@@ -127,6 +127,9 @@ th,td{padding:4px 8px;border-bottom:1px solid var(--line);text-align:right;verti
 th:first-child,td:first-child,th.l,td.l{text-align:left}
 th{font-weight:600;color:var(--muted);white-space:nowrap;vertical-align:bottom;background:var(--card);position:sticky;top:0}
 .rolagem{overflow-x:auto}
+thead th{cursor:pointer;user-select:none}thead th:hover{color:var(--accent)}
+thead th[aria-sort=ascending]::after{content:" ▲";font-size:.7em;color:var(--accent)}thead th[aria-sort=descending]::after{content:" ▼";font-size:.7em;color:var(--accent)}
+#rel-print thead th{cursor:auto}#rel-print thead th::after{content:none}
 tr.inativo td{color:var(--muted);font-style:italic}
 .ocultar-inativos tr.inativo{display:none}
 .sem-prod{color:var(--saldo);font-weight:600}
@@ -1340,7 +1343,7 @@ function renderMapa() {
   L.forEach(x => {
     if (ord === "estrutura" && x.g + x.u !== grupo) { grupo = x.g + x.u; h += `<tr class="grupo"><td colspan="${x.v.length + 2}">${esc(x.g)} › ${esc(x.u)}</td></tr>`; }
     h += `<tr><td class="rot" data-c="${esc(x.caminho)}" title="${esc(x.caminho)}">${ord === "estrutura" ? "" : esc(x.u) + " · "}${esc(x.e.nome)}</td>` +
-      x.v.map((y, i) => `<td class="c" style="background:${corMapa(y, x.ref)}" title="${esc(x.e.nome)} · ${mesRot(MESES[a + i])}: ${fmt(y)} (${Math.round(y / x.ref * 100)}% do habitual ${fmt(x.ref)})"></td>`).join("") + `<td class="c" style="background:var(--card);color:var(--muted)">${fmt(x.ref)}</td></tr>`;
+      x.v.map((y, i) => `<td class="c" data-v="${y}" style="background:${corMapa(y, x.ref)}" title="${esc(x.e.nome)} · ${mesRot(MESES[a + i])}: ${fmt(y)} (${Math.round(y / x.ref * 100)}% do habitual ${fmt(x.ref)})"></td>`).join("") + `<td class="c" data-v="${x.ref}" style="background:var(--card);color:var(--muted)">${fmt(x.ref)}</td></tr>`;
   });
   $("#mapa-corpo").innerHTML = L.length ? leg + h + "</tbody></table>" : "<p class='nota'>Nenhuma equipe com dados deste indicador neste tipo.</p>";
   const lg = $("#mapa-corpo .leg-mapa"); if (lg) $("#mapa-corpo").style.setProperty("--leg-h", lg.offsetHeight + "px");
@@ -1643,6 +1646,61 @@ $("#form-senha").addEventListener("submit", async ev => {
   if (msg) { er.textContent = msg; er.hidden = false; $("#senha").focus(); } else $("#dlg-senha").close();
 });
 document.addEventListener("click", e => { if (e.target.closest("button.lk-entrar")) abrirSenha(); });
+
+/* ---------- Ordenar tabelas ao clicar no cabeçalho (1º clique crescente, 2º decrescente) ---------- */
+const ORD_TAB = new Map();   // chave da tabela → {col, dir}; reaplicada quando a tabela é redesenhada
+function chaveTab(t) { const c = t.closest("[id]"), irmas = c ? [...c.querySelectorAll("table")] : []; return (c ? c.id : "") + "|" + irmas.indexOf(t); }
+function valorCel(td, texto) {
+  if (!td) return null;
+  if (!texto && td.dataset.v != null && td.dataset.v !== "") return +td.dataset.v;
+  const s = td.textContent.replace(/\s+/g, " ").trim();
+  if (texto) return s || null;
+  const m = s.match(/[−-]?\s?\d[\d.]*(,\d+)?/);
+  return m ? parseFloat(m[0].replace(/[\s.]/g, "").replace(",", ".").replace("−", "-")) : null;
+}
+function ordenarTabela(t, col, dir) {
+  const tb = t.tBodies[0]; if (!tb) return;
+  const ncol = t.tHead ? t.tHead.rows[t.tHead.rows.length - 1].cells.length : 0;
+  const separa = r => r.classList.contains("grp") || r.classList.contains("grupo");
+  const solta = r => r.classList.contains("det") || r.cells.length < ncol;   // linha de detalhe ou de largura total
+  const segs = [{ fixas: [], itens: [] }];
+  [...tb.rows].forEach(r => {
+    const s = segs[segs.length - 1];
+    if (separa(r)) { segs.push({ cab: r, fixas: [], itens: [] }); return; }
+    if (r.classList.contains("dest") || (solta(r) && !s.itens.length)) { s.fixas.push(r); return; }
+    if (solta(r)) { s.itens[s.itens.length - 1].extra.push(r); return; }
+    s.itens.push({ r, extra: [] });
+  });
+  const amostra = segs.flatMap(s => s.itens).map(x => x.r.cells[col]).find(c => c && (c.dataset.v || c.textContent.trim()));
+  const texto = !amostra || amostra.classList.contains("l") || amostra.tagName === "TH" || valorCel(amostra, false) == null;
+  segs.forEach(s => s.itens.forEach(x => (x.v = valorCel(x.r.cells[col], texto))));
+  const cmp = (a, b) => {
+    if (a.v == null || b.v == null) return (a.v == null) - (b.v == null);   // vazios sempre no fim
+    return dir * (texto ? String(a.v).localeCompare(String(b.v), "pt-BR", { numeric: true, sensitivity: "base" }) : a.v - b.v);
+  };
+  const frag = document.createDocumentFragment();
+  segs.forEach(s => { if (s.cab) frag.appendChild(s.cab); s.fixas.forEach(r => frag.appendChild(r)); s.itens.sort(cmp).forEach(x => { frag.appendChild(x.r); x.extra.forEach(r => frag.appendChild(r)); }); });
+  tb.appendChild(frag);
+  const ths = t.tHead.rows[t.tHead.rows.length - 1].cells;
+  [...ths].forEach((h, i) => h.setAttribute("aria-sort", i === col ? (dir > 0 ? "ascending" : "descending") : "none"));
+  t.dataset.ordAplicada = "1";
+}
+document.addEventListener("click", e => {
+  const th = e.target.closest("thead th");
+  if (!th || e.target.closest("button, a, input, select") || th.closest("#rel-print") || !th.textContent.trim()) return;
+  const t = th.closest("table"), linhaCab = t.tHead.rows[t.tHead.rows.length - 1];
+  if (th.parentElement !== linhaCab) return;
+  const col = th.cellIndex, k = chaveTab(t), atual = ORD_TAB.get(k);
+  const dir = atual && atual.col === col ? -atual.dir : 1;
+  ORD_TAB.set(k, { col, dir });
+  ordenarTabela(t, col, dir);
+});
+// escolher um "Ordenar por" desfaz o clique no cabeçalho daquela parte da página
+document.addEventListener("change", e => { if (!/-ord$/.test(e.target.id || "")) return; const pre = e.target.id.replace(/-ord$/, "-"); [...ORD_TAB.keys()].forEach(k => { if (k.startsWith(pre)) ORD_TAB.delete(k); }); }, true);
+new MutationObserver(() => {
+  if (!ORD_TAB.size) return;
+  document.querySelectorAll("table:not([data-ord-aplicada])").forEach(t => { const o = ORD_TAB.get(chaveTab(t)); if (o && t.tHead && t.tHead.rows[t.tHead.rows.length - 1].cells.length > o.col) ordenarTabela(t, o.col, o.dir); });
+}).observe(document.body, { childList: true, subtree: true });
 
 iniciar();
 entrarLembrado();
