@@ -562,7 +562,7 @@ function barras(s, w = 1100, h = 170) {   // uma linha por ano, de janeiro a dez
   const mx = Math.max(...ser.flat().filter(x => x != null), 1), pe = 34, pd = 44, pb = 20, pt = 12, iw = w - pe - pd, ih = h - pb - pt;
   const X = m => pe + iw / 24 + m * iw / 12, Y = v => pt + ih - v / mx * ih;
   const estilo = y => y === aU ? ["var(--accent)", 2.8, ""] : y === aU - 1 ? ["var(--s4)", 1.9, ""] : ["var(--muted)", 1.4, 'stroke-dasharray="2 3"'];
-  let g = `<text x="0" y="${pt + 4}">${fmt(mx)}</text><text x="0" y="${Y(mx / 2) + 4}">${fmt(mx / 2)}</text><line x1="${pe}" x2="${w - pd}" y1="${Y(mx / 2)}" y2="${Y(mx / 2)}" stroke="var(--line)" stroke-dasharray="2 4"/><line x1="${pe}" x2="${w - pd}" y1="${pt + ih}" y2="${pt + ih}" stroke="var(--line)"/>`, leg = "";
+  let g = `<text x="0" y="${pt + 4}">${fmt(mx)}</text>${mx >= 4 ? `<text x="0" y="${Y(mx / 2) + 4}">${fmt(mx / 2)}</text>` : ""}<line x1="${pe}" x2="${w - pd}" y1="${Y(mx / 2)}" y2="${Y(mx / 2)}" stroke="var(--line)" stroke-dasharray="2 4"/><line x1="${pe}" x2="${w - pd}" y1="${pt + ih}" y2="${pt + ih}" stroke="var(--line)"/>`, leg = "";
   const fins = [];
   anos.forEach((y, n) => {
     const [cor, larg, dash] = estilo(y), pts = ser[n].map((v, m) => v == null ? null : [X(m), Y(v), v, m]).filter(Boolean); if (!pts.length) return;
@@ -582,6 +582,20 @@ function barras(s, w = 1100, h = 170) {   // uma linha por ano, de janeiro a dez
 }
 
 const habitual = s => mediana(s.slice(Math.max(IU - 12, 0), IU));   // mediana dos 12 meses anteriores ao último mês completo (o mês avaliado não entra)
+function barrasPessoa(s, ini, w = 460, h = 120) {   // produção individual: uma barra por mês, em sequência, a partir do primeiro registro da pessoa
+  const [a0] = faixa(), a = Math.max(a0, ini), n = IU - a + 1; if (n < 1) return "";
+  const v = s.slice(a, IU + 1), mx = Math.max(...v, 1), pe = 30, pb = 18, pt = 14, iw = w - pe - 6, ih = h - pb - pt, bw = iw / n, Y = y => pt + ih - y / mx * ih, passo = n > 24 ? 4 : n > 12 ? 3 : n > 6 ? 2 : 1;
+  let g = `<text x="0" y="${pt + 4}">${fmt(mx)}</text>${mx >= 4 ? `<text x="0" y="${(Y(mx / 2) + 4).toFixed(1)}">${fmt(mx / 2)}</text><line x1="${pe}" x2="${w - 6}" y1="${Y(mx / 2).toFixed(1)}" y2="${Y(mx / 2).toFixed(1)}" stroke="var(--line)" stroke-dasharray="2 4"/>` : ""}<line x1="${pe}" x2="${w - 6}" y1="${pt + ih}" y2="${pt + ih}" stroke="var(--line)"/>`;
+  v.forEach((y, i) => {
+    const x = pe + i * bw, ult = i === n - 1, m = MESES[a + i], jan = m.endsWith("-01");
+    if (jan && i) g += `<line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${pt}" y2="${pt + ih}" stroke="var(--line)"/>`;
+    if (y > 0) g += `<rect x="${(x + bw * .14).toFixed(1)}" y="${Y(y).toFixed(1)}" width="${(bw * .72).toFixed(1)}" height="${(pt + ih - Y(y)).toFixed(1)}" rx="1.5" fill="${ult ? "var(--accent)" : "var(--s2)"}"/>`;
+    if (ult) g += `<text x="${(x + bw / 2).toFixed(1)}" y="${(Y(y) - 3).toFixed(1)}" text-anchor="middle" style="fill:var(--txt);font-weight:700">${fmt(y)}</text>`;
+    if (i % passo === 0 || ult) g += `<text x="${(x + bw / 2).toFixed(1)}" y="${h - 4}" text-anchor="middle">${ult || i === 0 || jan ? mesRot(m) : MES_ABR[+m.slice(5) - 1]}</text>`;
+    g += `<rect class="col" x="${x.toFixed(1)}" y="${pt}" width="${bw.toFixed(1)}" height="${ih}"><title>${mesRot(m)}: ${fmt(y)}${a + i >= 12 && a + i - 12 >= ini ? ` (${fmt(s[a + i - 12])} em ${mesRot(MESES[a + i - 12])})` : ""}</title></rect>`;
+  });
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="Produção por mês, de ${mesRot(MESES[a])} a ${mesRot(MESES[IU])}">${g}</svg>`;
+}
 function mediana(v) { const o = [...v].sort((x, y) => x - y), n = o.length; return n ? (o[Math.floor((n - 1) / 2)] + o[Math.ceil((n - 1) / 2)]) / 2 : 0; }
 function linhas(defs, w = 820, h = 200) {
   const [a, b] = faixa(), n = b - a, pe = 34, pb = 20, pt = 14, iw = w - pe - 8, ih = h - pb - pt;
@@ -1283,10 +1297,11 @@ function abrirFicha(id) {
   const x = pessoas.get(id); if (!x) return;
   $("#ficha-t").textContent = x.nome;
   $("#ficha-sub").textContent = [x.cat, x.chs ? x.chs + " h" : "", x.mat ? "matrícula " + x.mat : ""].filter(Boolean).join(" · ");
-  const graf = SOMAVEIS.concat(FAMS.map(k => [k, IND[k].nome])).map(([k, rot]) => {
-    const tot = P.meses.map((_, i) => x.v.reduce((a, y) => a + ((y.p.serie[k] || [])[i] || 0), 0));
-    if (!tot.slice(0, IU + 1).some(v => v)) return "";
-    return `<div><h4>${rot} – todas as equipes · ${fmt(tot[IU])} em ${mesRot(MESES[IU])} ${htmlVar(tot)}</h4>${barras(tot, 460, 120)}</div>`;
+  const sers = SOMAVEIS.concat(FAMS.map(k => [k, IND[k].nome])).map(([k, rot]) => [rot, P.meses.map((_, i) => x.v.reduce((a, y) => a + ((y.p.serie[k] || [])[i] || 0), 0))]).filter(([, tot]) => tot.slice(0, IU + 1).some(v => v));
+  const ini = Math.min(IU, ...sers.map(([, tot]) => tot.findIndex(v => v)).filter(i => i >= 0));   // primeiro mês com qualquer registro da pessoa: antes disso não é zero, é ausência
+  const graf = sers.map(([rot, tot]) => {
+    const comp = IU >= 12 && IU - 12 > ini && variacao(tot) != null;   // só compara com o ano anterior se a pessoa já registrava antes daquele mês (o mês de chegada costuma ser parcial)
+    return `<div><h4>${rot} · ${fmt(tot[IU])} em ${mesRot(MESES[IU])} ${comp ? htmlVar(tot) + ` <span class="nota">versus ${mesRot(MESES[IU - 12])}</span>` : ""}</h4>${barrasPessoa(tot, ini)}</div>`;
   }).join("");
   const lin = x.v.map(y => {
     const ult = y.p.serie.atend || y.p.serie.visitas || y.p.serie.vacinas || [];
@@ -1296,6 +1311,7 @@ function abrirFicha(id) {
   }).join("");
   const alerta = P.alertas.filter(a => x.v.some(y => a.caminho === y.caminho && a.texto.includes(x.nome))).map(a => `<li><b>${esc(a.tipo)}:</b> ${esc(a.texto)}</li>`).join("");
   $("#ficha-corpo").innerHTML = (alerta ? `<ul class="nota" style="color:var(--saldo)">${alerta}</ul>` : "") +
+    (graf ? `<p class="nota">Uma barra por mês, somando todas as equipes em que a pessoa registrou. Os gráficos começam em <b>${mesRot(MESES[Math.max(ini, faixa()[0])])}</b>${ini > faixa()[0] ? ", primeiro mês com registro dela nesta base" : ""}; a barra mais escura é ${mesRot(MESES[IU])}. Números pequenos (como um ou dois procedimentos no mês) oscilam por acaso: leia o conjunto, não o mês.</p>` : "") +
     `<div class="graf">${graf || "<p class='nota'>Sem produção individual registrada neste período.</p>"}</div>` +
     `<div class="rolagem"><table><thead><tr><th class="l">Equipe</th><th class="l">Situação</th>${SOMAVEIS.map(([k, r]) => `<th>${r.split(" ")[0]}<br><span class="nota">${mesRot(MESES[IU])}</span></th>`).join("")}</tr></thead><tbody>${lin}</tbody></table></div>` +
     `<p class="nota">Produção conforme registro no PEC. Zero pode ser registro ausente ou atrasado, férias ou afastamento.</p>`;
