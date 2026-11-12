@@ -1,0 +1,81 @@
+name: Atualizar painel da APS Norte
+on:
+  schedule:
+    - cron: "15 10 * * *"   # 07h15 em Brasília (o InfoSaúde recarrega cedo)
+    - cron: "30 17 * * *"   # 14h30 (segunda carga do dia)
+  workflow_dispatch:
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  construir:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests cryptography
+      - name: Buscar a lotação (RH) no repositório privado
+        uses: actions/checkout@v4
+        with:
+          repository: gapapsnorte/painel-aps-norte-rh
+          ssh-key: ${{ secrets.RH_CHAVE }}      # chave só de leitura, só daquele repositório
+          path: _rh
+          persist-credentials: false
+      - name: Colocar a lotação no lugar (não fica no repositório público nem no site)
+        run: |
+          cp _rh/referencia.json coleta/referencia.json
+          rm -rf _rh
+      - name: Coletar do InfoSaúde (API pública do Power BI)
+        working-directory: coleta
+        run: python coleta.py 2024-01
+      - name: Coletar população, cadastros e consultas por região (indicador por mil hab.)
+        working-directory: coleta
+        run: python razao.py
+      - name: Coletar pessoas atendidas e hiperfrequentadores (contagens por faixa, sem identificar ninguém)
+        working-directory: coleta
+        run: python usuarios.py
+      - name: Montar hierarquia e alertas
+        working-directory: coleta
+        env:
+          APS_PEPPER: ${{ secrets.APS_PEPPER }}
+          APS_SENHA: ${{ secrets.APS_SENHA }}      # senha dos gestores: cifra a lista de profissionais
+        run: python montar.py
+      - name: Validar (não publica se parecer vazio ou se houver nome de servidor na parte aberta)
+        working-directory: coleta
+        run: python validar.py
+      - name: Registrar a data da atualização (impede que o GitHub desative o agendamento após 60 dias sem atividade)
+        continue-on-error: true
+        run: |
+          date -u +%F > ultima_atualizacao.txt
+          git config user.name "painel-aps-norte[bot]"
+          git config user.email "actions@users.noreply.github.com"
+          git add ultima_atualizacao.txt
+          git diff --cached --quiet || (git commit -q -m "Atualização de $(cat ultima_atualizacao.txt)" && git push)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: painel-site
+          path: site
+          retention-days: 3
+      - if: ${{ vars.PUBLICAR == 'sim' }}
+        uses: actions/configure-pages@v5
+      - if: ${{ vars.PUBLICAR == 'sim' }}
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+  publicar:
+    needs: construir
+    if: ${{ vars.PUBLICAR == 'sim' }}
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4

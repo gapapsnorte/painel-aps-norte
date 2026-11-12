@@ -1,0 +1,1635 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Painel da APS – Região Norte</title>
+<style>
+/* Padrão visual dos painéis – DIRAPS Norte (mesmo do painel de filas de regulação) */
+:root{
+  --bg:#f6f7f9; --card:#fff; --txt:#1d2430; --muted:#5b6575; --line:#e2e6ec; --accent:#1f5fa8;
+  --in:#1d2430; --out:#13915a; --saldo:#d33a2c;
+  --alerta-bg:#fff4e5; --alerta-txt:#8a4b00; --aviso-bg:#fdecec; --aviso-txt:#8f1d1d;
+  /* categorias dos gráficos (azul, verde, âmbar, vermelho, cinza) */
+  --s1:#1f5fa8; --s2:#5a8fcf; --s3:#13915a; --s4:#b9770e; --s5:#d33a2c; --s6:#5b6575; --s7:#9bb7d8; --s8:#7fb89c; --s9:#1d2430; --s0:#c3cad4;
+  /* mapa de calor: abaixo do habitual (vermelho) → dentro (neutro) → acima (azul) */
+  --h0:#8f1d1d; --h1:#d33a2c; --h2:#e8a15b; --h3:#f5dfbf; --h4:#e2e6ec; --h5:#9bb7d8; --h6:#1f5fa8;
+  --faixa:#e3ebf5;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12161c; --card:#1b2129; --txt:#e6e9ee; --muted:#9aa4b2; --line:#2c3440; --accent:#6ea8ff;
+  --in:#e6e9ee; --out:#3ccf8e; --saldo:#ff6b5e;
+  --alerta-bg:#3a2a12; --alerta-txt:#ffc27a; --aviso-bg:#3d1b1b; --aviso-txt:#ffb3b3;
+  --s1:#6ea8ff; --s2:#4a7fc0; --s3:#3ccf8e; --s4:#ffc27a; --s5:#ff6b5e; --s6:#9aa4b2; --s7:#3b5a85; --s8:#2f8a68; --s9:#e6e9ee; --s0:#3a4452;
+  --h0:#7a1f1a; --h1:#b8453b; --h2:#a8742f; --h3:#4a3d28; --h4:#2c3440; --h5:#3b5a85; --h6:#6ea8ff; --faixa:#232c3a;}}
+:root[data-theme="dark"]{
+  --bg:#12161c; --card:#1b2129; --txt:#e6e9ee; --muted:#9aa4b2; --line:#2c3440; --accent:#6ea8ff;
+  --in:#e6e9ee; --out:#3ccf8e; --saldo:#ff6b5e;
+  --alerta-bg:#3a2a12; --alerta-txt:#ffc27a; --aviso-bg:#3d1b1b; --aviso-txt:#ffb3b3;
+  --s1:#6ea8ff; --s2:#4a7fc0; --s3:#3ccf8e; --s4:#ffc27a; --s5:#ff6b5e; --s6:#9aa4b2; --s7:#3b5a85; --s8:#2f8a68; --s9:#e6e9ee; --s0:#3a4452;
+  --h0:#7a1f1a; --h1:#b8453b; --h2:#a8742f; --h3:#4a3d28; --h4:#2c3440; --h5:#3b5a85; --h6:#6ea8ff; --faixa:#232c3a;}
+
+*{box-sizing:border-box}
+html{font-size:14px;scroll-padding-top:120px}
+body{margin:0;background:var(--bg);color:var(--txt);font:13px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.pagina{max-width:1180px;margin:0 auto;padding:0 14px}
+a{color:var(--accent)}
+header{padding:14px 0 0}
+header h1{font-size:1.45rem;margin:0}
+header p{margin:4px 0 0;color:var(--muted);font-size:.72rem}
+.pular{position:absolute;left:-9999px;top:0}
+.pular:focus{left:8px;top:8px;z-index:20;background:var(--card);color:var(--txt);padding:8px 12px;border-radius:8px;font-size:.9rem}
+
+/* abas */
+.abas{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:12px 0 10px;flex-wrap:wrap}
+.abas button{font:inherit;border:1px solid transparent;border-bottom:none;background:none;color:var(--muted);padding:6px 12px;border-radius:8px 8px 0 0;font-size:.9rem;cursor:pointer;margin-bottom:-1px}
+.abas button[aria-selected="true"]{background:var(--card);border-color:var(--line);color:var(--txt);font-weight:600}
+
+/* barra de filtros */
+.ctrl{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;margin-bottom:8px}
+.ctrl.fixa{position:sticky;top:0;z-index:20;background:var(--bg);padding:6px 14px 4px;box-shadow:0 6px 8px -8px rgba(0,0,0,.25)}
+label{font-size:.82rem;color:var(--muted);display:flex;align-items:center;gap:6px}
+select,input[type=search]{font:inherit;font-size:.9rem;padding:5px 7px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--txt)}
+select{max-width:100%;cursor:pointer}
+input[type=search]{min-width:200px;padding:6px 9px}
+.ctrl button,button.neutro{font:inherit;font-size:.9rem;padding:5px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--txt);cursor:pointer}
+.ctrl button:hover,button.neutro:hover{border-color:var(--accent)}
+button.link{font:inherit;background:none;border:0;color:var(--accent);text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:0}
+.chk{cursor:pointer}
+.busca{position:relative;flex:1 1 220px}
+.busca input{width:100%}
+#achados{position:absolute;left:0;top:36px;width:min(520px,92vw);background:var(--card);border:1px solid var(--line);border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.15);max-height:320px;overflow:auto;display:none;z-index:30}
+#achados button{display:block;width:100%;text-align:left;font:inherit;border:0;border-bottom:1px solid var(--line);background:var(--card);color:var(--txt);padding:7px 10px;cursor:pointer}
+#achados button:hover{background:var(--bg)}
+#achados small{display:block;color:var(--muted)}
+.ctl{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:6px 0 10px}
+.leg-x{display:flex;flex-wrap:wrap;gap:2px 12px;align-items:center;font-size:.8rem;color:var(--muted);margin:2px 0 8px}
+.leg-x i{display:inline-block;width:14px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+
+/* cartões de número */
+.kpis{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:8px;margin:12px 0}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 12px;cursor:pointer;text-align:left;font:inherit;color:inherit}
+.kpi:hover{border-color:var(--accent)}
+.multi{position:relative;font-size:.9rem}
+.multi>summary{cursor:pointer;border:1px solid var(--line);border-radius:8px;padding:5px 10px;background:var(--card);list-style:none}
+.multi>summary::-webkit-details-marker{display:none}
+.multi>summary::after{content:" ▾";color:var(--muted)}
+.multi[open]>summary{border-color:var(--accent)}
+.multi .lista{position:absolute;z-index:30;top:calc(100% + 4px);left:0;width:min(340px,calc(100vw - 28px));max-height:60vh;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 12px;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+.multi .lista label{display:flex;gap:7px;align-items:flex-start;padding:3px 0;font-size:.86rem}
+.multi .lista label.fixo{color:var(--muted)}
+.multi-graf{margin:8px 0 10px;padding:8px 10px;border:1px dashed var(--line);border-radius:8px}
+.multi-graf table{font-size:.82rem;margin-top:4px}
+.multi-graf td i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px}
+.grupos{display:flex;flex-wrap:wrap;gap:4px;flex-basis:100%}
+.grupos button{font-size:.84rem;padding:4px 10px;border-radius:999px}
+.grupos button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:#fff}
+.grupos button:disabled,.ctrl select:disabled{opacity:.5;cursor:not-allowed}
+.cmp-card{margin:8px 0 10px;padding:8px 10px;border:1px dashed var(--line);border-radius:8px}
+.cmp-card .cab{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;justify-content:space-between}
+.cmp-card .cab b{font-size:.86rem}
+.cmp-card svg text{font-size:11px;fill:var(--muted)}
+.cmp-card circle.pt{cursor:pointer}
+.kpi[aria-pressed=true]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.kpi .r{font-size:.82rem;color:var(--muted)}
+.kpi .n{font-size:1.3rem;font-weight:700;line-height:1.15;font-variant-numeric:tabular-nums}
+.var{font-size:.8rem;font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}
+.var.neg{color:var(--saldo)}.var.pos{color:var(--out)}.var.nd{color:var(--muted);font-weight:400}
+.painel-graf{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin-bottom:10px}
+.painel-graf h2{font-size:.92rem;margin:0 0 4px;font-weight:600}
+
+/* hierarquia: um cartão por GSAP / UBS / equipe */
+details.caixa{border:1px solid var(--line);border-radius:10px;background:var(--card);margin:8px 0}
+details.caixa:has(>summary:hover){border-color:var(--accent)}
+details.caixa>summary{list-style:none;cursor:pointer;position:relative;display:grid;grid-template-columns:minmax(150px,1fr) auto 74px 112px;gap:6px 12px;align-items:center;padding:6px 12px 6px 28px}
+details.caixa>summary::-webkit-details-marker{display:none}
+details.caixa>summary::before{content:"▸";position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted)}
+details.caixa[open]>summary::before{content:"▾"}
+details.caixa[open]>summary{border-bottom:1px solid var(--line)}
+details.u,details.e{margin-left:10px}
+.nome{font-weight:600;font-size:.92rem;overflow-wrap:anywhere}
+.meta{font-size:.75rem;color:var(--muted);display:block;font-weight:400}
+.num{font-weight:700;font-size:1.1rem;text-align:right;font-variant-numeric:tabular-nums}
+.corpo{padding:6px 12px 12px}
+.sp{max-width:100%}
+
+/* marcadores */
+.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:0 7px;font-size:.7rem;color:var(--muted);white-space:nowrap;margin-left:6px;vertical-align:1px}
+.alerta{display:inline-block;background:var(--alerta-bg);color:var(--alerta-txt);border-radius:6px;padding:2px 8px;font-size:.78rem;margin-left:6px;vertical-align:1px}
+.alerta.alta{background:var(--aviso-bg);color:var(--aviso-txt)}
+.chip{display:inline-block;border-radius:6px;padding:2px 8px;font-size:.78rem;margin:3px 4px 0 0;background:var(--alerta-bg);color:var(--alerta-txt)}
+.chip.alta{background:var(--aviso-bg);color:var(--aviso-txt)}
+
+/* tabelas */
+table{border-collapse:collapse;width:100%;font-size:.82rem}
+th,td{padding:4px 8px;border-bottom:1px solid var(--line);text-align:right;vertical-align:middle;font-variant-numeric:tabular-nums}
+th:first-child,td:first-child,th.l,td.l{text-align:left}
+th{font-weight:600;color:var(--muted);white-space:nowrap;vertical-align:bottom;background:var(--card);position:sticky;top:0}
+.rolagem{overflow-x:auto}
+tr.inativo td{color:var(--muted);font-style:italic}
+.ocultar-inativos tr.inativo{display:none}
+.sem-prod{color:var(--saldo);font-weight:600}
+table.eq tr.grp td{background:var(--bg);font-weight:600;font-size:.8rem;padding:6px 8px}
+button.pess{font:inherit;color:var(--accent);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:2px;text-align:left}
+button.btn-sec{font:inherit;font-size:.85rem;font-weight:600;color:var(--accent);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:3px 12px;cursor:pointer}
+button.btn-sec:hover{border-color:var(--accent)}
+.nota{font-size:.84rem;color:var(--muted)}
+p.nota{margin:0 0 8px}
+
+/* prioridades */
+button.prio{display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:12px;align-items:center;width:100%;text-align:left;font:inherit;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 12px;margin:0 0 8px;cursor:pointer}
+button.prio:hover{border-color:var(--accent)}
+button.prio b{font-size:.92rem}
+button.prio small{display:block;color:var(--muted);font-size:.75rem}
+
+/* alertas */
+.alertas section{margin:12px 0}
+.alertas h3{margin:0 0 6px;font-size:.92rem}
+#vista-a button.alerta{display:block;width:100%;margin:0 0 6px;padding:8px 12px;border-radius:10px;font:inherit;text-align:left;cursor:pointer;border:1px solid transparent;color:var(--alerta-txt);background:var(--alerta-bg)}
+#vista-a button.alerta.alta{color:var(--aviso-txt);background:var(--aviso-bg)}
+#vista-a button.alerta:hover{border-color:currentColor}
+#vista-a button.alerta small{display:block;opacity:.85}
+
+/* acesso */
+.x-barra{display:grid;grid-template-columns:minmax(140px,1.1fr) minmax(0,2fr) minmax(0,1fr) 130px;gap:12px;align-items:center;width:100%;text-align:left;font:inherit;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 12px;margin:0 0 6px}
+button.x-barra{cursor:pointer}
+button.x-barra:hover{border-color:var(--accent)}
+.x-barra.x-cab{background:none;border:0;padding:2px 12px;color:var(--muted);font-size:.8rem;font-weight:600}
+.x-barra.total{background:var(--bg)}
+.x-barra .v{text-align:right;font-variant-numeric:tabular-nums}
+#x-crumb,#r-crumb{display:flex;gap:6px;flex-wrap:wrap}
+#r-crumb button,#x-crumb button{font:inherit;font-size:.88rem;padding:4px 10px;border:1px solid var(--line);border-radius:999px;background:var(--card);color:var(--txt);cursor:pointer}
+
+/* pizzas */
+.pizza{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;padding:8px 4px}
+.pizza ul{list-style:none;margin:0;padding:0;font-size:.82rem;min-width:240px}
+.pizza li{display:flex;gap:8px;align-items:center;padding:1px 0}
+.pizza li i{width:11px;height:11px;border-radius:2px;flex:none}
+.pizza li .v{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--muted)}
+svg text{font:11px system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;fill:var(--muted)}
+.cartoes{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:10px 0}
+.cartoes div{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:9px 11px}
+.cartoes b{display:block;font-size:20px;font-variant-numeric:tabular-nums}
+.cartoes span{font-size:12px;color:var(--muted)}
+.leg-u{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--muted);margin:4px 0 10px}
+.leg-u i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+#vista-u h3{font-size:13px;margin:10px 0 4px}
+/* etiquetas de alerta na Visão geral */
+.sinais{display:block;margin-top:2px}
+.sinais .chip{cursor:help}
+.sinais .chip.conta{background:none;border:1px solid var(--line);color:var(--muted)}
+.sinais .chip.conta.alta{border-color:var(--aviso-txt);color:var(--aviso-txt)}
+#f-barra{margin:12px 0 8px}
+#f-barra label{min-width:0;max-width:100%}
+#f-barra select{max-width:100%;min-width:0}
+.sinais .chip{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+/* área dos gestores (senha) */
+body:not(.aberto) .so-aberto{display:none !important}
+body:not(.restrito) #btn-entrar{display:none}
+#btn-entrar{font:inherit;font-size:.85rem;color:var(--muted);background:none;border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer}
+#btn-entrar:hover{color:var(--accent);border-color:var(--accent)}
+.restrito-nota{margin-top:10px;padding:9px 12px;border:1px dashed var(--line);border-radius:8px}
+.restrito-nota button{font:inherit;color:var(--accent);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline}
+#dlg-senha{border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--txt);padding:18px 20px;width:min(360px,calc(100vw - 32px));box-sizing:border-box}
+#dlg-senha::backdrop{background:rgba(0,0,0,.45)}
+#dlg-rel{border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--txt);padding:18px 20px;width:min(520px,calc(100vw - 32px));max-height:92vh;box-sizing:border-box}
+#dlg-rel::backdrop{background:rgba(0,0,0,.45)}
+#dlg-rel h2{margin:0 0 6px;font-size:1.05rem}
+#dlg-rel label{display:block;font-size:.88rem;margin-top:8px}
+#dlg-rel select{width:100%;font:inherit;padding:7px 8px;margin-top:4px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--txt)}
+#dlg-rel fieldset{border:1px solid var(--line);border-radius:8px;margin:12px 0 0;padding:6px 12px 10px}
+#dlg-rel legend{font-size:.8rem;color:var(--muted);padding:0 4px}
+#dlg-rel .chk{display:flex;align-items:flex-start;gap:7px;margin-top:6px}
+#dlg-rel .acoes{margin:8px 0 0;font-size:.8rem}
+#dlg-rel .lk{background:none;border:0;padding:0;color:var(--accent);cursor:pointer;font:inherit;text-decoration:underline}
+#dlg-rel .botoes{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+#dlg-rel .botoes button{font:inherit;padding:7px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--txt);cursor:pointer}
+#dlg-rel #rel-ok{background:var(--accent);border-color:var(--accent);color:#fff}
+#dlg-rel #rel-ok[disabled]{opacity:.6;cursor:progress}
+#rel-print{display:none;--bg:#fff;--card:#fff;--txt:#1d2430;--muted:#5b6575;--line:#d5dae2;--accent:#1f5fa8;--s1:#1f5fa8;--s2:#5a8fcf;--s3:#13915a;--s4:#b9770e;--s5:#d33a2c;--s6:#5b6575;--s7:#9bb7d8;--s8:#7fb89c;--s9:#1d2430;--s0:#c3cad4;--faixa:#e3ebf5;background:#fff;color:#1d2430;font-size:10.5pt}
+#rel-print h1{font-size:16pt;margin:0 0 2pt}#rel-print h2{font-size:12.5pt;margin:14pt 0 4pt;border-bottom:1px solid #d5dae2;padding-bottom:2pt;break-after:avoid}#rel-print h3{font-size:10.5pt;margin:9pt 0 3pt;break-after:avoid}
+#rel-print table{border-collapse:collapse;width:100%;font-size:9pt;margin:4pt 0}#rel-print th,#rel-print td{border:1px solid #d5dae2;padding:2.5pt 5pt;text-align:right;vertical-align:top}#rel-print th{background:#eef1f5;font-weight:600}
+#rel-print td.l,#rel-print th.l{text-align:left}#rel-print tr.dest td{font-weight:700;background:#e3ebf5}#rel-print tr{break-inside:avoid}
+#rel-print .nota{color:#5b6575;font-size:8.5pt}#rel-print svg{max-width:100%}#rel-print .col{display:none}
+@media print{body.imprimindo-rel>*:not(#rel-print){display:none !important}body.imprimindo-rel #rel-print{display:block}body.imprimindo-rel{background:#fff}}
+#dlg-senha h2{margin:0 0 6px;font-size:1.05rem}
+#dlg-senha label{display:block;font-size:.85rem;margin-top:10px}
+#dlg-senha input[type=password]{width:100%;box-sizing:border-box;font:inherit;padding:8px 10px;margin-top:4px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--txt)}
+#dlg-senha .chk{display:flex;align-items:center;gap:6px}
+#senha-erro{color:var(--saldo);font-size:.88rem;margin:10px 0 0}
+#dlg-senha .botoes{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+#dlg-senha .botoes button{font:inherit;padding:7px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--txt);cursor:pointer}
+#dlg-senha #senha-ok{background:var(--accent);border-color:var(--accent);color:#fff}
+#dlg-senha #senha-ok[disabled]{opacity:.6;cursor:progress}
+/* números ao passar o mouse */
+#dica{position:fixed;z-index:9999;pointer-events:none;display:none;max-width:300px;background:var(--txt);color:var(--bg);font:12px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:6px 9px;border-radius:6px;white-space:pre-line;box-shadow:0 2px 10px rgba(0,0,0,.28);font-variant-numeric:tabular-nums}
+#dica b{display:block}
+svg .col{fill:var(--txt);fill-opacity:0;pointer-events:all}
+svg .col:hover{fill-opacity:.08}
+.pizza svg text{fill:var(--txt)}
+
+/* mapa de calor */
+.mapa td,.mapa th{padding:0;border:0}
+.mapa table{border-collapse:separate;border-spacing:1px;width:auto}
+.mapa td.c{width:26px;min-width:26px;height:20px;font-size:.62rem;text-align:center;color:var(--txt);cursor:default}
+.mapa td.rot{padding:2px 8px 2px 0;text-align:left;white-space:nowrap;position:sticky;left:0;background:var(--bg);cursor:pointer;font-size:.8rem;max-width:300px;overflow:hidden;text-overflow:ellipsis;z-index:3}
+.mapa td.rot:hover{text-decoration:underline}
+.mapa th.mes{font-size:.62rem;font-weight:400;writing-mode:vertical-rl;transform:rotate(180deg);height:46px;padding:0;text-align:left;color:var(--muted);background:var(--bg)}
+.mapa tr.grupo td{font-weight:600;padding:8px 0 2px;font-size:.8rem;background:var(--bg);position:sticky;left:0;z-index:2}
+.leg-mapa{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center;font-size:.72rem;color:var(--muted);padding:6px 0;position:sticky;top:0;left:0;z-index:6;background:var(--bg);border-bottom:1px solid var(--line)}
+.leg-mapa i{display:inline-block;width:14px;height:12px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.mapa-rol{max-height:calc(100vh - 130px);overflow:auto;position:relative;border:1px solid var(--line);border-radius:10px;background:var(--bg);padding:0 8px}
+.mapa thead th{position:sticky;top:var(--leg-h,34px);z-index:4;background:var(--bg)}
+.mapa thead th:first-child{left:0;z-index:7}
+
+/* consultas por mil habitantes */
+#vista-r td.l,#vista-r th.l{text-align:left}
+#vista-u td.l,#vista-u th.l{text-align:left}
+#vista-r .ctl label{min-width:0;max-width:100%}
+#vista-u .ctl label{min-width:0;max-width:100%}
+#vista-r select{max-width:100%;min-width:0}
+#vista-u select{max-width:100%;min-width:0}
+#vista-r tr.dest td{font-weight:600;background:var(--bg)}
+#vista-u tr.dest td{font-weight:600;background:var(--bg)}
+#vista-r button.lk{font:inherit;color:var(--accent);background:none;border:0;padding:0;cursor:pointer;text-align:left}
+#vista-u button.lk{font:inherit;color:var(--accent);background:none;border:0;padding:0;cursor:pointer;text-align:left}
+#vista-r button.lk:hover{text-decoration:underline}
+#vista-u button.lk:hover{text-decoration:underline}
+#vista-r .bar-r{display:inline-block;width:110px;height:10px;background:var(--line);border-radius:5px;vertical-align:middle;overflow:hidden}
+#vista-u .bar-r{display:inline-block;width:110px;height:10px;background:var(--line);border-radius:5px;vertical-align:middle;overflow:hidden}
+#vista-r .bar-r i{display:block;height:100%;background:var(--accent)}
+#vista-u .bar-r i{display:block;height:100%;background:var(--accent)}
+#vista-r .neg{color:var(--aviso-txt)}
+#vista-u .neg{color:var(--aviso-txt)}
+
+/* ficha do servidor */
+dialog#ficha{border:1px solid var(--line);border-radius:10px;padding:0;width:min(860px,96vw);max-height:92vh;background:var(--card);color:var(--txt)}
+dialog#ficha::backdrop{background:rgba(0,0,0,.5)}
+#ficha .topo{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:12px 14px 8px;background:var(--bg);border-bottom:1px solid var(--line)}
+#ficha h2{margin:0;font-size:1.1rem}
+#ficha .cx{padding:10px 14px 14px;overflow:auto;max-height:calc(92vh - 70px)}
+#ficha .fechar{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--txt);border-radius:8px;padding:4px 12px;cursor:pointer}
+#ficha .graf{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px;margin:10px 0}
+#ficha .graf>div{border:1px solid var(--line);border-radius:10px;padding:6px 8px}
+#ficha h4{margin:0;font-size:.82rem;color:var(--muted);font-weight:600}
+
+/* rodapé recolhido */
+footer{margin-top:28px;color:var(--muted);font-size:.8rem;border-top:1px solid var(--line);padding:12px 0 40px}
+footer details>summary{cursor:pointer;font-weight:600;list-style:none;display:inline-block;padding:6px 12px;border:1px solid var(--line);border-radius:999px;user-select:none}
+footer details>summary::-webkit-details-marker{display:none}
+footer details>summary::before{content:"▸ "}
+footer details[open]>summary::before{content:"▾ "}
+footer ul{max-width:900px;padding-left:18px}
+footer li{margin:4px 0}
+footer p{margin:10px 0 0}
+
+:is(button,a,summary,select,input,[tabindex="0"],[role=button]):focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+@media (max-width:900px){
+  .ctrl.fixa{position:static;box-shadow:none}
+  html{scroll-padding-top:12px}
+}
+@media (max-width:760px){
+  .kpis{display:flex;overflow-x:auto;scroll-snap-type:x proximity;margin:10px -14px;padding:0 14px 4px}
+  .kpi{flex:0 0 150px;scroll-snap-align:start;padding:6px 10px}
+  .kpi .n{font-size:1.15rem}.kpi .r{font-size:.74rem}
+  .ctrl{display:grid;grid-template-columns:1fr 1fr}
+  .ctrl>*{min-width:0}
+  .ctrl .busca,.ctrl>button,.ctrl .chk,.ctrl .grupos,.ctrl .multi{grid-column:1/-1}
+  .ctrl select{flex:1;min-width:0}
+  input[type=search]{min-width:0;width:100%}
+  details.caixa>summary{grid-template-columns:1fr auto}
+  details.caixa>summary .sp,details.caixa>summary .num{justify-self:end}
+  details.u,details.e{margin-left:4px}
+  button.prio,.x-barra{grid-template-columns:1fr}
+  .x-barra.x-cab{display:none}
+  .abas{overflow-x:auto;flex-wrap:nowrap}.abas button{white-space:nowrap}
+}
+@media print{.ctrl.fixa{position:static}details.caixa{break-inside:avoid}}
+
+.aviso-ctx{border:1px solid var(--line);border-left:4px solid var(--s4);border-radius:8px;padding:8px 12px;margin:0 0 10px;font-size:.86rem;background:var(--card)}
+.aviso-ctx ul{margin:4px 0 0;padding-left:18px}
+#sub-perfil{margin:0 0 4px}
+table.eq tr.det>td{background:var(--bg);text-align:left;padding:10px 12px}
+.tres{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px 22px}
+.tres .grande{font-size:1.6rem;font-weight:700;font-variant-numeric:tabular-nums}
+#vista-p button.lk,#vista-i button.lk{font:inherit;color:var(--accent);background:none;border:0;padding:0;cursor:pointer;text-align:left}
+#vista-p button.lk:hover,#vista-i button.lk:hover{text-decoration:underline}
+#vista-p .bar-r{display:inline-block;width:64px;height:8px;background:var(--line);border-radius:4px;vertical-align:middle;overflow:hidden;margin-left:4px}
+#vista-p .bar-r i{display:block;height:100%;background:var(--accent)}
+#sub-perfil button,#vista-i .ctl button{font:inherit;font-size:.88rem;padding:5px 11px;border:1px solid var(--line);border-radius:999px;background:var(--card);color:var(--txt);cursor:pointer}
+#vista-i .ctl button{border-radius:8px}
+#sub-perfil button:hover,#vista-i .ctl button:hover{border-color:var(--accent)}
+#sub-perfil button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:#fff}
+#vista-i .ctl input[type=search]{width:230px}
+#i-cartoes{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin:10px 0}
+#i-cartoes .kpi{text-align:left}
+#i-corpo td.l small{display:block;color:var(--muted)}
+</style>
+</head>
+<body>
+<a class="pular" href="#conteudo">Ir para o conteúdo</a>
+<header><div class="pagina">
+  <h1>Painel da Atenção Primária – Região Norte</h1>
+  <p id="sub"></p>
+</div></header>
+
+<div class="pagina">
+  <nav class="abas" role="tablist" aria-label="Seção">
+    <button role="tab" id="aba-h" aria-selected="true">Visão geral</button><button role="tab" id="aba-m" aria-selected="false">Mapa de calor</button><button role="tab" id="aba-p" aria-selected="false">Perfil dos atendimentos</button><button role="tab" id="aba-i" class="so-aberto" aria-selected="false" title="Problemas de código e de vínculo: acesso dos gestores">Inconsistências</button>
+  </nav>
+</div>
+
+<div class="ctrl fixa pagina">
+  <div class="grupos" id="grp-ind" role="group" aria-label="Grupo de indicadores"></div>
+  <label>Indicador <select id="sel-ind"></select></label>
+  <details class="multi" id="multi" hidden><summary id="multi-rot">Comparar com outros motivos</summary><div class="lista"><p class="nota">Marque até 5 motivos para ver junto com o escolhido ao lado, na mesma GSAP, UBS ou equipe.</p><div id="multi-itens"></div><button type="button" class="neutro" id="multi-limpar">Limpar</button></div></details>
+  <label>Período <select id="sel-per"><option value="12">12 meses</option><option value="24" selected>24 meses</option><option value="99">Tudo</option></select></label>
+  <label class="chk so-aberto"><input type="checkbox" id="chk-inativos"> mostrar quem não tem vínculo atual confirmado</label>
+  <div class="busca"><input type="search" id="busca" placeholder="Buscar equipe ou UBS" aria-label="Buscar"><div id="achados" role="listbox"></div></div>
+  <button type="button" id="btn-csv">Baixar lista (CSV)</button>
+  <button type="button" id="btn-rel" class="so-aberto" title="Monta um relatório em PDF ou Word com as partes que você escolher">Gerar relatório</button>
+  <button type="button" id="btn-entrar" title="Lista de profissionais, ficha do servidor e busca por nome: acesso dos gestores">Entrar</button>
+</div>
+<dialog id="dlg-senha" aria-labelledby="dlg-senha-t">
+  <form id="form-senha">
+    <h2 id="dlg-senha-t">Área dos gestores</h2>
+    <p class="nota">A lista de profissionais de cada equipe, a ficha do servidor e a busca por nome ficam protegidas por senha. Os indicadores por equipe, UBS e GSAP continuam abertos para todos.</p>
+    <label for="senha">Senha</label>
+    <input type="password" id="senha" autocomplete="current-password" required>
+    <label class="chk"><input type="checkbox" id="senha-lembrar"> lembrar neste navegador</label>
+    <p id="senha-erro" role="alert" hidden></p>
+    <div class="botoes"><button type="button" id="senha-cancelar">Cancelar</button><button type="submit" id="senha-ok">Entrar</button></div>
+  </form>
+</dialog>
+
+<main class="pagina" id="conteudo" tabindex="-1">
+  <div class="ctl" id="sub-perfil" hidden><div class="grupos" role="group" aria-label="Partes do perfil dos atendimentos"><button type="button" id="sub-p" aria-pressed="true">Resumo por unidade (12 meses)</button><button type="button" id="aba-x" aria-pressed="false">Tipo de atendimento, mês a mês</button><button type="button" id="aba-u" aria-pressed="false">Pessoas atendidas</button><button type="button" id="aba-r" aria-pressed="false">Consultas por mil hab.</button></div></div>
+  <div id="vista-h">
+    <div class="kpis" id="kpis"></div>
+    <div class="painel-graf"><h2 id="tit-graf"></h2><div id="graf-regiao"></div></div>
+    <div class="ctl" id="f-barra"><label>Mostrar <select id="f-alerta"></select></label><button type="button" class="neutro abrir-cmp" data-g="">Comparar todas as equipes da Região</button><button type="button" class="neutro btn-prov" title="Uma linha por alerta (e por inconsistência, na área dos gestores), com colunas em branco para responsável, providência, prazo e devolutiva. O arquivo fica só no seu computador.">Baixar planilha de providências</button><span class="nota" id="f-resumo"></span></div>
+    <div id="arvore"></div>
+  </div>
+  <div id="vista-c" class="cmp" hidden>
+    <p><button type="button" class="neutro" id="cmp-voltar">← Voltar à Visão geral</button></p>
+    <h2 id="cmp-tit">Comparar equipes da Região</h2>
+    <p class="nota" id="cmp-nota"></p>
+    <div class="ctl"><label>Equipes <select id="cmp-tipo"><option value="eSF">eSF</option><option value="eSB">eSB (bucal)</option><option value="eMulti">eMulti</option></select></label><label>GSAP <select id="cmp-gsap"><option value="">Todas</option></select></label><label>Valor <select id="cmp-modo"><option value="1">Último mês</option><option value="3m">Média dos últimos 3 meses</option></select></label></div>
+    <div class="leg-x" id="cmp-leg"></div>
+    <div id="cmp-corpo"></div>
+  </div>
+  <div id="vista-x" hidden>
+    <p class="nota">Perfil do atendimento realizado, mês a mês: o <b>tipo de atendimento</b> registrado no PEC e <b>quem atendeu</b>. O tipo depende de como o profissional classifica no registro, então a diferença entre UBS pode ser de hábito de registro e não só de trabalho. Clique numa linha para descer um nível.</p>
+    <div class="ctl"><nav id="x-crumb" aria-label="Nível"></nav><label>Mês <select id="x-mes"></select></label><label>Ordenar por <select id="x-ord"><option value="nome">Nome</option><option value="dia">% consulta no dia (maior)</option><option value="urg">% urgência (maior)</option><option value="med">% atendido por médico (maior)</option><option value="tot">Total de atendimentos (maior)</option></select></label></div>
+    <div class="leg-x" id="x-leg"></div>
+    <div class="painel-graf"><h2 id="x-tit-pizza"></h2><div id="x-pizzas" style="display:flex;flex-wrap:wrap;gap:8px 36px"></div></div>
+    <div class="painel-graf"><h2 id="x-tit-tempo"></h2><div id="x-tempo"></div></div>
+    <div id="x-corpo"></div>
+  </div>
+  <div id="vista-r" hidden>
+    <p class="nota" id="r-nota"></p>
+    <div class="ctl"><label>População (denominador) <select id="r-base"><option value="infosaude">Série do InfoSaúde por RA (padrão)</option><option value="censo">Censo 2022</option><option value="cad">População cadastrada</option></select></label> <label>Indicador <select id="r-ind"><option value="med">Consultas de médico por mil hab. (indicador da RIPSA)</option><option value="enf">Consultas de enfermeiro por mil hab.</option><option value="mie">Consultas de médico + enfermeiro por mil hab.</option></select></label></div>
+    <div class="painel-graf"><h2 id="r-tit-ref"></h2><div class="rolagem" id="r-ref"></div><p class="nota" id="r-ref-nota"></p></div>
+    <div class="painel-graf"><h2 id="r-tit-ubs"></h2><p class="nota" id="r-aviso"></p>
+      <div class="ctl"><nav id="r-crumb" aria-label="Nível"></nav><label>Ordenar por <select id="r-ord"><option value="nome">Nome</option><option value="maior">Razão (maior primeiro)</option><option value="menor">Razão (menor primeiro)</option><option value="var">Variação sobre os 12 meses anteriores (maior queda)</option></select></label></div>
+      <div class="rolagem" id="r-corpo"></div></div>
+  </div>
+  <div id="vista-u" hidden>
+    <p class="nota" id="u-nota"></p>
+    <div class="painel-graf"><h2 id="u-tit"></h2>
+      <div class="ctl"><nav id="u-crumb" aria-label="Nível"></nav></div>
+      <div class="cartoes" id="u-cartoes"></div>
+      <h3>Pessoas, pelo número de atendimentos que cada uma teve em 12 meses</h3><div id="u-pilha-p"></div>
+      <h3>Atendimentos, pela mesma divisão (quanto da agenda cada grupo ocupa)</h3><div id="u-pilha-a"></div>
+      <div class="leg-u" id="u-leg"></div>
+    </div>
+    <div class="painel-graf"><h2 id="u-tit-tab"></h2>
+      <div class="ctl"><label>Ordenar por <select id="u-ord"><option value="nome">Nome</option><option value="hf">Pessoas com 12 ou mais atendimentos (% maior primeiro)</option><option value="ahf">Agenda ocupada por elas (% maior primeiro)</option><option value="apc">Atendimentos por pessoa (maior primeiro)</option><option value="um">Pessoas com um só atendimento (% maior primeiro)</option><option value="cob">Pessoas atendidas por 100 cadastrados (menor primeiro)</option></select></label></div>
+      <div class="rolagem" id="u-corpo"></div><p class="nota" id="u-rod"></p></div>
+  </div>
+  <div id="vista-p" hidden>
+    <p class="nota" id="p-nota"></p>
+    <div class="ctl"><nav id="p-crumb" aria-label="Nível"></nav><label>Ordenar por <select id="p-ord"><option value="nome">Nome</option><option value="dia">% consulta no dia (maior)</option><option value="med">% atendido por médico (maior)</option><option value="apc">Atendimentos por pessoa (maior)</option><option value="hf">% de pessoas com 12 ou mais (maior)</option><option value="mil">Consultas de médico por mil cadastrados (maior)</option><option value="milm">Consultas de médico por mil cadastrados (menor)</option></select></label></div>
+    <div class="rolagem" id="p-corpo"></div>
+    <p class="nota" id="p-rod"></p>
+  </div>
+  <div id="vista-i" hidden>
+    <p class="nota" id="i-nota"></p>
+    <div id="i-cartoes"></div>
+    <div class="ctl"><label>Tipo <select id="i-tipo"></select></label><label>GSAP <select id="i-gsap"><option value="">Todas</option></select></label><label>Buscar <input type="search" id="i-q" placeholder="nome, categoria, UBS ou equipe"></label><button type="button" id="i-csv">Baixar esta lista (CSV)</button><button type="button" class="btn-prov">Baixar planilha de providências</button></div>
+    <p class="nota" id="i-exp"></p>
+    <div class="rolagem" id="i-corpo"></div>
+  </div>
+  <div id="vista-m" class="mapa" hidden>
+    <p class="nota">Cada linha é uma equipe e cada coluna um mês. A cor compara o mês com o <b>habitual da própria equipe</b>: a mediana dos 12 meses anteriores ao último mês completo, a mesma referência das etiquetas de alerta (não muda com o período escolhido, que só define quantos meses aparecem). Quanto mais escuro o vermelho, mais abaixo do habitual. Clique no nome para abrir a equipe.</p>
+    <div class="barra-mapa" style="display:flex;flex-wrap:wrap;gap:10px 16px;margin:8px 0">
+      <label>Equipes <select id="mapa-tipo"><option value="eSF">eSF</option><option value="eSB">eSB (bucal)</option><option value="eMulti">eMulti</option><option value="*">Todas</option></select></label>
+      <label>Ordenar por <select id="mapa-ord"><option value="estrutura">GSAP e UBS</option><option value="queda">Último mês mais abaixo do habitual</option><option value="valor">Último mês (menor primeiro)</option></select></label>
+    </div>
+    <div class="rolagem mapa-rol" id="mapa-corpo"></div>
+  </div>
+</main>
+<dialog id="ficha" aria-labelledby="ficha-t"><div class="topo"><div><h2 id="ficha-t"></h2><div class="nota" id="ficha-sub"></div></div><button class="fechar" id="ficha-x" type="button">Fechar</button></div><div class="cx" id="ficha-corpo"></div></dialog>
+<dialog id="dlg-rel" aria-labelledby="dlg-rel-t">
+  <form id="form-rel">
+    <h2 id="dlg-rel-t">Gerar relatório</h2>
+    <p class="nota">Escolha a unidade e o que entra. O relatório usa o indicador e o período selecionados no topo do painel.</p>
+    <label for="rel-escopo">Unidade</label><select id="rel-escopo"></select>
+    <fieldset><legend>O que incluir</legend><div id="rel-secoes"></div>
+      <p class="acoes"><button type="button" class="lk" id="rel-todas">marcar todas</button> · <button type="button" class="lk" id="rel-nenhuma">desmarcar todas</button></p></fieldset>
+    <fieldset><legend>Formato</legend>
+      <label class="chk"><input type="radio" name="rel-fmt" value="pdf" checked> PDF (abre a janela de impressão; escolha “Salvar como PDF”)</label>
+      <label class="chk"><input type="radio" name="rel-fmt" value="word"> Word (baixa um arquivo .doc editável)</label></fieldset>
+    <p id="rel-aviso" class="nota" role="status"></p>
+    <div class="botoes"><button type="button" id="rel-cancelar">Cancelar</button><button type="submit" id="rel-ok">Gerar</button></div>
+  </form>
+</dialog>
+<div id="rel-print"></div>
+<footer><div class="pagina"><details><summary>Fontes e mais</summary>
+    <ul>
+      <li><b>Fonte:</b> painéis públicos da Sala de Situação do InfoSaúde-DF (SES-DF), lidos diretamente do modelo de dados de cada painel; a lotação (quem pertence a qual equipe) vem da planilha de RH da APS Norte de <span class="rh-rot"></span>.</li>
+      <li><b>Mês corrente</b> fica de fora dos gráficos e dos alertas, por estar incompleto. O último mês completo é <b id="ult"></b>.</li>
+      <li><b>Gráfico mensal:</b> uma linha por ano, de janeiro a dezembro; o ano corrente é a linha mais forte e vai até o último mês completo. O seletor Período define quantos anos aparecem.</li>
+      <li><b>Variação</b> = último mês completo contra o mesmo mês do ano anterior. Em vermelho quando a queda passa de 30%.</li>
+      <li><b>Zero não é prova de que não houve trabalho:</b> pode ser registro ausente ou atrasado no PEC, ficha digitada em outra equipe, férias ou afastamento. Os alertas servem para <i>conferir</i>, não para concluir.</li>
+      <li><b>Sem equipe vinculada:</b> produção registrada sem INE (aparece como uma "equipe" à parte em cada UBS).</li>
+      <li><b>Vínculo atual não confirmado:</b> o profissional não consta na lotação de <span class="rh-rot"></span> e não tem registro nos últimos 3 meses. É uma inferência, não a confirmação de que saiu. Ficam ocultos até marcar a opção acima.</li>
+      <li><b>Habitual</b> = mediana dos 12 meses anteriores ao último mês completo (o mês avaliado não entra). Vale igual para as etiquetas de alerta e para o mapa de calor. “Bem abaixo do habitual” = menos de 70% dele.</li>
+      <li><b>Grupos de indicadores</b> seguem as boas práticas do cofinanciamento da APS (desenvolvimento infantil, gestação e puerpério, diabetes, hipertensão, pessoa idosa, saúde da mulher). Mostram a <i>produção registrada</i> ligada a cada boa prática (atendimentos e procedimentos), não o indicador oficial, que conta pessoas acompanhadas. Um mesmo indicador pode aparecer em mais de um grupo. Hemoglobina glicada não existe na fonte (o InfoSaúde não publica exames solicitados e avaliados).</li>
+      <li><b>Doses de vacina</b> são volume de aplicação, não cobertura vacinal. <b>Visitas de ACS</b>: o total inclui visitas recusadas e com morador ausente; “visitas realizadas” é só o desfecho realizado. <b>Participantes</b> de atividades coletivas são participações somadas, não pessoas diferentes. <b>Pré-natal</b> aparece como condição avaliada e como procedimento: são dois registros do mesmo trabalho, não se somam.</li>
+      <li><b>Mês fechado não é base consolidada:</b> o InfoSaúde pode receber registros atrasados de meses já encerrados. Queda forte no último mês pede primeiro conferir se a base já foi alimentada.</li>
+      <li><b>Link desta tela:</b> o endereço do navegador guarda a aba, o indicador, o período, o filtro e a unidade aberta; copie e envie para abrir no mesmo ponto.</li>
+      <li><b>Pré-natal, hipertensão, diabetes, saúde mental, colo do útero, IST e odontologia</b> existem só por equipe (a fonte não traz o profissional).</li>
+      <li><b>Procedimentos</b> são agrupados em famílias por código SIGTAP (rastreio do colo do útero, testes rápidos, DIU, implante contraceptivo, pé diabético, pressão arterial, peso e altura, curativos etc.). Um procedimento só aparece se foi <i>registrado</i> como tal no PEC; acolhimento e escuta inicial, por exemplo, quase sempre entram como tipo de atendimento, não como procedimento.</li>
+      <li><b>Motivos de consulta</b> usam o CID-10 registrado no atendimento, agrupado em linhas de cuidado (a lista está em <code>coleta/motivos.py</code>). Um atendimento pode ter mais de um CID, e cerca de <b>4 em cada 10 não têm CID</b>: a linha "Sem CID registrado" mostra isso. Leia como perfil, não como contagem exata de doenças.</li>
+      <li><b>Alertas</b> são etiquetas nas equipes e UBS (nenhum atendimento, bem abaixo do habitual, queda sobre o ano anterior, sem médico, ACS sem visita, sem registro de procedimento); o filtro Mostrar lista só quem tem o sinal. Dentro de cada GSAP e UBS, a faixa <b>contra a Região</b> põe cada equipe como um ponto contra as demais: estar entre as mais baixas não prova desempenho inadequado, porque população, território e composição da equipe diferem. <b>Perfil dos atendimentos</b> descreve o atendimento realizado (tipo, quem atendeu, pessoas atendidas e consultas por mil); não mede espera nem demanda não atendida. <b>Inconsistências</b> (área dos gestores) lista problemas de código e de vínculo.</li>
+      <li>Cobertura da APS, Previne Brasil/ISF e Bolsa Família estão parados no InfoSaúde (abr/2025, 2024 e 2025-2) e por isso não entram.</li>
+    </ul>
+  </details><p id="rodape"></p></div></footer>
+
+<script src="painel.js"></script>
+<script>
+"use strict";
+const P = window.PAINEL;
+const NOM = { aberto: false };   // área dos gestores: os nomes só entram na página depois de decifrar site/nominal.js
+P.gsaps.forEach(g => g.ubs.forEach(u => u.equipes.forEach(e => { e.prof = []; })));
+const $ = (s, r = document) => r.querySelector(s);
+const MES_ABR = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
+const IU = P.meses.indexOf(P.ultimo_mes_completo);
+const MESES = P.meses.slice(0, IU + 1);
+const estado = { ind: "atend", per: 24, fil: "", grp: "prod", cmpInd: [] };
+/* seletor de indicador em dois passos: primeiro o grupo (botões), depois o indicador dentro dele */
+const BP = "Produção registrada ligada a esta boa prática do cofinanciamento; não é o indicador oficial, que conta pessoas acompanhadas";
+const GRUPOS = [["prod", "Acesso e produção", "Atendimentos, visitas, vacinas, atividades coletivas, tipo de atendimento e procedimentos gerais"], ["inf", "Desenvolvimento infantil", BP], ["gest", "Gestação e puerpério", BP],
+  ["dm", "Diabetes", BP], ["has", "Hipertensão", BP], ["idoso", "Pessoa idosa", BP], ["mulher", "Saúde da mulher", BP + " (prevenção do câncer e contracepção)"], ["bucal", "Saúde bucal", "Só por equipe de saúde bucal"],
+  ["outras", "Saúde mental e outras", "Saúde mental, IST, tuberculose e hanseníase, tabagismo, PrEP e práticas integrativas"], ["mot", "Motivos de consulta", "CID registrado no atendimento; só por equipe"]];
+const GRP_KS = { inf: ["p_puer", "vacinas", "m_crianca"], gest: ["prenatal", "p_prenatal", "p_puerp", "p_ts_sif", "p_penic", "p_ts_hiv", "p_ts_hep", "m_gravidez"],
+  dm: ["dm", "p_pe", "p_glic", "p_pa", "p_antropo", "m_dm"], has: ["has", "p_pa", "p_antropo", "m_has", "m_obesi"], idoso: ["p_idoso", "p_domic"],
+  mulher: ["colo", "p_cito", "mama", "p_diu", "p_implante", "m_contracep", "m_rastreio"], bucal: ["odonto1", "odonto"], outras: ["mental", "m_mental", "ist", "m_ist", "m_tbhan", "p_tabag", "p_prep", "p_pic"] };
+const EM_BP = new Set(Object.values(GRP_KS).flat().filter(k => !["vacinas", "p_domic"].includes(k) && !k.startsWith("m_")));   // vacinas e visita domiciliar ficam também em Acesso e produção
+function membros(grp) {
+  const todos = Object.keys(P.indicadores);
+  if (grp === "mot") return todos.filter(k => k.startsWith("m_"));
+  if (GRP_KS[grp]) return GRP_KS[grp].filter(k => P.indicadores[k]);
+  return todos.filter(k => !k.startsWith("m_") && !EM_BP.has(k));
+}
+const grpDe = k => (k.startsWith("m_") ? "mot" : !EM_BP.has(k) ? "prod" : Object.keys(GRP_KS).find(g => GRP_KS[g].includes(k)) || "prod");
+const ultimoDoGrupo = {};
+function montarInd(grp, k) {   // preenche o 2º passo com os indicadores do grupo
+  estado.grp = grp;
+  const l = membros(grp).map(x => [x, P.indicadores[x]]);
+  document.getElementById("sel-ind").innerHTML = l.map(([x, v]) => `<option value="${x}">${v.sub && grp === "prod" ? "— " : ""}${esc(v.nome)}${v.nivel === "eq" ? " (só por equipe)" : ""}</option>`).join("");
+  document.getElementById("sel-ind").value = k || ultimoDoGrupo[grp] || l[0][0];
+  document.querySelectorAll("#grp-ind button").forEach(b => b.setAttribute("aria-pressed", b.dataset.g === grp));
+  const mu = document.getElementById("multi"); mu.hidden = grp !== "mot"; if (grp !== "mot") mu.open = false;
+  if (grp === "mot" && !document.getElementById("multi-itens").children.length)
+    document.getElementById("multi-itens").innerHTML = l.map(([x, v]) => `<label><input type="checkbox" value="${x}"> ${esc(v.nome)}</label>`).join("");
+}
+/* ---------- comparar vários motivos de consulta na mesma GSAP, UBS ou equipe ---------- */
+const CORES_M = ["var(--accent)", "var(--s4)", "var(--s3)", "var(--s5)", "#7b4fa8", "var(--s6)"];
+const chavesMulti = () => (estado.grp === "mot" && estado.cmpInd.length ? [estado.ind, ...estado.cmpInd.filter(x => x !== estado.ind)].slice(0, 6) : []);
+function atualizarMulti() {   // marca o motivo principal como fixo e mostra quantos estão marcados
+  const ks = chavesMulti();
+  document.querySelectorAll("#multi-itens input").forEach(c => { const fixo = c.value === estado.ind; c.checked = fixo || estado.cmpInd.includes(c.value); c.disabled = fixo || (!c.checked && estado.cmpInd.length >= 5); c.parentElement.classList.toggle("fixo", fixo); });
+  document.getElementById("multi-rot").textContent = ks.length ? `Comparando ${ks.length} motivos` : "Comparar com outros motivos";
+}
+function multiGraf(ser, nome) {
+  const ks = chavesMulti().filter(k => ser && ser[k]); if (ks.length < 2) return "";
+  const defs = ks.map((k, n) => ({ s: ser[k], cor: CORES_M[n], rot: nomeInd(k), larg: 2 }));
+  const s12 = s => s.slice(Math.max(IU - 11, 0), IU + 1).reduce((a, b) => a + b, 0), tot = ks.reduce((a, k) => a + s12(ser[k]), 0);
+  const lin = ks.map((k, n) => { const s = ser[k], ant = IU >= 12 ? s[IU - 12] : null; return `<tr><td class="l"><i style="background:${CORES_M[n]}"></i>${esc(nomeInd(k))}</td><td class="v">${fmt(s[IU])}</td><td class="v">${ant == null ? "–" : fmt(ant)}</td><td>${htmlVar(s)}</td><td class="v">${fmt(s12(s))}</td><td class="v">${tot ? Math.round(s12(s) / tot * 100) + "%" : "–"}</td></tr>`; }).join("");
+  return `<div class="multi-graf"><b style="font-size:.86rem">Motivos comparados – ${esc(nome)}</b>${linhas(defs, 1100, 190)}<div class="rolagem"><table class="eq"><thead><tr><th class="l">Motivo</th><th>${mesRot(MESES[IU])}</th><th>${IU >= 12 ? mesRot(MESES[IU - 12]) : ""}</th><th>Variação</th><th>12 meses</th><th>Parte entre os marcados</th></tr></thead><tbody>${lin}</tbody></table></div><div class="nota">Um atendimento pode ter mais de um CID e cerca de 4 em cada 10 não têm CID: leia como perfil, não como contagem exata.</div></div>`;
+}
+function defInd(k) { if (!P.indicadores[k]) return; if (!membros(estado.grp).includes(k)) montarInd(grpDe(k), k); else document.getElementById("sel-ind").value = k; mudar(); }
+const fmt = n => (n == null ? "–" : Math.round(n).toLocaleString("pt-BR"));
+const mesRot = m => { const [a, n] = m.split("-"); return MES_ABR[+n - 1] + "/" + a.slice(2); };
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const IND = P.indicadores;
+const RH = P.rh_rot || "jun/2026";   // competência da planilha de lotação
+const faixa = () => { const n = Math.min(estado.per, MESES.length); return [MESES.length - n, MESES.length]; };
+const S = (obj, k) => (obj.serie && obj.serie[k]) || (obj[k]) || null;
+
+function variacao(s) {
+  if (!s || IU < 12) return null;
+  const base = s[IU - 12];
+  if (!base || base < 10) return null;
+  return s[IU] / base - 1;
+}
+function htmlVar(s) {
+  const v = variacao(s);
+  if (v == null) return '<span class="var nd">–</span>';
+  const r = Math.round(v * 100), t = r === 0 ? "0%" : (r > 0 ? "+" : "−") + Math.abs(r) + "%";
+  return `<span class="var ${v <= -0.30 ? "neg" : v >= 0.30 ? "pos" : "nd"}" title="${mesRot(MESES[IU])} versus ${mesRot(MESES[IU - 12])}">${t}</span>`;
+}
+function spark(s, w = 104, h = 24) {
+  if (!s) return "";
+  const [a, b] = faixa(), v = s.slice(a, b), mx = Math.max(...v, 1), n = v.length;
+  const pts = v.map((y, i) => [(n === 1 ? w / 2 : 2 + i * (w - 4) / (n - 1)), h - 3 - (y / mx) * (h - 6)]);
+  const ult = pts[pts.length - 1], cw = n === 1 ? w : (w - 4) / (n - 1);
+  const cols = v.map((y, i) => `<rect class="col" x="${(pts[i][0] - cw / 2).toFixed(1)}" y="0" width="${cw.toFixed(1)}" height="${h}"><title>${mesRot(MESES[a + i])}: ${fmt(y)}</title></rect>`).join("");
+  return `<svg class="sp" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" role="img" aria-label="Série mensal de ${mesRot(MESES[a])} a ${mesRot(MESES[b - 1])}">` +
+    `<polyline fill="none" stroke="var(--accent)" stroke-width="1.5" points="${pts.map(p => p.map(x => x.toFixed(1)).join(",")).join(" ")}"/>` +
+    `<circle cx="${ult[0].toFixed(1)}" cy="${ult[1].toFixed(1)}" r="2.4" fill="var(--txt)"/>${cols}</svg>`;
+}
+function barras(s, w = 1100, h = 170) {   // uma linha por ano, de janeiro a dezembro (os anos que o período escolhido alcança)
+  if (!s) return "<p class='nota'>Sem dados para este indicador neste nível.</p>";
+  const [a] = faixa(), anoDe = m => +m.slice(0, 4), aU = anoDe(MESES[IU]), anos = [];
+  for (let y = anoDe(MESES[a]); y <= aU; y++) anos.push(y);
+  const val = (y, m) => { const k = MESES.indexOf(`${y}-${String(m + 1).padStart(2, "0")}`); return k < 0 ? null : s[k]; };
+  const ser = anos.map(y => MES_ABR.map((_, m) => val(y, m)));
+  const mx = Math.max(...ser.flat().filter(x => x != null), 1), pe = 34, pd = 44, pb = 20, pt = 12, iw = w - pe - pd, ih = h - pb - pt;
+  const X = m => pe + iw / 24 + m * iw / 12, Y = v => pt + ih - v / mx * ih;
+  const estilo = y => y === aU ? ["var(--accent)", 2.8, ""] : y === aU - 1 ? ["var(--s4)", 1.9, ""] : ["var(--muted)", 1.4, 'stroke-dasharray="2 3"'];
+  let g = `<text x="0" y="${pt + 4}">${fmt(mx)}</text><text x="0" y="${Y(mx / 2) + 4}">${fmt(mx / 2)}</text><line x1="${pe}" x2="${w - pd}" y1="${Y(mx / 2)}" y2="${Y(mx / 2)}" stroke="var(--line)" stroke-dasharray="2 4"/><line x1="${pe}" x2="${w - pd}" y1="${pt + ih}" y2="${pt + ih}" stroke="var(--line)"/>`, leg = "";
+  const fins = [];
+  anos.forEach((y, n) => {
+    const [cor, larg, dash] = estilo(y), pts = ser[n].map((v, m) => v == null ? null : [X(m), Y(v), v, m]).filter(Boolean); if (!pts.length) return;
+    g += `<polyline fill="none" stroke="${cor}" stroke-width="${larg}" ${dash} stroke-linejoin="round" points="${pts.map(p => p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" ")}"/>`;
+    if (y === aU) pts.forEach(p => g += `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${p[3] === pts[pts.length - 1][3] ? 4.2 : 2.6}" fill="${cor}"/>`);
+    const u = pts[pts.length - 1]; fins.push({ y, cor, x: u[0], yy: u[1], v: u[2], atual: y === aU });
+    leg += `<span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px"><svg width="24" height="8"><line x1="0" x2="24" y1="4" y2="4" stroke="${cor}" stroke-width="${larg}" ${dash}/></svg> ${y}${y === aU ? ` (até ${MES_ABR[pts[pts.length - 1][3]]})` : ""}</span>&ensp;`;
+  });
+  fins.sort((p, q) => p.yy - q.yy); for (let k = 1; k < fins.length; k++) if (fins[k].yy - fins[k - 1].yy < 11) fins[k].yy = fins[k - 1].yy + 11;   // rótulos do fim da linha sem encavalar
+  fins.forEach(f => g += `<text x="${(f.x + 7).toFixed(1)}" y="${(f.yy + 4).toFixed(1)}" style="fill:${f.cor};font-weight:${f.atual ? 700 : 400}">${f.atual ? fmt(f.v) : f.y}</text>`);
+  MES_ABR.forEach((r, m) => g += `<text x="${X(m).toFixed(1)}" y="${h - 5}" text-anchor="middle">${r}</text>`);
+  const cols = MES_ABR.map((r, m) => {   // faixa do mês inteiro: o valor de cada ano naquele mês
+    const ls = anos.map((y, n) => { const v = ser[n][m]; if (v == null) return ""; const q = n ? ser[n - 1][m] : null; return `\n${r}/${String(y).slice(2)}: ${fmt(v)}` + (q ? ` (${v >= q ? "+" : "−"}${Math.abs(Math.round((v / q - 1) * 100))}% sobre ${y - 1})` : ""); }).reverse().join("");
+    return ls ? `<rect class="col" x="${(pe + m * iw / 12).toFixed(1)}" y="${pt}" width="${(iw / 12).toFixed(1)}" height="${ih}"><title>${r}${ls}</title></rect>` : "";
+  }).join("");
+  return `<div class="nota" style="margin-bottom:2px">${leg}</div><svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="Série mensal">${g}${cols}</svg>`;
+}
+
+const habitual = s => mediana(s.slice(Math.max(IU - 12, 0), IU));   // mediana dos 12 meses anteriores ao último mês completo (o mês avaliado não entra)
+function mediana(v) { const o = [...v].sort((x, y) => x - y), n = o.length; return n ? (o[Math.floor((n - 1) / 2)] + o[Math.ceil((n - 1) / 2)]) / 2 : 0; }
+function linhas(defs, w = 820, h = 200) {
+  const [a, b] = faixa(), n = b - a, pe = 34, pb = 20, pt = 14, iw = w - pe - 8, ih = h - pb - pt;
+  const todos = defs.flatMap(d => d.s.slice(a, b).filter(x => x != null)), mx = Math.max(...todos, 1);
+  const X = i => pe + (n === 1 ? iw / 2 : i * iw / (n - 1)), Y = y => pt + ih - y / mx * ih;
+  let g = "", leg = "";
+  defs.forEach(d => {
+    const segs = []; let seg = [];
+    d.s.slice(a, b).forEach((y, i) => { if (y == null) { if (seg.length) segs.push(seg); seg = []; } else seg.push([X(i), Y(y), y, i]); });
+    if (seg.length) segs.push(seg);
+    segs.forEach(sg => {
+      g += `<polyline fill="none" stroke="${d.cor}" stroke-width="${d.larg || 2}" ${d.dash ? 'stroke-dasharray="5 4"' : ""} points="${sg.map(p => p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" ")}"/>`;
+      sg.forEach(p => g += `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${d.larg ? 3.2 : 4}" fill="${d.cor}" opacity="${d.dash ? .01 : 1}"><title>${esc(d.rot)} · ${mesRot(MESES[a + p[3]])}: ${fmt(p[2])}</title></circle>`);
+    });
+    leg += `<span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px"><svg width="24" height="8"><line x1="0" x2="24" y1="4" y2="4" stroke="${d.cor}" stroke-width="2.6" ${d.dash ? 'stroke-dasharray="5 3"' : ""}/></svg>${esc(d.rot)}</span>`;
+  });
+  let xs = ""; for (let i = 0; i < n; i += (n > 18 ? 3 : 2)) xs += `<text x="${X(i).toFixed(1)}" y="${h - 5}" text-anchor="middle">${mesRot(MESES[a + i])}</text>`;
+  const cw = n === 1 ? iw : iw / (n - 1); let cols = "";   // faixa do mês inteiro: mostra todas as curvas daquele mês
+  for (let i = 0; i < n; i++) {
+    const ls = defs.map(d => d.s[a + i] == null ? "" : `\n${esc(d.rot)}: ${fmt(d.s[a + i])}`).join("");
+    if (ls) cols += `<rect class="col" x="${(X(i) - cw / 2).toFixed(1)}" y="${pt}" width="${cw.toFixed(1)}" height="${ih}"><title>${mesRot(MESES[a + i])}${ls}</title></rect>`;
+  }
+  return `<div class="nota" style="margin-bottom:2px">${leg}</div><svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="Série mensal"><text x="0" y="${pt + 4}">${fmt(mx)}</text><line x1="${pe}" x2="${w - 8}" y1="${pt + ih}" y2="${pt + ih}" stroke="var(--line)"/>${g}${xs}${cols}</svg>`;
+}
+const cacheMed = {};
+function medianaTipo(k, tipo) {
+  const ch = k + "|" + tipo; if (cacheMed[ch]) return cacheMed[ch];
+  const eqs = []; P.gsaps.forEach(g => g.ubs.forEach(u => u.equipes.forEach(e => { if (e.ine && !e.migrou && e.tipo === tipo && e.serie[k] && e.serie[k].slice(Math.max(IU - 11, 0), IU + 1).some(x => x)) eqs.push(e.serie[k]); })));
+  return cacheMed[ch] = P.meses.map((_, i) => eqs.length ? mediana(eqs.map(x => x[i])) : null);
+}
+function graficoEquipe(e) {
+  const k = estado.ind, s = e.serie[k]; if (!s) return "";
+  const defs = [{ s, cor: "var(--accent)", rot: "Esta equipe", larg: 2 }];
+  if (e.ine) defs.push({ s: medianaTipo(k, e.tipo), cor: "var(--s4)", rot: `Mediana das ${e.tipo} da Região`, dash: true });
+  defs.push({ s: s.map((_, i) => i >= 12 ? s[i - 12] : null), cor: "var(--muted)", rot: "Mesmo mês do ano anterior", dash: true });
+  return `<div class="painel-graf" style="margin:0 0 10px"><h2 style="font-size:.9rem">${esc(nomeInd(k))} – esta equipe contra a mediana</h2>${linhas(defs)}</div>`;
+}
+
+/* ---------- árvore ---------- */
+const nomeInd = k => IND[k].nome;
+function sumario(nome, meta, s, extra = "") {
+  const v = s ? s[IU] : null;
+  return `<summary><span><span class="nome">${esc(nome)}</span><span class="meta">${meta}</span>${extra}</span><span class="num" title="${mesRot(MESES[IU])}">${s ? fmt(v) : "–"}</span>${htmlVar(s)}${spark(s)}</summary>`;
+}
+function alertasDe(caminho) { return P.alertas.filter(a => a.caminho === caminho); }
+/* ---------- sinais de alerta: etiquetas nas equipes e UBS, e filtro da Visão geral ----------
+   Juntam os alertas calculados na geração (P.alertas) com o sinal "bem abaixo do habitual" (mediana de 12 meses da própria equipe ou UBS). */
+const TIPOS_SINAL = [["zerada", "Nenhum atendimento no mês"], ["habitual", "Bem abaixo do habitual"], ["medico", "Sem atendimento médico"], ["queda", "Queda contra o mesmo mês do ano anterior"],
+  ["acs", "ACS sem visita registrada"], ["proc", "Sem registro de procedimento (citopatológico, teste de sífilis)"], ["semeq", "Produção sem equipe vinculada"], ["mudou", "Equipe mudou de UBS"]];
+let SIN = null;
+function sinais() {
+  if (SIN) return SIN; SIN = new Map();
+  const poe = (cam, tipo, nivel, rot, det) => { const l = SIN.get(cam) || []; if (!l.some(x => x.rot === rot)) l.push({ tipo, nivel, rot, det }); SIN.set(cam, l); };
+  P.alertas.forEach(a => {
+    const c = a.caminho, t = a.tipo;
+    if (t === "equipe zerada") poe(c, "zerada", "alta", "Nenhum atendimento no mês", a.texto);
+    else if (t === "sem atendimento médico") poe(c, "medico", "alta", "Sem atendimento médico", a.texto);
+    else if (t === "queda de atendimentos") poe(c, "queda", "media", `${Math.round(-(a.valor || 0) * 100)}% menos que em ${mesRot(MESES[IU - 12])}`, a.texto);
+    else if (t === "ACS sem visita") poe(c, "acs", "media", a.texto.split(" lotados")[0] + " sem visita", a.texto);
+    else if (t === "sem registro de procedimento") poe(c, "proc", "media", "Sem " + a.texto.replace(/^Nenhum registro de /, "").split(" em ")[0], a.texto);
+    else if (t === "produção sem equipe") poe(c, "semeq", "media", a.texto.split(" dos atendimentos")[0] + " sem equipe vinculada", a.texto);
+    else if (t === "equipe mudou de UBS") poe(c, "mudou", "media", "Mudou de UBS", a.texto);
+    else poe(c, "outro", a.nivel, a.tipo, a.texto);
+  });
+  const hab = (cam, sr) => {
+    if (!sr) return; const m = habitual(sr), rel = m ? sr[IU] / m : null;
+    if (sr[IU] > 0 && rel != null && rel < 0.7 && m >= 150) poe(cam, "habitual", "alta", `${Math.round((1 - rel) * 100)}% abaixo do habitual`, `${fmt(sr[IU])} atendimentos em ${mesRot(MESES[IU])}; o habitual (mediana dos 12 meses anteriores) é ${fmt(m)}.`);
+  };
+  P.gsaps.forEach(g => g.ubs.forEach(u => {
+    hab(`${g.nome} › ${u.nome}`, u.serie.atend);
+    u.equipes.forEach(e => { if (e.ine && e.tipo === "eSF" && !e.migrou) hab(`${g.nome} › ${u.nome} › ${e.nome}`, e.serie.atend); });
+  }));
+  SIN.forEach(l => l.sort((a, b) => (a.nivel !== "alta") - (b.nivel !== "alta")));
+  return SIN;
+}
+const passaSinal = l => !!l && l.some(x => estado.fil === "*" || (estado.fil === "alta" ? x.nivel === "alta" : x.tipo === estado.fil));
+function passa(cam) {   // com filtro ligado: o próprio nó ou algum nó abaixo dele tem o sinal
+  if (!estado.fil) return true;
+  for (const [c, l] of sinais()) if ((c === cam || c.startsWith(cam + " › ")) && passaSinal(l)) return true;
+  return false;
+}
+function etiquetas(cam, nivel) {
+  const proprias = (sinais().get(cam) || []).map(x => `<span class="chip ${x.nivel}" title="${esc(x.det)}">${esc(x.rot)}</span>`).join("");
+  let conta = "";
+  if (nivel !== "e") {   // GSAP e UBS: quantas equipes abaixo têm algum sinal
+    let n = 0, alta = 0;
+    sinais().forEach((l, c) => { if (c.startsWith(cam + " › ") && c.split(" › ").length === 3) { n++; if (l.some(x => x.nivel === "alta")) alta++; } });
+    if (n) conta = `<span class="chip conta${alta ? " alta" : ""}" title="Abra para ver quais equipes; ou use o filtro Mostrar, acima.">⚠ ${n} equipe${n > 1 ? "s" : ""} com alerta${alta ? ` (${alta} de prioridade alta)` : ""}</span>`;
+  }
+  return proprias || conta ? `<span class="sinais">${proprias}${conta}</span>` : "";
+}
+function renderFiltro() {
+  const S = sinais(), eq = [...S].filter(([c]) => c.split(" › ").length === 3), n = f => eq.filter(([, l]) => l.some(f)).length;
+  const ubsN = [...S].filter(([c]) => c.split(" › ").length === 2).length;
+  $("#f-alerta").innerHTML = `<option value="">Todas as equipes</option><option value="*">Só com algum alerta (${eq.length} equipes, ${ubsN} UBS)</option><option value="alta">Só prioridade alta (${n(x => x.nivel === "alta")} equipes)</option>` +
+    `<optgroup label="Por tipo de alerta">${TIPOS_SINAL.map(([k, r]) => { const q = [...S].filter(([, l]) => l.some(x => x.tipo === k)).length; return q ? `<option value="${k}">${esc(r)} (${q})</option>` : ""; }).join("")}</optgroup>`;
+  $("#f-alerta").value = estado.fil || "";
+  if ($("#f-alerta").value !== (estado.fil || "")) { estado.fil = ""; $("#f-alerta").value = ""; }
+  resumoFiltro();
+}
+function resumoFiltro() {
+  const S = sinais();
+  if (!estado.fil) { $("#f-resumo").textContent = `Referência dos alertas: ${mesRot(MESES[IU])} (último mês completo). São sinais para conferir com a equipe, não conclusões. Passe o mouse ou toque na etiqueta para ver o detalhe.`; return; }
+  const q = [...S].filter(([, l]) => passaSinal(l)), ne = q.filter(([c]) => c.split(" › ").length === 3).length, nu = q.length - ne;
+  $("#f-resumo").textContent = `${ne} equipe${ne === 1 ? "" : "s"}${nu ? ` e ${nu} UBS` : ""} neste filtro · referência ${mesRot(MESES[IU])}. Vermelho = prioridade alta. Passe o mouse ou toque na etiqueta para ver o detalhe.`;
+}
+function renderArvore() {
+  const el = $("#arvore"); el.innerHTML = "";
+  P.gsaps.forEach((g, gi) => {
+    if (!passa(g.nome)) return;
+    const d = document.createElement("details"); d.className = "caixa g"; d.id = "g" + gi; d.dataset.t = "g"; d.dataset.gi = gi;
+    d.innerHTML = sumario(g.nome, `${g.ubs.length} UBS · ${g.n_esf} eSF`, g.serie[estado.ind], etiquetas(g.nome, "g")) + '<div class="corpo"></div>';
+    d.addEventListener("toggle", () => preencher(d)); el.appendChild(d);
+    if (estado.fil) d.open = true;   // com filtro, já abre até o nível das equipes
+  });
+  if (!el.children.length) el.innerHTML = "<p class='nota'>Nenhuma equipe ou UBS com este alerta no último mês completo.</p>";
+}
+function preencher(d) {
+  const ch = estado.ind + estado.per + estado.fil + chavesMulti().join(",");
+  if (!d.open || d.dataset.pronto === ch) return;
+  d.dataset.pronto = ch;
+  const corpo = $(".corpo", d); const t = d.dataset.t, gi = +d.dataset.gi;
+  if (t === "g") {
+    const g = P.gsaps[gi];
+    corpo.innerHTML = estado.fil ? "" : `<div class="nota">${esc(nomeInd(estado.ind))} – ${esc(g.nome)}</div>${barras(g.serie[estado.ind], 1100, 130)}${multiGraf(g.serie, g.nome)}${cmpCard(g, null)}`;
+    g.ubs.forEach((u, ui) => {
+      const x = document.createElement("details"); x.className = "caixa u"; x.id = `g${gi}u${ui}`; x.dataset.t = "u"; x.dataset.gi = gi; x.dataset.ui = ui;
+      const cam = `${g.nome} › ${u.nome}`; if (!passa(cam)) return;
+      x.innerHTML = sumario(u.nome, `${esc(u.ra || "")} · ${u.n_esf} eSF · ${u.equipes.length} equipes`, u.serie[estado.ind], etiquetas(cam, "u")) + '<div class="corpo"></div>';
+      x.addEventListener("toggle", () => preencher(x)); corpo.appendChild(x);
+      if (estado.fil) x.open = true;
+    });
+  } else if (t === "u") {
+    const ui = +d.dataset.ui, u = P.gsaps[gi].ubs[ui], g = P.gsaps[gi];
+    corpo.innerHTML = estado.fil ? "" : `<div class="nota">${esc(nomeInd(estado.ind))} – ${esc(u.nome)}</div>${barras(u.serie[estado.ind], 1100, 130)}${multiGraf(u.serie, u.nome)}${cmpCard(g, u)}`;
+    u.equipes.forEach((e, ei) => {
+      const x = document.createElement("details"); x.className = "caixa e"; x.id = `g${gi}u${ui}e${ei}`; x.dataset.t = "e"; x.dataset.gi = gi; x.dataset.ui = ui; x.dataset.ei = ei;
+      const cam = `${g.nome} › ${u.nome} › ${e.nome}`; if (!passa(cam)) return;
+      const ativos = NOM.aberto ? e.prof.filter(p => p.ativo).length : (e.n_prof || 0);
+      x.innerHTML = sumario(e.nome, `${esc(e.tipo)} · ${ativos} profissionais${e.migrou ? ` · <b>passou a registrar na ${esc(e.migrou.para)}</b>` : ""}`, e.serie[estado.ind], etiquetas(cam, "e")) + '<div class="corpo"></div>';
+      x.addEventListener("toggle", () => preencher(x)); corpo.appendChild(x);
+    });
+  } else {
+    const ui = +d.dataset.ui, ei = +d.dataset.ei, e = P.gsaps[gi].ubs[ui].equipes[ei];
+    corpo.innerHTML = avisoCtx(P.gsaps[gi], P.gsaps[gi].ubs[ui], e) + multiGraf(e.serie, e.nome) + tabelaEquipe(e) + tabelaProf(e);
+  }
+}
+function avisoCtx(g, u, e) {   // o que conferir antes de concluir que a equipe parou: produção sem equipe na mesma UBS, mudança de UBS, total da unidade
+  const s = e.serie.atend; if (!e.ine || !s) return "";
+  const h = habitual(s), baixo = h >= 50 && s[IU] < 0.7 * h, sem = u.equipes.find(x => !x.ine), ns = sem && sem.serie.atend ? sem.serie.atend[IU] : 0, tu = u.serie.atend ? u.serie.atend[IU] : 0, l = [];
+  if (e.migrou) l.push(`Esta equipe passou a registrar na <b>${esc(e.migrou.para)}</b> (último registro aqui: ${e.migrou.ultimo ? mesRot(e.migrou.ultimo) : "–"}). Não é equipe parada: confira a lotação no RH.`);
+  if (baixo && ns > 0) l.push(`Nesta UBS, <b>${fmt(ns)} atendimentos</b> de ${mesRot(MESES[IU])} (${tu ? Math.round(ns / tu * 100) : 0}% do total da unidade) estão <b>sem equipe vinculada</b>. Parte pode ser desta equipe; o painel não redistribui nada.`);
+  if (baixo) l.push(`A equipe registrou ${fmt(s[IU])} atendimentos em ${mesRot(MESES[IU])}; o habitual é ${fmt(h)}. O total da UBS foi ${fmt(tu)} (${htmlVar(u.serie.atend)} versus ${IU >= 12 ? mesRot(MESES[IU - 12]) : "ano anterior"}).`);
+  if (baixo) l.push("Ordem sugerida: composição e funcionamento da equipe no mês; registros em outro INE ou sem INE; atraso na alimentação da base; só então redução real de oferta.");
+  return l.length ? `<div class="aviso-ctx"><b>Antes de concluir, confira</b><ul>${l.map(x => `<li>${x}</li>`).join("")}</ul></div>` : "";
+}
+function linhaInd(k, s, tot, g) {
+  const v = s.slice(Math.max(IU - 5, 0), IU + 1), media = v.reduce((x, y) => x + y, 0) / v.length;
+  const pct = tot ? `<td class="v">${(s[IU] / tot * 100).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%</td>` : `<td></td>`;
+  return `<tr data-g="${g}" hidden><td class="l">${esc(nomeInd(k))}</td><td class="v">${fmt(s[IU])}</td><td class="v">${IU >= 12 ? fmt(s[IU - 12]) : "–"}</td><td>${htmlVar(s)}</td><td class="v">${fmt(media)}</td>${pct}<td>${spark(s)}</td></tr>`;
+}
+const PALETA_PIZZA = ["var(--s1)", "var(--s3)", "var(--s4)", "var(--s2)", "var(--s5)", "var(--s8)", "var(--s7)", "var(--s9)"];
+function pizza(itens, titulo, tam = 170) {
+  const L = itens.filter(x => x.n > 0).sort((a, b) => b.ord - a.ord || b.n - a.n), tot = L.reduce((a, x) => a + x.n, 0);
+  if (!tot) return "<p class='nota'>Sem dados neste mês.</p>";
+  const r = tam / 2, ri = r * .56, P2 = (a, q) => [(r + q * Math.cos(a)).toFixed(2), (r + q * Math.sin(a)).toFixed(2)];
+  let ang = -Math.PI / 2, g = "";
+  L.forEach(x => {
+    const f = x.n / tot, a2 = ang + f * 2 * Math.PI, tip = `${esc(x.rot)}: ${fmt(x.n)} (${(f * 100).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%)`;
+    if (f >= .9999) g += `<circle cx="${r}" cy="${r}" r="${((r + ri) / 2).toFixed(2)}" fill="none" stroke="${x.cor}" stroke-width="${(r - ri).toFixed(2)}"><title>${tip}</title></circle>`;
+    else { const [x1, y1] = P2(ang, r), [x2, y2] = P2(a2, r), [x3, y3] = P2(a2, ri), [x4, y4] = P2(ang, ri), gr = f > .5 ? 1 : 0;
+      g += `<path d="M${x1} ${y1} A${r} ${r} 0 ${gr} 1 ${x2} ${y2} L${x3} ${y3} A${ri} ${ri} 0 ${gr} 0 ${x4} ${y4} Z" fill="${x.cor}" stroke="var(--card)" stroke-width="1"><title>${tip}</title></path>`; }
+    ang = a2;
+  });
+  const leg = L.map(x => `<li><i style="background:${x.cor}"></i>${esc(x.rot)}<span class="v">${fmt(x.n)} · ${(x.n / tot * 100).toLocaleString("pt-BR", { maximumFractionDigits: 0 })}%</span></li>`).join("");
+  return `<div class="pizza"><svg width="${tam}" height="${tam}" viewBox="0 0 ${tam} ${tam}" role="img" aria-label="${esc(titulo)}"><title>${esc(titulo)}</title>${g}<text x="${r}" y="${r - 2}" text-anchor="middle" style="font-size:15px;font-weight:700">${fmt(tot)}</text><text x="${r}" y="${r + 13}" text-anchor="middle" style="font-size:9px">${esc(titulo)}</text></svg><ul>${leg}</ul></div>`;
+}
+function pizzaSecao(grupo, ks, e) {
+  if (grupo.startsWith("Motivos")) {
+    const L = ks.map(k => ({ k, n: e.serie[k][IU], rot: IND[k].nome })).filter(x => x.n > 0).sort((a, b) => b.n - a.n), topo = L.slice(0, 8), resto = L.slice(8).reduce((a, x) => a + x.n, 0);
+    const itens = topo.map((x, i) => ({ n: x.n, rot: x.rot, cor: x.k === "m_sem" ? "var(--s6)" : PALETA_PIZZA[i % PALETA_PIZZA.length], ord: 0 }));
+    if (resto) itens.push({ n: resto, rot: "Demais linhas de cuidado", cor: "var(--s0)", ord: -1 });
+    return pizza(itens, "CID em " + mesRot(MESES[IU]));
+  }
+  if (grupo.startsWith("Perfil de acesso")) {
+    const tipos = TIPOS.map(([k, rot, cor]) => ({ n: e.serie[k] ? e.serie[k][IU] : 0, rot, cor, ord: 0 }));
+    return pizza(tipos, "atend. em " + mesRot(MESES[IU]));
+  }
+  return "";
+}
+function tabelaEquipe(e) {
+  const ks = Object.keys(IND).filter(k => e.serie[k] && e.serie[k].slice(0, IU + 1).some(x => x));
+  if (!ks.length) return "<p class='nota'>Sem produção registrada nesta equipe no período.</p>";
+  const porGrupo = {}; ks.forEach(k => (porGrupo[IND[k].grp] = porGrupo[IND[k].grp] || []).push(k));
+  let corpo = "", gi = 0;
+  Object.entries(porGrupo).forEach(([g, lista]) => {
+    const mot = g.startsWith("Motivos"), tot = mot ? lista.reduce((t, k) => t + e.serie[k][IU], 0) : 0, nome = g.replace(/ \(.*\)$/, "").toLowerCase();
+    const ord = mot ? [...lista].sort((a, b) => e.serie[b][IU] - e.serie[a][IU]) : lista, pz = pizzaSecao(g, lista, e);
+    corpo += `<tr class="grp"><td class="l" colspan="7"><button type="button" class="btn-sec" aria-expanded="false" data-g="${gi}" data-r="${esc(nome)}" data-n="${lista.length}">▸ Mostrar ${esc(nome)} (${lista.length})</button>${mot ? ` <span class="nota">· ${fmt(tot)} CID registrados em ${mesRot(MESES[IU])}</span>` : ""}</td></tr>`;
+    if (pz) corpo += `<tr data-g="${gi}" hidden><td colspan="7">${pz}</td></tr>`;
+    corpo += ord.map(k => linhaInd(k, e.serie[k], tot, gi)).join("");
+    gi++;
+  });
+  return graficoEquipe(e) + `<div class="rolagem"><table class="eq"><thead><tr><th class="l">Indicador da equipe</th><th>${mesRot(MESES[IU])}</th><th>${IU >= 12 ? mesRot(MESES[IU - 12]) : ""}</th><th>Variação</th><th>Média 6 m</th><th>% dos CID</th><th>Série</th></tr></thead><tbody>${corpo}</tbody></table></div>`;
+}
+const COLS_PROF = [["atend", "Atendimentos"], ["visitas", "Visitas"], ["visitas_ok", "Realizadas"], ["vacinas", "Doses"], ["coletivas", "Ativ. coletivas"]];
+const FAMS = Object.keys(IND).filter(k => IND[k].grp === "Procedimentos");
+function colsProf(e) {
+  const tem = k => e.prof.some(p => p.serie[k] && p.serie[k].slice(0, IU + 1).some(x => x));
+  const base = COLS_PROF.filter(([k]) => tem(k));
+  const fam = FAMS.map(k => [k, e.prof.reduce((t, p) => t + (p.serie[k] ? p.serie[k].slice(0, IU + 1).reduce((x, y) => x + y, 0) : 0), 0)])
+    .filter(x => x[1] > 0).sort((a, b) => b[1] - a[1]).slice(0, 4).map(([k]) => [k, IND[k].nome.length > 24 ? IND[k].nome.slice(0, 22) + "…" : IND[k].nome]);
+  return base.concat(fam);
+}
+function tabelaProf(e) {
+  if (!NOM.aberto) return `<p class="nota restrito-nota">${e.n_prof ? `Esta equipe tem ${e.n_prof} profissiona${e.n_prof === 1 ? "l" : "is"} em atividade. ` : ""}A lista de profissionais e a produção individual são de acesso dos gestores.${P.restrito ? ' <button type="button" class="lk-entrar">Entrar</button>' : " Esta versão do painel foi gerada sem essa parte."}</p>`;
+  if (!e.prof.length) return "<p class='nota'>Nenhum profissional com lotação ou produção registrada.</p>";
+  const cols = colsProf(e);
+  const cab = cols.map(([k, r]) => `<th title="${esc(IND[k].nome)}">${esc(r)}<br><span class="nota">${mesRot(MESES[IU])} · série</span></th>`).join("");
+  const lin = e.prof.map(p => {
+    const celulas = cols.map(([k]) => {
+      const s = p.serie[k];
+      if (!s || !s.slice(0, IU + 1).some(x => x)) return `<td class="v nota">–</td>`;
+      const z = s[IU] === 0 && p.lotado && (k === "atend" || k === "visitas") ? " sem-prod" : "";
+      return `<td class="v"><span class="${z}">${fmt(s[IU])}</span> ${spark(s, 70, 18)}</td>`;
+    }).join("");
+    const tag = p.lotado ? "" : (p.ativo ? '<span class="tag" title="Produziu nos últimos 3 meses, mas não consta na lotação de ' + RH + '">fora do RH</span>' : `<span class="tag" title="Não consta na lotação de ${RH} e não tem registro nos últimos 3 meses. Último registro: ${p.ultimo ? mesRot(p.ultimo) : "–"}">vínculo não confirmado${p.ultimo ? " · último registro " + mesRot(p.ultimo) : ""}</span>`);
+    const cargo = [p.cat, p.chs ? p.chs + " h" : ""].filter(Boolean).join(" · ");
+    return `<tr class="${p.ativo ? "" : "inativo"}"><td class="l"><button class="pess" data-pid="${p.id}">${esc(p.nome)}</button>${tag}<span class="meta">${esc(cargo)}${p.mat ? " · mat. " + esc(p.mat) : ""}</span></td>${celulas}</tr>`;
+  }).join("");
+  return `<div class="rolagem" style="margin-top:10px"><table><thead><tr><th class="l">Profissional</th>${cab}</tr></thead><tbody>${lin}</tbody></table></div>`;
+}
+
+/* ---------- KPIs, gráfico da região, alertas ---------- */
+function renderTopo() {
+  const ks = ["atend", "atend_med", "visitas", "vacinas", "coletivas", "prenatal", "odonto1"];
+  $("#kpis").innerHTML = ks.filter(k => P.regiao[k]).map(k =>
+    `<button class="kpi" data-k="${k}" aria-pressed="${k === estado.ind}"><div class="r">${esc(nomeInd(k))}</div><div class="n">${fmt(P.regiao[k][IU])}</div>${htmlVar(P.regiao[k])} <span class="r">versus ${IU >= 12 ? mesRot(MESES[IU - 12]) : "ano anterior"}</span></button>`).join("");
+  $("#tit-graf").textContent = `${nomeInd(estado.ind)} – Região Norte`;
+  $("#graf-regiao").innerHTML = barras(P.regiao[estado.ind], 1100, 190) + multiGraf(P.regiao, "Região Norte");
+  document.querySelectorAll(".kpi").forEach(b => b.addEventListener("click", () => defInd(b.dataset.k)));
+}
+/* ---------- Comparar equipes ---------- */
+function quantil(o, q) { if (!o.length) return 0; const p = (o.length - 1) * q, i = Math.floor(p); return o[i] + (o[Math.min(i + 1, o.length - 1)] - o[i]) * (p - i); }
+const tipoCmp = () => (estado.ind.startsWith("odonto") ? "eSB" : "eSF");
+function ctxCmp(k, tipo, modo) {   // todas as equipes do tipo, com o valor do indicador e os quartis da Região
+  const val = s => modo === "3m" ? (s[IU] + s[IU - 1] + s[IU - 2]) / 3 : s[IU], todas = [];
+  P.gsaps.forEach(g => g.ubs.forEach(u => u.equipes.forEach(e => {
+    if (!e.ine || e.migrou || e.tipo !== tipo || !e.serie[k] || !e.serie[k].slice(Math.max(IU - 11, 0), IU + 1).some(x => x)) return;
+    todas.push({ g, u, e, v: val(e.serie[k]), cam: `${g.nome} › ${u.nome} › ${e.nome}` });
+  })));
+  const o = todas.map(x => x.v).sort((a, b) => a - b), q10 = quantil(o, .1), q25 = quantil(o, .25), q50 = quantil(o, .5), q75 = quantil(o, .75), xmax = Math.max(...o, 1) * 1.05;
+  return { todas, q10, q25, q50, q75, xmax, cor: v => v < q10 ? "var(--s5)" : v < q25 ? "var(--s4)" : v > q75 ? "var(--s2)" : "var(--s1)" };
+}
+function svgCmp(C, linhas, rotulo) {   // uma linha por UBS, um ponto por equipe, sobre a faixa central e a mediana da Região
+  const { q25, q50, q75, xmax, cor } = C;
+  const est = window.innerWidth < 640;   // celular: desenho estreito, com o nome da UBS acima da linha
+  const W = est ? 400 : 920, ML = est ? 12 : 230, MR = est ? 16 : 24, RH = est ? 40 : 30, TOP = 24, H = TOP + linhas.length * RH + 6, X = v => ML + v / xmax * (W - ML - MR);
+  let g2 = `<rect x="${X(q25).toFixed(1)}" y="${TOP}" width="${(X(q75) - X(q25)).toFixed(1)}" height="${linhas.length * RH}" fill="var(--faixa)"/><line x1="${X(q50).toFixed(1)}" x2="${X(q50).toFixed(1)}" y1="${TOP}" y2="${TOP + linhas.length * RH}" stroke="var(--s4)" stroke-dasharray="4 3" stroke-width="1.5"/>`;
+  [0, .25, .5, .75, 1].forEach(f => { const v = xmax / 1.05 * f; g2 += `<text x="${X(v).toFixed(1)}" y="14" text-anchor="${est && f === 0 ? "start" : est && f === 1 ? "end" : "middle"}">${fmt(v)}</text><line x1="${X(v).toFixed(1)}" x2="${X(v).toFixed(1)}" y1="${TOP - 4}" y2="${TOP}" stroke="var(--line)"/>`; });
+  linhas.forEach((r, i) => {
+    const cy = est ? TOP + i * RH + RH - 13 : TOP + i * RH + RH / 2;
+    g2 += `<line x1="${ML}" x2="${W - MR}" y1="${(TOP + (i + 1) * RH).toFixed(1)}" y2="${(TOP + (i + 1) * RH).toFixed(1)}" stroke="var(--line)"/>` + (est ? `<text x="${ML}" y="${TOP + i * RH + 11}">${esc(r.u.nome)} (${r.eq.length})</text>` : `<text x="${ML - 10}" y="${cy + 4}" text-anchor="end">${esc(r.u.nome)} (${r.eq.length})</text>`);
+    r.eq.forEach((x, j) => { const dy = ((j % 3) - 1) * 5; g2 += `<circle class="pt" data-c="${esc(x.cam)}" cx="${X(x.v).toFixed(1)}" cy="${(cy + dy).toFixed(1)}" r="5.5" fill="${cor(x.v)}" fill-opacity=".9" stroke="var(--card)" stroke-width="1"><title>${esc(x.e.nome)} · ${esc(x.u.nome)}: ${fmt(x.v)} (${q50 ? Math.round(x.v / q50 * 100) : 0}% da mediana da Região)</title></circle>`; });
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(rotulo)}">${g2}</svg>`;
+}
+let CMP_MEMO = null;
+function cmpCard(g, u) {   // dentro do card da GSAP (u vazio) ou da UBS: as equipes dali contra a Região
+  const k = estado.ind, tipo = tipoCmp(), ch = k + "|" + tipo;
+  if (!CMP_MEMO || CMP_MEMO.ch !== ch) CMP_MEMO = { ch, C: ctxCmp(k, tipo, "1") };
+  const C = CMP_MEMO.C, linhas = (u ? [u] : g.ubs).map(x => ({ u: x, eq: C.todas.filter(y => y.u === x) })).filter(r => r.eq.length);
+  if (!linhas.length) return "";
+  const n = linhas.reduce((s, r) => s + r.eq.length, 0);
+  return `<div class="cmp-card"><div class="cab"><b>${n === 1 ? "A equipe" : "As " + n + " equipes"} ${esc(tipo)} ${u ? "desta UBS" : "desta GSAP"} contra a Região · ${mesRot(MESES[IU])}</b><button type="button" class="neutro abrir-cmp" data-g="${esc(g.nome)}">Ver comparação detalhada</button></div>` +
+    svgCmp(C, linhas, `Equipes de ${u ? u.nome : g.nome} contra a Região`) +
+    `<div class="nota">Cada ponto é uma equipe (clique para abrir). Faixa = metade central das ${C.todas.length} equipes ${esc(tipo)} da Região; tracejado = mediana (${fmt(C.q50)}). Vermelho = entre os 10% mais baixos.</div></div>`;
+}
+function abrirCmp(gsap) { $("#cmp-gsap").value = gsap || ""; $("#cmp-tipo").value = tipoCmp(); mostrarVista("c"); window.scrollTo({ top: 0 }); }
+function renderComparar() {
+  const k = estado.ind, tipo = $("#cmp-tipo").value, gf = $("#cmp-gsap").value, modo = $("#cmp-modo").value;
+  const C = ctxCmp(k, tipo, modo), todas = C.todas, q50 = C.q50;
+  if (!todas.length) { $("#cmp-corpo").innerHTML = "<p class='nota'>Nenhuma equipe deste tipo tem dados deste indicador.</p>"; $("#cmp-nota").textContent = ""; $("#cmp-leg").innerHTML = ""; return; }
+  $("#cmp-nota").innerHTML = `<b>${esc(nomeInd(k))}</b> · ${modo === "3m" ? "média dos 3 últimos meses completos" : mesRot(MESES[IU])} · ${todas.length} equipes ${esc(tipo)} · mediana da Região <b>${fmt(q50)}</b>. Cada ponto é uma equipe; quem está à esquerda da faixa produz menos que a maioria. Troque o indicador no seletor do topo.`;
+  $("#cmp-leg").innerHTML = `<span><i style="background:var(--s5)"></i>entre os 10% mais baixos</span><span><i style="background:var(--s4)"></i>abaixo do quartil inferior</span><span><i style="background:var(--s1)"></i>faixa do meio</span><span><i style="background:var(--s2)"></i>acima do quartil superior</span><span><i style="background:var(--faixa);border:1px solid var(--line)"></i>faixa central da Região (25% a 75%)</span>`;
+  let h = "";
+  P.gsaps.forEach(g => {
+    if (gf && g.nome !== gf) return;
+    const linhas = g.ubs.map(u => ({ u, eq: todas.filter(x => x.u === u) })).filter(r => r.eq.length); if (!linhas.length) return;
+    h += `<h3>${esc(g.nome)}</h3>` + svgCmp(C, linhas, "Comparação de equipes " + g.nome);
+  });
+  $("#cmp-corpo").innerHTML = h || "<p class='nota'>Nenhuma equipe neste recorte.</p>";
+}
+
+/* ---------- Acesso ---------- */
+const TIPOS = [["a_dia", "Consulta no dia", "var(--s1)"], ["a_agend", "Consulta agendada", "var(--s2)"], ["a_prog", "Agendada programada (cuidado continuado)", "var(--s3)"], ["a_urg", "Urgência", "var(--s5)"], ["a_escuta", "Escuta inicial / orientação", "var(--s4)"]];
+const QUEM = [["atend_med", "Médico", "var(--s9)"], ["atend_enf", "Enfermeiro", "var(--s6)"], ["atend_out", "Outros", "var(--s0)", true]];
+const xs = { esc: "r", gi: 0, ui: 0, mes: IU };
+function noAcesso() {
+  if (xs.esc === "r") return { nome: "Região Norte", ser: P.regiao, filhos: P.gsaps.map((g, gi) => ({ nome: g.nome, ser: g.serie, n: `${g.n_esf} eSF`, ir: () => { xs.esc = "g"; xs.gi = gi; renderAcesso(); } })) };
+  const g = P.gsaps[xs.gi];
+  if (xs.esc === "g") return { nome: g.nome, ser: g.serie, filhos: g.ubs.map((u, ui) => ({ nome: u.nome, ser: u.serie, n: `${u.n_esf} eSF`, ir: () => { xs.esc = "u"; xs.ui = ui; renderAcesso(); } })) };
+  const u = g.ubs[xs.ui];
+  return { nome: u.nome, ser: u.serie, filhos: u.equipes.filter(e => e.serie.atend).map(e => ({ nome: e.nome, ser: e.serie, n: e.tipo, cam: `${g.nome} › ${u.nome} › ${e.nome}` })) };
+}
+function pilha(vals, w = 300, h = 18) {
+  const tot = vals.reduce((a, v) => a + v.n, 0); if (!tot) return '<span class="nota">sem dados</span>';
+  let x = 0, g = "";
+  vals.forEach(v => { const wi = v.n / tot * w; if (wi > 0) { g += `<rect x="${x.toFixed(1)}" y="0" width="${wi.toFixed(1)}" height="${h}" fill="${v.cor}"><title>${esc(v.rot)}: ${fmt(v.n)} (${Math.round(v.n / tot * 100)}%)</title></rect>`; if (wi >= 26) g += `<text x="${(x + wi / 2).toFixed(1)}" y="${h - 5}" text-anchor="middle" style="fill:${v.claro ? "var(--txt)" : "var(--bg)"};font-size:10px">${Math.round(v.n / tot * 100)}%</text>`; } x += wi; });
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" role="img">${g}</svg>`;
+}
+const valTipos = (ser, i) => TIPOS.map(([k, rot, cor]) => ({ n: ser[k] ? ser[k][i] : 0, rot, cor }));
+const valQuem = (ser, i) => QUEM.map(([k, rot, cor, claro]) => ({ n: ser[k] ? ser[k][i] : 0, rot, cor, claro }));
+function pilhaTempo(ser, w = 920, h = 200) {
+  const [a, b] = faixa(), n = b - a, pe = 34, pb = 20, pt = 8, ih = h - pb - pt, bw = (w - pe) / n; let g = "";
+  for (let i = 0; i < n; i++) {
+    const idx = a + i, tot = TIPOS.reduce((t, [k]) => t + (ser[k] ? ser[k][idx] : 0), 0); let y = pt + ih; const x = pe + i * bw;
+    if (tot) TIPOS.forEach(([k, rot, cor]) => { const v = ser[k] ? ser[k][idx] : 0, hh = v / tot * ih; y -= hh; if (hh > 0) g += `<rect x="${(x + bw * .12).toFixed(1)}" y="${y.toFixed(1)}" width="${(bw * .76).toFixed(1)}" height="${hh.toFixed(1)}" fill="${cor}"><title>${mesRot(MESES[idx])} · ${esc(rot)}: ${fmt(v)} (${Math.round(v / tot * 100)}%)</title></rect>`; });
+    if (tot && bw >= 26) g += `<text x="${(x + bw / 2).toFixed(1)}" y="${(pt + ih - (ser.a_dia[idx] / tot * ih) / 2 + 3).toFixed(1)}" text-anchor="middle" style="fill:var(--bg);font-size:9px">${Math.round(ser.a_dia[idx] / tot * 100)}</text>`;
+    if (n <= 24 || i % 2 === 0) g += `<text x="${(x + bw / 2).toFixed(1)}" y="${h - 6}" text-anchor="middle">${mesRot(MESES[idx])}</text>`;
+  }
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="Perfil de atendimento por mês">${[0, 50, 100].map(p => `<text x="0" y="${(pt + ih - p / 100 * ih + 3).toFixed(1)}">${p}%</text>`).join("")}${g}</svg>`;
+}
+function renderAcesso() {
+  const no = noAcesso(), i = xs.mes, ord = $("#x-ord").value;
+  const crumb = [`<button data-e="r">Região Norte</button>`];
+  if (xs.esc !== "r") crumb.push(xs.esc === "g" ? `<span>${esc(P.gsaps[xs.gi].nome)}</span>` : `<button data-e="g">${esc(P.gsaps[xs.gi].nome)}</button>`);
+  if (xs.esc === "u") crumb.push(`<span>${esc(P.gsaps[xs.gi].ubs[xs.ui].nome)}</span>`);
+  $("#x-crumb").innerHTML = crumb.join(" › ").replace(/^<button data-e="r">(.*?)<\/button>/, xs.esc === "r" ? "<span>$1</span>" : '<button data-e="r">$1</button>');
+  $("#x-crumb").querySelectorAll("button").forEach(b => b.addEventListener("click", () => { xs.esc = b.dataset.e; renderAcesso(); }));
+  $("#x-leg").innerHTML = TIPOS.map(([, r, c]) => `<span><i style="background:${c}"></i>${esc(r)}</span>`).join("") + '<span style="margin-left:14px">Quem atendeu:</span>' + QUEM.map(([, r, c]) => `<span><i style="background:${c};border:1px solid var(--line)"></i>${esc(r)}</span>`).join("");
+  $("#x-tit-pizza").textContent = `${no.nome} em ${mesRot(MESES[i])}: tipo de atendimento e quem atendeu`;
+  $("#x-pizzas").innerHTML = `<div><b class="nota">Tipo de atendimento</b>${pizza(TIPOS.map(([k, rot, cor]) => ({ n: no.ser[k] ? no.ser[k][i] : 0, rot, cor, ord: 0 })), "atendimentos", 180)}</div><div><b class="nota">Quem atendeu</b>${pizza(QUEM.map(([k, rot, cor]) => ({ n: no.ser[k] ? no.ser[k][i] : 0, rot, cor, ord: 0 })), "atendimentos", 180)}</div>`;
+  $("#x-tit-tempo").textContent = `Tipo de atendimento por mês – ${no.nome} (número = % consulta no dia)`;
+  $("#x-tempo").innerHTML = pilhaTempo(no.ser);
+  const tot = (ser, j) => TIPOS.reduce((t, [k]) => t + (ser[k] ? ser[k][j] : 0), 0), pct = (ser, k, j) => { const t = tot(ser, j); return t ? (ser[k] ? ser[k][j] : 0) / t : 0; };
+  const met = { dia: f => pct(f.ser, "a_dia", i), urg: f => pct(f.ser, "a_urg", i), med: f => pct(f.ser, "atend_med", i), tot: f => tot(f.ser, i) };
+  let F = no.filhos.filter(f => tot(f.ser, i) > 0);
+  F = ord === "nome" ? F : F.sort((a, b) => met[ord](b) - met[ord](a));
+  const linha = (f, cls) => {
+    const t = tot(f.ser, i), ant = i >= 12 ? pct(f.ser, "a_dia", i - 12) : null, p = pct(f.ser, "a_dia", i);
+    const d = ant != null && tot(f.ser, i - 12) >= 100 ? ` <span class="nota">(${Math.round(ant * 100)}% em ${mesRot(MESES[i - 12])})</span>` : "";
+    const corpo = `<span><b>${esc(f.nome)}</b><small class="nota" style="display:block">${esc(f.n || "")}</small></span><span>${pilha(valTipos(f.ser, i))}</span><span>${pilha(valQuem(f.ser, i))}</span><span class="v">${fmt(t)} atend.<br><span class="nota">${Math.round(p * 100)}% no dia</span>${d}</span>`;
+    return (f.ir || f.cam) ? `<button class="x-barra ${cls}" ${f.cam ? `data-c="${esc(f.cam)}"` : ""} data-i="${f.idx}">${corpo}</button>` : `<div class="x-barra ${cls}">${corpo}</div>`;
+  };
+  F.forEach((f, j) => f.idx = j);
+  $("#x-corpo").innerHTML = `<div class="x-barra x-cab"><span>${mesRot(MESES[i])}</span><span>Tipo de atendimento</span><span>Quem atendeu</span><span>Total · % no dia</span></div>` + linha({ nome: no.nome + " (total)", ser: no.ser, n: "" }, "total") + F.map(f => linha(f, "")).join("") || "<p class='nota'>Sem dados neste mês.</p>";
+  $("#x-corpo").querySelectorAll("button.x-barra[data-i]").forEach(b => b.addEventListener("click", () => { const f = F[+b.dataset.i]; if (f.ir) f.ir(); else if (f.cam) irPara(f.cam); }));
+}
+
+/* ---------- consultas por mil habitantes (RIPSA COB.1.01) ---------- */
+const RZ = P.razao, rs = { esc: "r", gi: 0, ui: 0 };
+const RVAL = { med: d => d.med, enf: d => d.enf, mie: d => d.med + d.enf };
+const RNOME = { med: "Consultas de médico", enf: "Consultas de enfermeiro", mie: "Consultas de médico + enfermeiro" };
+const por1000 = (n, pop) => (pop ? n / pop * 1000 : null);
+const r1 = v => (v == null || !isFinite(v) ? "–" : Math.round(v).toLocaleString("pt-BR"));
+const pctv = v => (v == null || !isFinite(v) ? "–" : Math.abs(v * 100) < 0.05 ? "0,0%" : (v >= 0 ? "+" : "−") + Math.abs(v * 100).toFixed(1).replace(".", ",") + "%");
+const clsv = v => (v != null && v <= -0.1 ? ' class="neg"' : "");
+function janelaRot() { return `${mesRot(MESES[IU - 11])} a ${mesRot(MESES[IU])}`; }
+const BASE_TXT = {
+  infosaude: (n) => `Denominador: série de população por RA do próprio InfoSaúde (projeção anual; Norte ${fmt(n.anos[RZ.anos[0]].pop)} em ${RZ.anos[0]}, ${fmt(n.m12.pop)} em ${P.ultimo_mes_completo.slice(0, 4)}).`,
+  censo: (n, d) => `Denominador: Censo 2022 fixo para todos os anos (Norte ${fmt(n.pop_censo)}, soma das 4 RAs pelo IPEDF em malha preliminar; DF ${fmt(d.pop_censo)}, IBGE). Só existe para Norte e DF. Não acompanha o crescimento, então a razão sai maior nos anos recentes.`,
+  cad: (n, d) => `Denominador: população cadastrada na última competência do InfoSaúde (${mesRot(RZ.cad_comp)}; Norte ${fmt(n.pop_cad)}, DF ${fmt(d.pop_cad)}), a mesma para todos os anos. É menor que a população residente, e a razão sai maior; o cadastro está parado desde ${mesRot(RZ.cad_comp)}.`,
+};
+function renderRazao() {
+  if (!RZ) { $("#r-nota").textContent = "Dados deste indicador ainda não foram coletados (rodar coleta/razao.py e montar.py)."; return; }
+  const k = $("#r-ind").value, val = RVAL[k];
+  $("#r-nota").innerHTML = `<b>Indicador da RIPSA (COB.1.01, 3ª ed., jun/2026):</b> consultas de médico na Atenção Primária (SISAB/InfoSaúde) por população residente. A ficha é “por 100 habitantes”; aqui, “por mil” (a mesma razão × 10). Não há meta na ficha. As consultas de enfermeiro e de médico + enfermeiro são acréscimos do painel, não fazem parte do indicador da RIPSA. A categoria Médico do InfoSaúde inclui residentes (cerca de 3% das consultas em 2025) e especialistas que atendem na APS.`;
+  $("#r-tit-ref").textContent = `${RNOME[k]} por mil habitantes: Brasil, DF e regiões de saúde`;
+  const cab = `<tr><th class="l">Território</th>${RZ.anos.map(a => `<th>${a}</th>`).join("")}<th>12 meses<br>${janelaRot()}</th><th>12 meses<br>anteriores</th><th>Variação</th></tr>`;
+  const base = $("#r-base").value;
+  const pAno = (e, a) => (base === "censo" ? e.pop_censo : base === "cad" ? e.pop_cad : e.anos[a].pop);
+  const pAtual = e => (base === "infosaude" ? e.m12.pop : pAno(e, null)), pAnt = e => (base === "infosaude" ? e.m12ant.pop : pAno(e, null));
+  const linhaRef = (e, dest) => {
+    const anos = RZ.anos.map(a => `<td>${r1(por1000(val(e.anos[a]), pAno(e, a)))}</td>`).join("");
+    const a = por1000(val(e.m12), pAtual(e)), b = por1000(val(e.m12ant), pAnt(e)), v = a != null && b ? a / b - 1 : null;
+    return `<tr class="${dest ? "dest" : ""}"><td class="l">${esc(e.nome)}</td>${anos}<td>${r1(a)}</td><td>${r1(b)}</td><td${clsv(v)}>${pctv(v)}</td></tr>`;
+  };
+  const br = k === "med" ? `<tr><td class="l">Brasil (RIPSA)</td>${RZ.anos.map(a => `<td>${RZ.brasil[a] != null ? r1(RZ.brasil[a]) : "–"}</td>`).join("")}<td>–</td><td>–</td><td>–</td></tr>` : "";
+  const [norte, df, ...outras] = RZ.entes;
+  $("#r-ref").innerHTML = `<table class="eq"><thead>${cab}</thead><tbody>${br}${linhaRef(df, false)}${linhaRef(norte, true)}<tr class="grp"><td class="l" colspan="${RZ.anos.length + 4}">Outras regiões de saúde</td></tr>${outras.map(e => linhaRef(e, false)).join("")}</tbody></table>`;
+  $("#r-ref-nota").innerHTML = `Numerador: atendimentos individuais registrados no InfoSaúde. ${BASE_TXT[base](norte, df)} ${k === "med" ? "Brasil: tabela da própria ficha da RIPSA (2022 a 2024), com a população das projeções do IBGE, não a base escolhida aqui. " : "Não há número nacional deste indicador. "}A escolha da base muda o nível <b>e também a variação no tempo</b>: uma população fixa (Censo, cadastro) e uma que cresce ano a ano não dão a mesma trajetória. Na janela de 12 meses que atravessa dois anos, o denominador é a população do ano em que a janela termina (e, na janela anterior, a do ano anterior). “–” = sem população nessa base.`;
+  renderRazaoUbs();
+}
+function noRazao() {
+  const cadU = us => us.reduce((t, u) => t + (u.cad || 0), 0);
+  if (rs.esc === "r") { const us = P.gsaps.flatMap(g => g.ubs); return { nome: "Região Norte (população cadastrada)", ser: P.regiao, cad: cadU(us), filhos: P.gsaps.map((g, gi) => ({ nome: g.nome, ser: g.serie, cad: cadU(g.ubs), n: `${g.n_esf} eSF`, ir: () => { rs.esc = "g"; rs.gi = gi; renderRazaoUbs(); } })) }; }
+  const g = P.gsaps[rs.gi];
+  if (rs.esc === "g") return { nome: g.nome, ser: g.serie, cad: cadU(g.ubs), filhos: g.ubs.map((u, ui) => ({ nome: u.nome, ser: u.serie, cad: u.cad, n: `${u.n_esf} eSF`, ir: () => { rs.esc = "u"; rs.ui = ui; renderRazaoUbs(); } })) };
+  const u = g.ubs[rs.ui];
+  return { nome: u.nome, ser: u.serie, cad: u.cad, filhos: u.equipes.filter(e => e.cad && e.serie.atend_med).map(e => ({ nome: e.nome, ser: e.serie, cad: e.cad, n: e.tipo, cam: `${g.nome} › ${u.nome} › ${e.nome}` })) };
+}
+function renderRazaoUbs() {
+  if (!RZ) return;
+  const k = $("#r-ind").value, ord = $("#r-ord").value, no = noRazao();
+  const cols = k === "enf" ? ["atend_enf"] : k === "med" ? ["atend_med"] : ["atend_med", "atend_enf"];
+  const soma12 = (ser, fim) => { let t = 0; cols.forEach(c => { if (ser[c]) for (let i = fim - 11; i <= fim; i++) t += ser[c][i] || 0; }); return t; };
+  const calc = f => { const a = f.cad ? soma12(f.ser, IU) / f.cad * 1000 : null, b = f.cad ? soma12(f.ser, IU - 12) / f.cad * 1000 : null; return { ...f, a, b, v: a != null && b ? a / b - 1 : null }; };
+  const crumb = [rs.esc === "r" ? `<span>Região Norte</span>` : `<button data-e="r">Região Norte</button>`];
+  if (rs.esc !== "r") crumb.push(rs.esc === "g" ? `<span>${esc(P.gsaps[rs.gi].nome)}</span>` : `<button data-e="g">${esc(P.gsaps[rs.gi].nome)}</button>`);
+  if (rs.esc === "u") crumb.push(`<span>${esc(P.gsaps[rs.gi].ubs[rs.ui].nome)}</span>`);
+  $("#r-crumb").innerHTML = crumb.join(" › ");
+  $("#r-crumb").querySelectorAll("button").forEach(b => b.addEventListener("click", () => { rs.esc = b.dataset.e; renderRazaoUbs(); }));
+  $("#r-tit-ubs").textContent = `${RNOME[k]} por mil cadastrados: ${no.nome}`;
+  $("#r-aviso").innerHTML = `<span class="chip">Denominador desatualizado (${mesRot(RZ.cad_comp)}): comparação exploratória</span> Aqui o denominador é a <b>população cadastrada</b> (cadastros vinculados à UBS ou à equipe na última competência que o InfoSaúde publica, <b>${mesRot(RZ.cad_comp)}</b>), porque o Censo e a série do InfoSaúde não têm recorte por UBS (esta tabela não muda com a escolha de população acima). O numerador são as consultas de ${janelaRot()}. Por isso estes valores <b>não se comparam com a tabela de cima</b> quando ela usa população residente; a comparação entre UBS e equipes é só <b>exploratória</b>: mudanças de território, de equipe e de cadastro desde ${mesRot(RZ.cad_comp)} afetam cada unidade de um jeito diferente. Leia sempre junto: consultas, população usada e data do cadastro.`;
+  const F = no.filhos.map(calc).filter(f => f.cad);
+  const maxv = Math.max(1, ...F.map(f => f.a || 0), calc(no).a || 0);
+  if (ord === "maior") F.sort((x, y) => (y.a || 0) - (x.a || 0)); else if (ord === "menor") F.sort((x, y) => (x.a || 0) - (y.a || 0)); else if (ord === "var") F.sort((x, y) => (x.v ?? 9) - (y.v ?? 9));
+  F.forEach((f, j) => f.idx = j);
+  const lin = (f, cls) => {
+    const nm = (f.ir || f.cam) ? `<button class="lk" data-i="${f.idx}">${esc(f.nome)}</button>` : esc(f.nome);
+    return `<tr class="${cls}"><td class="l">${nm}${f.n ? `<small class="nota" style="display:block">${esc(f.n)}</small>` : ""}</td><td>${fmt(f.cad)}</td><td>${fmt(soma12(f.ser, IU))}</td><td><b>${r1(f.a)}</b> <span class="bar-r"><i style="width:${Math.min(100, (f.a || 0) / maxv * 100).toFixed(0)}%"></i></span></td><td>${r1(f.b)}</td><td${clsv(f.v)}>${pctv(f.v)}</td></tr>`;
+  };
+  $("#r-corpo").innerHTML = `<table class="eq"><thead><tr><th class="l">${rs.esc === "r" ? "GSAP" : rs.esc === "g" ? "UBS" : "Equipe"}</th><th>Cadastrados</th><th>Consultas (12 meses)</th><th>Por mil cadastrados</th><th>12 meses anteriores</th><th>Variação</th></tr></thead><tbody>${lin({ ...calc(no), n: "" }, "dest")}${F.map(f => lin(f, "")).join("")}</tbody></table>`;
+  $("#r-corpo").querySelectorAll("button.lk[data-i]").forEach(b => b.addEventListener("click", () => { const f = F[+b.dataset.i]; if (f.ir) f.ir(); else if (f.cam) irPara(f.cam); }));
+}
+
+/* ---------- pessoas atendidas e uso muito frequente ---------- */
+const US = P.usuarios, us = { esc: "r", gi: 0, ui: 0 };
+const CORES_U = ["var(--s0)", "var(--s7)", "var(--s2)", "var(--s1)", "var(--s4)", "var(--s5)"];
+const p1 = (a, b) => (b ? (a / b * 100).toFixed(1).replace(".", ",") + "%" : "–");
+function medU(d, cad) {
+  if (!d || !d.pess) return null;
+  const hf = d.fp[4] + d.fp[5];
+  return { d, cad, pess: d.pess, atend: d.atend, apc: d.atend / d.pess, um: d.fp[0] / d.pess, hfn: hf, hf: hf / d.pess, ahf: (d.fa[4] + d.fa[5]) / d.atend, top: d.top10 / d.atend, max: d.max, cob: cad ? d.pess / cad * 100 : null };
+}
+function noUsuarios() {
+  const cadU = l => l.reduce((t, u) => t + (u.cad || 0), 0);
+  if (us.esc === "r") return { nome: "Região Norte", m: medU(US.regiao, cadU(P.gsaps.flatMap(g => g.ubs))), rot: "GSAP",
+    filhos: P.gsaps.map((g, gi) => ({ nome: g.nome, n: `${g.n_esf} eSF`, m: medU(US.gsap[g.nome], cadU(g.ubs)), ir: () => { us.esc = "g"; us.gi = gi; renderUsuarios(); } })) };
+  const g = P.gsaps[us.gi];
+  if (us.esc === "g") return { nome: g.nome, m: medU(US.gsap[g.nome], cadU(g.ubs)), rot: "UBS",
+    filhos: g.ubs.map((u, ui) => ({ nome: u.nome, n: `${u.n_esf} eSF`, m: medU(US.ubs[u.cnes], u.cad), ir: () => { us.esc = "u"; us.ui = ui; renderUsuarios(); } })) };
+  const u = g.ubs[us.ui];
+  return { nome: u.nome, m: medU(US.ubs[u.cnes], u.cad), rot: "Equipe",
+    filhos: u.equipes.filter(e => e.ine && US.equipe[e.ine]).map(e => ({ nome: e.nome, n: e.tipo, m: medU(US.equipe[e.ine], e.cad), cam: `${g.nome} › ${u.nome} › ${e.nome}` })) };
+}
+function difU() {   // a tabela de pessoas do InfoSaúde soma um pouco menos que a série de atendimentos do painel
+  const i0 = MESES.indexOf(US.janela[0]), i1 = MESES.indexOf(US.janela[1]); if (i0 < 0 || i1 < 0 || !P.regiao.atend) return "";
+  const ser = P.regiao.atend.slice(i0, i1 + 1).reduce((t, x) => t + x, 0), d = ser - US.regiao.atend;
+  return ser && Math.abs(d) / ser >= 0.005 ? ` Na Região, esta base de pessoas soma ${fmt(US.regiao.atend)} atendimentos no período, ${fmt(Math.abs(d))} (${p1(Math.abs(d), ser)}) a ${d > 0 ? "menos" : "mais"} que a série de atendimentos individuais das outras abas (${fmt(ser)}); a causa da diferença ainda não foi verificada.` : "";
+}
+function renderUsuarios() {
+  if (!US) { $("#u-nota").textContent = "Dados de pessoas atendidas ainda não foram coletados (rodar coleta/usuarios.py e montar.py)."; return; }
+  const jan = `${mesRot(US.janela[0])} a ${mesRot(US.janela[1])}`, no = noUsuarios(), m = no.m, ord = $("#u-ord").value;
+  $("#u-nota").innerHTML = `Quantas <b>pessoas diferentes</b> foram atendidas em 12 meses (${jan}) e quantos atendimentos individuais cada uma teve. A pessoa é reconhecida pelo CNS ou CPF do registro; o painel guarda <b>só as contagens</b>, sem identificar ninguém. “Uso muito frequente” aqui = <b>12 ou mais atendimentos em 12 meses</b> (um por mês, em média); é um corte prático deste painel, não há definição única. Serve para dimensionar a agenda e pensar plano de cuidado, não para julgar a equipe: território com mais idosos, gestantes e doença crônica tem mais retorno.`;
+  const crumb = [us.esc === "r" ? `<span>Região Norte</span>` : `<button data-e="r">Região Norte</button>`];
+  if (us.esc !== "r") crumb.push(us.esc === "g" ? `<span>${esc(P.gsaps[us.gi].nome)}</span>` : `<button data-e="g">${esc(P.gsaps[us.gi].nome)}</button>`);
+  if (us.esc === "u") crumb.push(`<span>${esc(P.gsaps[us.gi].ubs[us.ui].nome)}</span>`);
+  $("#u-crumb").innerHTML = crumb.join(" › ");
+  $("#u-crumb").querySelectorAll("button").forEach(b => b.addEventListener("click", () => { us.esc = b.dataset.e; renderUsuarios(); }));
+  $("#u-tit").textContent = `Pessoas atendidas: ${no.nome}`;
+  if (!m) { $("#u-cartoes").innerHTML = "<p class='nota'>Sem registro de pessoas atendidas neste nível.</p>"; $("#u-pilha-p").innerHTML = $("#u-pilha-a").innerHTML = $("#u-leg").innerHTML = ""; }
+  else {
+    $("#u-cartoes").innerHTML =
+      `<div><b>${fmt(m.pess)}</b><span>pessoas atendidas</span></div>` +
+      `<div><b>${m.apc.toFixed(1).replace(".", ",")}</b><span>atendimentos por pessoa (${fmt(m.atend)} no total)</span></div>` +
+      `<div><b>${p1(m.d.fp[0], m.pess)}</b><span>vieram uma única vez</span></div>` +
+      `<div><b>${fmt(m.hfn)}</b><span>pessoas com 12 ou mais atendimentos (${p1(m.hfn, m.pess)})</span></div>` +
+      `<div><b>${p1(m.d.fa[4] + m.d.fa[5], m.atend)}</b><span>dos atendimentos foram para essas pessoas</span></div>` +
+      `<div><b>${p1(m.d.top10, m.atend)}</b><span>dos atendimentos foram para os 10% que mais usaram</span></div>` +
+      `<div><b>${fmt(m.max)}</b><span>maior número de atendimentos de uma só pessoa</span></div>`;
+    const vals = (v, un) => v.map((n, i) => ({ n, rot: `${US.faixas[i]} atendimento${US.faixas[i] === "1" ? "" : "s"} · ${un}`, cor: CORES_U[i], claro: i === 0 }));
+    $("#u-pilha-p").innerHTML = pilha(vals(m.d.fp, "pessoas"), 900, 22);
+    $("#u-pilha-a").innerHTML = pilha(vals(m.d.fa, "atendimentos"), 900, 22);
+    $("#u-leg").innerHTML = US.faixas.map((f, i) => `<span><i style="background:${CORES_U[i]}"></i>${f} atendimento${f === "1" ? "" : "s"}</span>`).join("");
+  }
+  const F = no.filhos.filter(f => f.m);
+  const chave = { hf: f => -f.m.hf, ahf: f => -f.m.ahf, apc: f => -f.m.apc, um: f => -f.m.um, cob: f => (f.m.cob == null ? 1e9 : f.m.cob) }[ord];
+  if (chave) F.sort((x, y) => chave(x) - chave(y));
+  F.forEach((f, j) => f.idx = j);
+  const maxhf = Math.max(0.0001, ...F.map(f => f.m.hf), m ? m.hf : 0);
+  const lin = (f, cls) => {
+    const x = f.m, nm = (f.ir || f.cam) ? `<button class="lk" data-i="${f.idx}">${esc(f.nome)}</button>` : esc(f.nome);
+    return `<tr class="${cls}"><td class="l">${nm}${f.n ? `<small class="nota" style="display:block">${esc(f.n)}</small>` : ""}</td><td>${fmt(x.pess)}</td><td>${fmt(x.atend)}</td><td>${x.apc.toFixed(1).replace(".", ",")}</td><td>${p1(x.d.fp[0], x.pess)}</td>` +
+      `<td><b>${p1(x.hfn, x.pess)}</b> <span class="bar-r"><i style="width:${Math.min(100, x.hf / maxhf * 100).toFixed(0)}%"></i></span><small class="nota" style="display:block">${fmt(x.hfn)} pessoas</small></td><td>${p1(x.d.fa[4] + x.d.fa[5], x.atend)}</td><td>${fmt(x.max)}</td><td>${x.cob == null ? "–" : Math.round(x.cob)}</td></tr>`;
+  };
+  $("#u-tit-tab").textContent = `${no.rot === "GSAP" ? "Gerências" : no.rot === "UBS" ? "Unidades" : "Equipes"} de ${no.nome}`;
+  $("#u-corpo").innerHTML = `<table class="eq"><thead><tr><th class="l">${no.rot}</th><th>Pessoas atendidas</th><th>Atendimentos</th><th>Por pessoa</th><th>Uma só vez</th><th>Com 12 ou mais</th><th>Agenda ocupada por elas</th><th>Máximo</th><th>Por 100 cadastrados</th></tr></thead><tbody>${m ? lin({ nome: no.nome, m }, "dest") : ""}${F.map(f => lin(f, "")).join("")}</tbody></table>`;
+  $("#u-corpo").querySelectorAll("button.lk[data-i]").forEach(b => b.addEventListener("click", () => { const f = F[+b.dataset.i]; if (f.ir) f.ir(); else if (f.cam) irPara(f.cam); }));
+  $("#u-rod").innerHTML = `Quem foi atendido por duas equipes conta em cada uma delas, mas uma vez só na UBS, na GSAP e na Região; por isso a soma das linhas passa do total. Atendimentos sem equipe vinculada entram na UBS, não nas equipes. “Atendidas por 100 cadastrados” usa o cadastro de ${RZ ? mesRot(RZ.cad_comp) : "data não informada"}, parado desde então, e pode passar de 100 onde a equipe atende gente de fora do cadastro.` + difU();
+}
+
+/* ---------- Perfil dos atendimentos: resumo por unidade (12 meses) ---------- */
+const ps = { esc: "r", gi: 0, ui: 0, ab: new Set() };
+const s12 = (ser, k, fim = IU) => { let t = 0; if (ser && ser[k]) for (let i = Math.max(fim - 11, 0); i <= fim; i++) t += ser[k][i] || 0; return t; };
+function medP(f) {
+  const tot = TIPOS.reduce((t, [k]) => t + s12(f.ser, k), 0), m = US ? medU(f.usu, f.cad) : null, med = s12(f.ser, "atend_med"), ant = IU >= 23 ? s12(f.ser, "atend_med", IU - 12) : 0;
+  return { tot, dia: tot ? s12(f.ser, "a_dia") / tot : null, med: tot ? med / tot : null, apc: m ? m.apc : null, hf: m ? m.hf : null, m, med12: med, mil: f.cad ? med / f.cad * 1000 : null, vmil: f.cad && ant ? med / ant - 1 : null };
+}
+function noPerfil() {
+  const cadU = l => l.reduce((t, u) => t + (u.cad || 0), 0), U = US || { gsap: {}, ubs: {}, equipe: {} };
+  if (ps.esc === "r") return { nome: "Região Norte", rot: "GSAP", ser: P.regiao, cad: cadU(P.gsaps.flatMap(g => g.ubs)), usu: U.regiao,
+    filhos: P.gsaps.map((g, gi) => ({ nome: g.nome, n: `${g.n_esf} eSF`, ser: g.serie, cad: cadU(g.ubs), usu: U.gsap[g.nome], ir: () => { ps.esc = "g"; ps.gi = gi; ps.ab.clear(); renderPerfil(); } })) };
+  const g = P.gsaps[ps.gi];
+  if (ps.esc === "g") return { nome: g.nome, rot: "UBS", ser: g.serie, cad: cadU(g.ubs), usu: U.gsap[g.nome],
+    filhos: g.ubs.map((u, ui) => ({ nome: u.nome, n: `${u.n_esf} eSF`, ser: u.serie, cad: u.cad, usu: U.ubs[u.cnes], ir: () => { ps.esc = "u"; ps.ui = ui; ps.ab.clear(); renderPerfil(); } })) };
+  const u = g.ubs[ps.ui];
+  return { nome: u.nome, rot: "Equipe", ser: u.serie, cad: u.cad, usu: U.ubs[u.cnes],
+    filhos: u.equipes.filter(e => e.ine && e.serie.atend).map(e => ({ nome: e.nome, n: e.tipo, ser: e.serie, cad: e.cad, usu: U.equipe[e.ine], cam: `${g.nome} › ${u.nome} › ${e.nome}` })) };
+}
+function linhaDia(ser, w = 300, h = 66) {   // % de consulta no dia em cada um dos 12 meses
+  const v = []; for (let i = Math.max(IU - 11, 0); i <= IU; i++) { const t = TIPOS.reduce((a, [k]) => a + (ser[k] ? ser[k][i] : 0), 0); v.push([i, t ? (ser.a_dia ? ser.a_dia[i] : 0) / t * 100 : null]); }
+  const n = v.length, X = j => 30 + (n === 1 ? 0 : j * (w - 38) / (n - 1)), Y = y => 6 + (100 - y) / 100 * (h - 26), pts = v.map(([i, y], j) => (y == null ? null : [X(j), Y(y), y, i])).filter(Boolean);
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="Consulta no dia, por mês">${[0, 50, 100].map(y => `<text x="0" y="${(Y(y) + 3).toFixed(1)}">${y}%</text><line x1="28" x2="${w}" y1="${Y(y).toFixed(1)}" y2="${Y(y).toFixed(1)}" stroke="var(--line)"/>`).join("")}<polyline fill="none" stroke="var(--s1)" stroke-width="2" points="${pts.map(p => p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" ")}"/>${pts.map(p => `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3" fill="var(--s1)"><title>${mesRot(MESES[p[3]])}: ${Math.round(p[2])}% de consulta no dia</title></circle>`).join("")}<text x="30" y="${h - 2}">${mesRot(MESES[v[0][0]])}</text><text x="${X(n - 1).toFixed(1)}" y="${h - 2}" text-anchor="end">${mesRot(MESES[IU])}</text></svg>`;
+}
+function detPerfil(f) {
+  const x = f.x || medP(f), t12 = TIPOS.map(([k, rot, cor]) => ({ n: s12(f.ser, k), rot, cor })), q12 = QUEM.map(([k, rot, cor, claro]) => ({ n: s12(f.ser, k), rot, cor, claro }));
+  const fx = (v, un) => v.map((n, i) => ({ n, rot: `${US.faixas[i]} atendimento${US.faixas[i] === "1" ? "" : "s"} · ${un}`, cor: CORES_U[i], claro: i === 0 }));
+  const quem = x.m ? `${pilha(fx(x.m.d.fp, "pessoas"))}<div class="nota">pessoas, pelo número de atendimentos em 12 meses</div>${pilha(fx(x.m.d.fa, "atendimentos"))}<div class="nota">atendimentos: quanto da agenda cada grupo ocupa · ${fmt(x.m.pess)} pessoas, ${fmt(x.m.hfn)} com 12 ou mais atendimentos</div>` : `<p class="nota">Sem registro de pessoas atendidas neste nível.</p>`;
+  const quanto = x.mil == null ? `<p class="nota">Sem população cadastrada neste nível.</p>` : `<div class="grande">${r1(x.mil)}</div><div class="nota">consultas de médico por mil cadastrados (${pctv(x.vmil)} sobre os 12 meses anteriores); ${fmt(x.med12)} consultas, ${fmt(f.cad)} cadastrados em ${RZ ? mesRot(RZ.cad_comp) : "–"}</div><span class="chip">Denominador desatualizado: comparação exploratória</span>`;
+  return `<div class="tres"><div><b class="nota">Como entram · ${janelaRot()}</b>${pilha(t12)}<div class="nota">tipo de atendimento</div>${pilha(q12)}<div class="nota">quem atendeu · abaixo, % de consulta no dia em cada mês</div>${linhaDia(f.ser)}</div><div><b class="nota">Quem entra · 12 meses</b>${quem}</div><div><b class="nota">Quanto · 12 meses</b>${quanto}</div></div>`;
+}
+function renderPerfil() {
+  const no = noPerfil(), ord = $("#p-ord").value;
+  $("#p-nota").innerHTML = `Uma linha por unidade, com cinco medidas dos <b>últimos 12 meses completos</b> (${janelaRot()}): como as pessoas entram (tipo de atendimento registrado no PEC e quem atendeu), quem entra (pessoas diferentes e uso muito frequente) e quanto (consultas de médico por mil cadastrados). Clique no nome para descer um nível e em <b>detalhe</b> para ver os gráficos da unidade; os botões acima abrem cada parte completa. Esta aba descreve o atendimento <b>realizado</b>: não mede tempo de espera, demanda não atendida nem falta. O tipo de atendimento depende de como o profissional classifica o registro.`;
+  const crumb = [ps.esc === "r" ? `<span>Região Norte</span>` : `<button data-e="r">Região Norte</button>`];
+  if (ps.esc !== "r") crumb.push(ps.esc === "g" ? `<span>${esc(P.gsaps[ps.gi].nome)}</span>` : `<button data-e="g">${esc(P.gsaps[ps.gi].nome)}</button>`);
+  if (ps.esc === "u") crumb.push(`<span>${esc(P.gsaps[ps.gi].ubs[ps.ui].nome)}</span>`);
+  $("#p-crumb").innerHTML = crumb.join(" › ");
+  $("#p-crumb").querySelectorAll("button").forEach(b => b.addEventListener("click", () => { ps.esc = b.dataset.e; ps.ab.clear(); renderPerfil(); }));
+  const filhos = no.filhos.map(f => ({ ...f, x: medP(f) })).filter(f => f.x.tot);
+  const chave = { dia: f => -(f.x.dia ?? -1), med: f => -(f.x.med ?? -1), apc: f => -(f.x.apc ?? -1), hf: f => -(f.x.hf ?? -1), mil: f => -(f.x.mil ?? -1), milm: f => (f.x.mil ?? 1e9) }[ord];
+  if (chave) filhos.sort((a, b) => chave(a) - chave(b));
+  const topo = { nome: no.nome, ser: no.ser, cad: no.cad, usu: no.usu, n: "", topo: true }; topo.x = medP(topo);
+  const L = [topo, ...filhos]; L.forEach((f, j) => f.idx = j);
+  const mx = k => Math.max(1e-9, ...L.map(f => f.x[k] || 0)), mhf = mx("hf"), mmil = mx("mil"), mapc = mx("apc");
+  const bar = (v, m) => `<span class="bar-r"><i style="width:${Math.min(100, (v || 0) / m * 100).toFixed(0)}%"></i></span>`, pc = (v, d = 0) => (v == null ? "–" : (v * 100).toFixed(d).replace(".", ",") + "%");
+  const lin = f => {
+    const x = f.x, ab = ps.ab.has(f.nome), nm = !f.topo && (f.ir || f.cam) ? `<button class="lk" data-i="${f.idx}">${esc(f.nome)}</button>` : esc(f.nome);
+    return `<tr class="${f.topo ? "dest" : ""}"><td class="l">${nm}${f.n ? `<small class="nota" style="display:block">${esc(f.n)}</small>` : ""}</td><td>${fmt(x.tot)}</td><td>${pc(x.dia)} ${bar(x.dia, 1)}</td><td>${pc(x.med)} ${bar(x.med, 1)}</td><td>${x.apc == null ? "–" : x.apc.toFixed(1).replace(".", ",")} ${bar(x.apc, mapc)}</td><td>${pc(x.hf, 1)} ${bar(x.hf, mhf)}</td><td>${r1(x.mil)} ${bar(x.mil, mmil)}</td><td><button type="button" class="neutro p-det" data-d="${f.idx}" aria-expanded="${ab}">${ab ? "fechar" : "detalhe"}</button></td></tr>` + (ab ? `<tr class="det"><td colspan="8">${detPerfil(f)}</td></tr>` : "");
+  };
+  $("#p-corpo").innerHTML = `<table class="eq" id="p-tab"><thead><tr><th class="l">${no.rot}</th><th>Atendimentos<br>(12 meses)</th><th>% consulta<br>no dia</th><th>% atendido<br>por médico</th><th>Atendimentos<br>por pessoa</th><th>% de pessoas com<br>12 ou mais</th><th>Consultas de médico<br>por mil cadastrados</th><th></th></tr></thead><tbody>${L.map(lin).join("")}</tbody></table>`;
+  $("#p-corpo").querySelectorAll("button.lk[data-i]").forEach(b => b.addEventListener("click", () => { const f = L[+b.dataset.i]; if (f.ir) f.ir(); else if (f.cam) irPara(f.cam); }));
+  $("#p-corpo").querySelectorAll("button.p-det").forEach(b => b.addEventListener("click", () => { const n = L[+b.dataset.d].nome; if (ps.ab.has(n)) ps.ab.delete(n); else ps.ab.add(n); renderPerfil(); }));
+  $("#p-rod").innerHTML = `Todas as medidas são de 12 meses, para não misturar um mês com um ano. “Por mil cadastrados” usa o cadastro de ${RZ ? mesRot(RZ.cad_comp) : "data não informada"}, parado desde então: comparação exploratória. Pessoa atendida por duas equipes conta em cada uma, mas uma vez só na UBS, na GSAP e na Região. Atendimentos sem equipe vinculada entram na UBS, não nas equipes.`;
+}
+
+/* ---------- Inconsistências de código e de vínculo (área dos gestores) ---------- */
+const TIPOS_INC = [
+  ["sem_ine", "Produção sem equipe (sem INE)", "Quem registrou atendimento, visita, vacina ou procedimento sem equipe vinculada nos últimos 3 meses. Conferir o vínculo do profissional à equipe no CNES e a lotação escolhida ao entrar no PEC."],
+  ["lot_outra", "Lotado numa equipe, registra em outra", "Consta na planilha de RH numa equipe, mas a maior parte dos registros está em outra equipe, em outra UBS ou sem equipe. Conferir a planilha de RH e o vínculo no CNES."],
+  ["lot_sem_prod", "Lotado sem registro em 3 meses", "Consta na lotação e não tem nenhum registro no período. Pode ser férias, licença, função sem registro individual ou saída não informada ao RH."],
+  ["prod_fora_rh", "Registra e não consta na lotação", "Tem registros numa equipe, mas não aparece na planilha de RH. Atualizar a planilha ou conferir se o registro está na unidade certa."],
+  ["ine_fora_rh", "Equipe (INE) fora da planilha de RH", "INE com produção na UBS que não existe na planilha de RH: equipe nova, INE antigo ainda em uso ou erro de vínculo."],
+  ["eq_sem_prod", "Equipe do RH sem registro", "Equipe que consta na planilha de RH e não tem nenhum registro nos últimos 3 meses."],
+  ["mudou_ubs", "Equipe mudou de UBS", "O mesmo INE parou de registrar numa UBS e segue ativo em outra. Atualizar a lotação."],
+  ["lugar_errado", "Registro provável em lugar errado", "Equipe muito abaixo do habitual em UBS com produção sem equipe, ou procedimento esperado (citopatológico, teste de sífilis) sem registro por três meses."]];
+const rotInc = k => (TIPOS_INC.find(x => x[0] === k) || [k, k])[1];
+const is = { tipo: "", gsap: "", q: "" };
+function filtInc() {
+  const t = semAcento(is.q.trim());
+  return (NOM.incons || []).filter(x => (!is.tipo || x.tipo === is.tipo) && (!is.gsap || x.gsap === is.gsap) && (!t || semAcento(`${x.nome} ${x.cat} ${x.ubs} ${x.equipe}`).includes(t)));
+}
+function renderIncons() {
+  if (!NOM.aberto) { $("#i-nota").textContent = "As inconsistências trazem nomes de profissionais e são de acesso dos gestores."; $("#i-cartoes").innerHTML = $("#i-corpo").innerHTML = $("#i-exp").innerHTML = ""; return; }
+  const D = NOM.incons || [], cont = k => D.filter(x => x.tipo === k).length;
+  $("#i-nota").innerHTML = `Problemas de <b>código e de vínculo</b> que distorcem os números das outras abas: registro sem equipe (sem INE), lotação que não bate com a produção, equipe que não bate com a UBS e registro provavelmente feito em lugar errado. Referência: ${mesRot(MESES[Math.max(IU - 2, 0)])} a ${mesRot(MESES[IU])}; lotação da planilha de RH de ${RH}. São pontos para <b>conferir e corrigir o cadastro</b>, não juízo sobre o trabalho de ninguém. Clique num cartão para filtrar.`;
+  $("#i-cartoes").innerHTML = TIPOS_INC.map(([k, r, d]) => `<button type="button" class="kpi" data-t="${k}" aria-pressed="${is.tipo === k}" title="${esc(d)}"><div class="r">${esc(r)}</div><div class="n">${fmt(cont(k))}</div></button>`).join("");
+  $("#i-tipo").innerHTML = `<option value="">Todos (${D.length})</option>` + TIPOS_INC.map(([k, r]) => `<option value="${k}">${esc(r)} (${cont(k)})</option>`).join(""); $("#i-tipo").value = is.tipo;
+  $("#i-exp").textContent = is.tipo ? TIPOS_INC.find(x => x[0] === is.tipo)[2] : "";
+  const L = filtInc(), MAX = 500;
+  $("#i-corpo").innerHTML = L.length ? `<table class="eq"><thead><tr><th class="l">Tipo</th><th class="l">UBS e equipe</th><th class="l">Profissional</th><th class="l">O que foi encontrado</th></tr></thead><tbody>${L.slice(0, MAX).map(x => {
+    const cam = x.equipe ? `${x.gsap} › ${x.ubs} › ${x.equipe}` : `${x.gsap} › ${x.ubs}`;
+    return `<tr><td class="l">${esc(rotInc(x.tipo))}</td><td class="l"><button class="lk" data-c="${esc(cam)}">${esc(x.ubs)}${x.equipe ? " › " + esc(x.equipe) : ""}</button><small>${esc(x.gsap)}</small></td><td class="l">${x.nome ? esc(x.nome) : "–"}<small>${esc(x.cat)}</small></td><td class="l">${esc(x.det)}</td></tr>`; }).join("")}</tbody></table>` + (L.length > MAX ? `<p class="nota">Mostrando ${MAX} de ${fmt(L.length)} linhas; filtre ou baixe a lista completa.</p>` : "") : "<p class='nota'>Nenhuma inconsistência neste filtro.</p>";
+}
+function baixarCSV(nome, linhas) {
+  const txt = linhas.map(l => l.map(c => `"${String(c ?? "").replace(/"/g, '""')}"`).join(";")).join("\r\n");
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["﻿" + txt], { type: "text/csv;charset=utf-8" })); a.download = nome; document.body.appendChild(a); a.click(); a.remove();
+}
+function linhasProvidencias() {   // uma linha por alerta e por inconsistência, com as colunas de acompanhamento em branco
+  const hoje = new Date().toLocaleDateString("pt-BR"), ref = mesRot(MESES[IU]), vazio = ["", "", "", "", "", "", "", "novo"];
+  const L = [["Emitido em", "Mês de referência", "Origem", "GSAP", "UBS", "Equipe", "Profissional", "Problema observado", "Evidência", "Situação da validação (suspeita ou confirmado)", "Categoria (registro, vínculo, capacidade, processo de trabalho, outra)", "Responsável", "Providência pactuada", "Prazo", "Data de revisão", "Devolutiva e evidência de resolução", "Situação (novo, em verificação, ação pactuada, em acompanhamento, resolvido)"]];
+  sinais().forEach((l, cam) => { const [g, u, e] = cam.split(" › "); l.forEach(x => L.push([hoje, ref, "Alerta", g, u || "", e || "", "", x.rot, x.det, ...vazio])); });
+  if (NOM.aberto) (NOM.incons || []).forEach(x => { if (x.tipo === "lugar_errado" && x.det.startsWith("Nenhum registro de")) return; L.push([hoje, ref, "Inconsistência", x.gsap, x.ubs, x.equipe, x.nome, rotInc(x.tipo), x.det, ...vazio]); });
+  return L;
+}
+
+/* ---------- link que preserva a tela (aba, indicador, período, filtro e unidade aberta) ---------- */
+let URL_OK = false;
+function gravarURL() {
+  if (!URL_OK) return;
+  const q = new URLSearchParams();
+  if (vistaAtual !== "h") q.set("v", vistaAtual);
+  if (estado.ind !== "atend") q.set("i", estado.ind);
+  if (estado.per !== 24) q.set("p", estado.per);
+  if (estado.fil) q.set("f", estado.fil);
+  const ab = [...document.querySelectorAll("#arvore details.caixa[open]")].sort((a, b) => b.id.length - a.id.length)[0];
+  if (ab) { const g = P.gsaps[+ab.dataset.gi]; q.set("g", g.nome); if (ab.dataset.t !== "g") { const u = g.ubs[+ab.dataset.ui]; q.set("u", u.cnes); if (ab.dataset.t === "e") q.set("e", u.equipes[+ab.dataset.ei].ine || "SEM"); } }
+  const s = q.toString();
+  try { history.replaceState(null, "", s ? "#" + s : location.pathname + location.search); } catch (e) {}
+}
+let vistaPendente = "";
+function lerURL() {
+  const q = new URLSearchParams(location.hash.replace(/^#/, ""));
+  if (q.get("p") && [...$("#sel-per").options].some(o => o.value === q.get("p"))) { $("#sel-per").value = q.get("p"); estado.per = +q.get("p"); }
+  if (q.get("i") && P.indicadores[q.get("i")]) defInd(q.get("i")); else if (q.get("p")) mudar();
+  if (q.get("f")) { $("#f-alerta").value = q.get("f"); if ($("#f-alerta").value === q.get("f")) { estado.fil = q.get("f"); resumoFiltro(); renderArvore(); } }
+  const g = P.gsaps.find(x => x.nome === q.get("g"));
+  if (g) {
+    const u = g.ubs.find(x => x.cnes === q.get("u")), e = u && q.get("e") ? u.equipes.find(x => (x.ine || "SEM") === q.get("e")) : null;
+    if (u) irPara(e ? `${g.nome} › ${u.nome} › ${e.nome}` : `${g.nome} › ${u.nome}`);
+    else { const d = document.getElementById("g" + P.gsaps.indexOf(g)); if (d) { d.open = true; preencher(d); } }
+  }
+  const v = q.get("v");
+  if (v === "i") vistaPendente = "i"; else if (v && VISTAS[v] && v !== "h") mostrarVista(v);
+}
+
+/* ---------- navegação ---------- */
+const caminhos = new Map();   // "GSAP › UBS › equipe" -> ids
+P.gsaps.forEach((g, gi) => g.ubs.forEach((u, ui) => {
+  caminhos.set(`${g.nome} › ${u.nome}`, [`g${gi}`, `g${gi}u${ui}`]);
+  u.equipes.forEach((e, ei) => caminhos.set(`${g.nome} › ${u.nome} › ${e.nome}`, [`g${gi}`, `g${gi}u${ui}`, `g${gi}u${ui}e${ei}`]));
+}));
+function irPara(caminho) {
+  const ids = caminhos.get(caminho); if (!ids) return;
+  mostrarVista("h");
+  if (estado.fil && !passa(caminho)) { estado.fil = ""; $("#f-alerta").value = ""; resumoFiltro(); renderArvore(); }
+  let el; ids.forEach(id => { el = document.getElementById(id); if (el) { el.open = true; preencher(el); } });
+  if (el) { el.scrollIntoView({ block: "start" }); el.style.outline = "2px solid var(--accent)"; setTimeout(() => el.style.outline = "", 2500); }
+}
+let vistaAtual = "h";
+const VISTAS = { h: () => {}, c: () => renderComparar(), m: () => renderMapa(), p: () => renderPerfil(), x: () => renderAcesso(), r: () => renderRazao(), u: () => renderUsuarios(), i: () => renderIncons() };
+const PERFIL = ["p", "x", "u", "r"];
+function mostrarVista(v) {
+  if (v === "i" && !NOM.aberto) v = "h";
+  vistaAtual = v;
+  Object.keys(VISTAS).forEach(x => { $("#vista-" + x).hidden = x !== v; });
+  $("#aba-h").setAttribute("aria-selected", v === "h" || v === "c"); $("#aba-m").setAttribute("aria-selected", v === "m"); $("#aba-p").setAttribute("aria-selected", PERFIL.includes(v)); $("#aba-i").setAttribute("aria-selected", v === "i");
+  $("#sub-perfil").hidden = !PERFIL.includes(v);
+  [["sub-p", "p"], ["aba-x", "x"], ["aba-u", "u"], ["aba-r", "r"]].forEach(([id, x]) => { const b = document.getElementById(id); b.setAttribute("aria-pressed", x === v); b.setAttribute("aria-selected", x === v); });
+  const sem = PERFIL.includes(v) || v === "i";
+  $("#sel-ind").disabled = sem; $("#sel-ind").title = sem ? "Esta aba não usa o seletor de indicador" : ""; document.querySelectorAll("#grp-ind button").forEach(b => b.disabled = sem);
+  VISTAS[v](); gravarURL();
+}
+/* pessoas (um servidor pode aparecer em mais de uma equipe) */
+const pessoas = new Map();
+const indice = [];
+function montarPessoas() {
+  pessoas.clear(); indice.length = 0;
+  P.gsaps.forEach(g => g.ubs.forEach(u => u.equipes.forEach(e => e.prof.forEach(p => {
+    let x = pessoas.get(p.id);
+    if (!x) { x = { id: p.id, nome: p.nome, mat: p.mat || "", cat: p.cat, cargo: p.cargo, chs: p.chs, v: [] }; pessoas.set(p.id, x); }
+    if (!x.mat && p.mat) x.mat = p.mat; if (!x.cat && p.cat) x.cat = p.cat; if (!x.cargo && p.cargo) x.cargo = p.cargo; if (!x.chs && p.chs) x.chs = p.chs;
+    x.v.push({ g, u, e, p, caminho: `${g.nome} › ${u.nome} › ${e.nome}` });
+  }))));
+  /* busca */
+  P.gsaps.forEach(g => g.ubs.forEach(u => {
+    indice.push({ t: u.nome, s: `${g.nome}`, c: `${g.nome} › ${u.nome}`, k: "UBS" });
+    u.equipes.forEach(e => indice.push({ t: e.nome, s: `${u.nome} · ${g.nome}`, c: `${g.nome} › ${u.nome} › ${e.nome}`, k: "Equipe" }));
+  }));
+  pessoas.forEach(x => {
+    const ult = x.v.find(y => y.p.ativo) || x.v[0];
+    indice.push({ t: x.nome, s: `${x.cat || ""} · ${ult.e.nome} · ${ult.u.nome}${x.v.length > 1 ? " (+" + (x.v.length - 1) + " equipe" + (x.v.length > 2 ? "s" : "") + ")" : ""}`, id: x.id, mat: x.mat, k: "Profissional", ativo: x.v.some(y => y.p.ativo) });
+  });
+}
+montarPessoas();
+const semAcento = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+function procurar(q0) {
+  const q = q0.trim(); if (!q) return [];
+  if (/^[\d.\-\s]+$/.test(q)) {
+    const d = q.replace(/\D/g, ""); if (d.length < 3) return [];
+    return indice.filter(x => x.mat && x.mat.includes(d)).sort((x, y) => (x.mat.startsWith(d) ? 0 : 1) - (y.mat.startsWith(d) ? 0 : 1)).slice(0, 40);
+  }
+  const t = semAcento(q); if (t.length < 2) return [];
+  const ach = indice.filter(x => semAcento(x.t).includes(t) || (x.k === "Profissional" && x.mat && x.mat === t));
+  return ach.sort((x, y) => (semAcento(x.t).startsWith(t) ? 0 : 1) - (semAcento(y.t).startsWith(t) ? 0 : 1) || (y.ativo === true) - (x.ativo === true)).slice(0, 40);
+}
+function escolher(x) { $("#achados").style.display = "none"; if (x.k === "Profissional") abrirFicha(x.id); else irPara(x.c); }
+let tBusca;
+$("#busca").addEventListener("input", () => {
+  clearTimeout(tBusca); tBusca = setTimeout(() => {
+    const box = $("#achados"), q = $("#busca").value.trim();
+    if (q.length < 2) { box.style.display = "none"; return; }
+    const ach = procurar(q);
+    box.innerHTML = ach.length ? ach.map((x, i) => `<button data-i="${i}"><b>${esc(x.t)}</b> <span class="tag">${x.k}</span>${x.mat ? ` <span class="tag">mat. ${esc(x.mat)}</span>` : ""}${x.k === "Profissional" && !x.ativo ? ' <span class="tag">vínculo não confirmado</span>' : ""}<small>${esc(x.s)}</small></button>`).join("") : "<button disabled>Nada encontrado</button>";
+    box.style.display = "block";
+    box.querySelectorAll("button[data-i]").forEach(b => b.addEventListener("click", () => escolher(ach[+b.dataset.i])));
+  }, 150);
+});
+$("#busca").addEventListener("keydown", e => { if (e.key === "Enter") { const a = procurar($("#busca").value); if (a.length) escolher(a[0]); } });
+document.addEventListener("click", e => {
+  if (!e.target.closest(".busca")) $("#achados").style.display = "none";
+  const b = e.target.closest("button.pess"); if (b) abrirFicha(b.dataset.pid);
+  const pr = e.target.closest("button.prio, circle.pt, #i-corpo button.lk"); if (pr && pr.dataset.c) irPara(pr.dataset.c);
+  if (e.target.closest("button.btn-prov")) baixarCSV(`providencias_aps_norte_${MESES[IU]}.csv`, linhasProvidencias());
+  const ic = e.target.closest("#i-cartoes button"); if (ic) { is.tipo = is.tipo === ic.dataset.t ? "" : ic.dataset.t; renderIncons(); }
+  const sec = e.target.closest("button.btn-sec");
+  if (sec) {
+    const t = sec.closest("table"), on = sec.getAttribute("aria-expanded") !== "true";
+    sec.setAttribute("aria-expanded", on); t.querySelectorAll(`tr[data-g="${sec.dataset.g}"]`).forEach(r => { r.hidden = !on; });
+    sec.textContent = `${on ? "▾ Ocultar" : "▸ Mostrar"} ${sec.dataset.r} (${sec.dataset.n})`;
+  }
+});
+
+/* ficha do servidor */
+const SOMAVEIS = [["atend", "Atendimentos individuais"], ["visitas", "Visitas domiciliares"], ["vacinas", "Doses de vacina"], ["coletivas", "Atividades coletivas"]];
+function abrirFicha(id) {
+  const x = pessoas.get(id); if (!x) return;
+  $("#ficha-t").textContent = x.nome;
+  $("#ficha-sub").textContent = [x.cat, x.chs ? x.chs + " h" : "", x.mat ? "matrícula " + x.mat : ""].filter(Boolean).join(" · ");
+  const graf = SOMAVEIS.concat(FAMS.map(k => [k, IND[k].nome])).map(([k, rot]) => {
+    const tot = P.meses.map((_, i) => x.v.reduce((a, y) => a + ((y.p.serie[k] || [])[i] || 0), 0));
+    if (!tot.slice(0, IU + 1).some(v => v)) return "";
+    return `<div><h4>${rot} – todas as equipes · ${fmt(tot[IU])} em ${mesRot(MESES[IU])} ${htmlVar(tot)}</h4>${barras(tot, 460, 120)}</div>`;
+  }).join("");
+  const lin = x.v.map(y => {
+    const ult = y.p.serie.atend || y.p.serie.visitas || y.p.serie.vacinas || [];
+    const sit = y.p.lotado ? "lotado em " + RH : (y.p.ativo ? "produz, fora do RH de " + RH : "vínculo atual não confirmado (último registro " + (y.p.ultimo ? mesRot(y.p.ultimo) : "–") + ")");
+    return `<tr><td class="l"><button class="link" data-c="${esc(y.caminho)}">${esc(y.e.nome)}</button><span class="meta">${esc(y.u.nome)} · ${esc(y.g.nome)}</span></td><td class="l">${sit}</td>` +
+      SOMAVEIS.map(([k]) => `<td class="v">${y.p.serie[k] ? fmt(y.p.serie[k][IU]) : "–"}</td>`).join("") + "</tr>";
+  }).join("");
+  const alerta = P.alertas.filter(a => x.v.some(y => a.caminho === y.caminho && a.texto.includes(x.nome))).map(a => `<li><b>${esc(a.tipo)}:</b> ${esc(a.texto)}</li>`).join("");
+  $("#ficha-corpo").innerHTML = (alerta ? `<ul class="nota" style="color:var(--saldo)">${alerta}</ul>` : "") +
+    `<div class="graf">${graf || "<p class='nota'>Sem produção individual registrada neste período.</p>"}</div>` +
+    `<div class="rolagem"><table><thead><tr><th class="l">Equipe</th><th class="l">Situação</th>${SOMAVEIS.map(([k, r]) => `<th>${r.split(" ")[0]}<br><span class="nota">${mesRot(MESES[IU])}</span></th>`).join("")}</tr></thead><tbody>${lin}</tbody></table></div>` +
+    `<p class="nota">Produção conforme registro no PEC. Zero pode ser registro ausente ou atrasado, férias ou afastamento.</p>`;
+  $("#ficha-corpo").querySelectorAll("button.link").forEach(b => b.addEventListener("click", () => { $("#ficha").close(); irPara(b.dataset.c); }));
+  if (!$("#ficha").open) $("#ficha").showModal();
+}
+$("#ficha-x").addEventListener("click", () => $("#ficha").close());
+$("#ficha").addEventListener("click", e => { if (e.target === $("#ficha")) $("#ficha").close(); });
+
+/* mapa de calor */
+const FAIXAS = [[0, "var(--h0)", "zero"], [0.4, "var(--h1)", "menos de 40% do habitual"], [0.7, "var(--h2)", "40% a 70%"], [0.9, "var(--h3)", "70% a 90%"], [1.1, "var(--h4)", "dentro do habitual (90% a 110%)"], [1.3, "var(--h5)", "110% a 130%"], [Infinity, "var(--h6)", "mais de 130%"]];
+function corMapa(v, ref) {
+  if (v === 0) return FAIXAS[0][1]; const r = v / ref;
+  return (FAIXAS.slice(1).find(f => r < f[0] || (f[0] === 1.1 && r <= 1.1)) || FAIXAS[FAIXAS.length - 1])[1];
+}
+function renderMapa() {
+  const tipo = $("#mapa-tipo").value, ord = $("#mapa-ord").value, k = estado.ind, [a, b] = faixa(), L = [];
+  P.gsaps.forEach(g => g.ubs.forEach(u => u.equipes.forEach(e => {
+    if (!e.ine || e.migrou || (tipo !== "*" && e.tipo !== tipo) || !e.serie[k]) return;
+    const v = e.serie[k].slice(a, b), ref = habitual(e.serie[k]); if (!ref) return;
+    L.push({ g: g.nome, u: u.nome, e, v, ref, rel: v[v.length - 1] / ref, caminho: `${g.nome} › ${u.nome} › ${e.nome}` });
+  })));
+  if (ord === "queda") L.sort((x, y) => x.rel - y.rel); else if (ord === "valor") L.sort((x, y) => x.v[x.v.length - 1] - y.v[y.v.length - 1]);
+  const leg = `<div class="leg-mapa"><b>${esc(nomeInd(k))}</b><span>habitual = mediana de ${mesRot(MESES[Math.max(IU - 12, 0)])} a ${mesRot(MESES[Math.max(IU - 1, 0)])}</span>${FAIXAS.map(f => `<span><i style="background:${f[1]}"></i>${f[2]}</span>`).join("")}</div>`;
+  let h = `<table><thead><tr><th></th>${MESES.slice(a, b).map(m => `<th class="mes">${mesRot(m)}</th>`).join("")}<th class="mes">habitual</th></tr></thead><tbody>`, grupo = "";
+  L.forEach(x => {
+    if (ord === "estrutura" && x.g + x.u !== grupo) { grupo = x.g + x.u; h += `<tr class="grupo"><td colspan="${x.v.length + 2}">${esc(x.g)} › ${esc(x.u)}</td></tr>`; }
+    h += `<tr><td class="rot" data-c="${esc(x.caminho)}" title="${esc(x.caminho)}">${ord === "estrutura" ? "" : esc(x.u) + " · "}${esc(x.e.nome)}</td>` +
+      x.v.map((y, i) => `<td class="c" style="background:${corMapa(y, x.ref)}" title="${esc(x.e.nome)} · ${mesRot(MESES[a + i])}: ${fmt(y)} (${Math.round(y / x.ref * 100)}% do habitual ${fmt(x.ref)})"></td>`).join("") + `<td class="c" style="background:var(--card);color:var(--muted)">${fmt(x.ref)}</td></tr>`;
+  });
+  $("#mapa-corpo").innerHTML = L.length ? leg + h + "</tbody></table>" : "<p class='nota'>Nenhuma equipe com dados deste indicador neste tipo.</p>";
+  const lg = $("#mapa-corpo .leg-mapa"); if (lg) $("#mapa-corpo").style.setProperty("--leg-h", lg.offsetHeight + "px");
+  document.querySelectorAll("#mapa-corpo td.rot").forEach(td => td.addEventListener("click", () => irPara(td.dataset.c)));
+}
+
+/* CSV do indicador escolhido */
+function csv() {
+  const k = estado.ind, nivProf = IND[k].nivel === "prof" && NOM.aberto, linhas = [];
+  const cab = ["GSAP", "UBS", "Equipe", "Tipo de equipe", ...(nivProf ? ["Profissional", ...(P.com_matricula ? ["Matrícula"] : []), "Categoria", "Na lotação " + RH] : []), ...MESES.map(m => m)];
+  linhas.push(cab);
+  P.gsaps.forEach(g => g.ubs.forEach(u => u.equipes.forEach(e => {
+    if (nivProf) e.prof.forEach(p => { if (p.serie[k]) linhas.push([g.nome, u.nome, e.nome, e.tipo, p.nome, ...(P.com_matricula ? [p.mat || ""] : []), p.cat || "", p.lotado ? "sim" : "não", ...p.serie[k].slice(0, IU + 1)]); });
+    else if (e.serie[k]) linhas.push([g.nome, u.nome, e.nome, e.tipo, ...e.serie[k].slice(0, IU + 1)]);
+  })));
+  const txt = linhas.map(l => l.map(c => `"${String(c).replace(/"/g, '""')}"`).join(";")).join("\r\n");
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["﻿" + txt], { type: "text/csv;charset=utf-8" }));
+  a.download = `aps_norte_${k}_${MESES[IU]}.csv`; a.click();
+}
+
+/* ---------- relatório (área dos gestores): PDF pela impressão do navegador, Word como arquivo .doc ---------- */
+const REL_SEC = [["resumo", "Resumo dos indicadores principais", 1], ["grafico", "Gráfico mensal do indicador escolhido (uma linha por ano)", 1], ["alertas", "Alertas do último mês completo", 1],
+  ["unidades", "Tabela das unidades abaixo, no indicador escolhido", 1], ["bp", "Produção por boa prática (gestação, diabetes, hipertensão, saúde da mulher, criança, pessoa idosa)", 1], ["comparar", "Equipes contra a Região (gráfico de pontos)", 0],
+  ["perfil", "Perfil dos atendimentos: resumo de 12 meses por unidade", 1], ["acesso", "Perfil dos atendimentos no mês: tipo de atendimento e quem atendeu", 0],
+  ["pessoas", "Pessoas atendidas e uso muito frequente (12 meses)", 0], ["razao", "Consultas de médico por mil cadastrados (12 meses)", 0], ["prof", "Lista de profissionais por equipe, com a produção do mês (dados nominais)", 0],
+  ["incons", "Inconsistências de código e de vínculo (dados nominais)", 0], ["prov", "Quadro de providências para preencher na reunião", 0]];
+function noRel(esc0) {   // "r", "g:gi" ou "u:gi:ui"
+  const [t, gi, ui] = esc0.split(":"), cadU = l => l.reduce((s, u) => s + (u.cad || 0), 0), usu = US || { gsap: {}, ubs: {}, equipe: {} };
+  const fg = g => ({ nome: g.nome, ser: g.serie, cad: cadU(g.ubs), usu: usu.gsap[g.nome] }), fu = u => ({ nome: u.nome, ser: u.serie, cad: u.cad, usu: usu.ubs[u.cnes] });
+  if (t === "r") return { nome: "Região Norte", cam: "", ser: P.regiao, cad: cadU(P.gsaps.flatMap(g => g.ubs)), usu: usu.regiao, rot: "GSAP", filhos: P.gsaps.map(fg), gsaps: P.gsaps, ubs: null };
+  const g = P.gsaps[+gi];
+  if (t === "g") return { ...fg(g), cam: g.nome, rot: "UBS", filhos: g.ubs.map(fu), gsaps: [g], ubs: null };
+  const u = g.ubs[+ui];
+  return { ...fu(u), nome: `${u.nome} (${g.nome})`, cam: `${g.nome} › ${u.nome}`, rot: "Equipe", gsaps: [g], ubs: u,
+    filhos: u.equipes.map(e => ({ nome: e.nome, ser: e.serie, cad: e.cad, usu: e.ine ? usu.equipe[e.ine] : null })) };
+}
+function relatorioHTML(esc0, secoes) {
+  const no = noRel(esc0), k = estado.ind, i = IU, tem = s => secoes.includes(s), h = [];
+  const va = s => (s && i >= 12 && s[i - 12] ? pctv(s[i] / s[i - 12] - 1) : "–"), m6 = s => fmt(s.slice(Math.max(i - 5, 0), i + 1).reduce((a, b) => a + b, 0) / Math.min(6, i + 1));
+  const linS = (nome, s, cls) => `<tr class="${cls || ""}"><td class="l">${esc(nome)}</td><td>${s ? fmt(s[i]) : "–"}</td><td>${s && i >= 12 ? fmt(s[i - 12]) : "–"}</td><td>${va(s)}</td><td>${s ? m6(s) : "–"}</td></tr>`;
+  const cabS = r => `<thead><tr><th class="l">${r}</th><th>${mesRot(MESES[i])}</th><th>${i >= 12 ? mesRot(MESES[i - 12]) : ""}</th><th>Variação</th><th>Média de 6 meses</th></tr></thead>`;
+  const hoje = new Date().toLocaleDateString("pt-BR"), nominal = tem("prof") || tem("alertas") || tem("incons");
+  h.push(`<h1>Painel da Atenção Primária – Região Norte</h1><p><b>Relatório: ${esc(no.nome)}</b><br><span class="nota">Último mês completo: ${mesRot(MESES[i])} · indicador escolhido: ${esc(nomeInd(k))} · emitido em ${hoje} · ${esc(P.fonte)}.${nominal ? " <b>Contém dados nominais de servidores: uso interno da gestão.</b>" : ""}</span></p>`);
+  if (tem("resumo")) {
+    const ks = ["atend", "atend_med", "atend_enf", "visitas", "vacinas", "coletivas", "prenatal", "has", "dm", "odonto1"].filter(x => no.ser[x]);
+    h.push(`<h2>Resumo dos indicadores principais</h2><table>${cabS("Indicador")}<tbody>${ks.map(x => linS(nomeInd(x), no.ser[x])).join("")}</tbody></table><p class="nota">Variação = ${mesRot(MESES[i])} versus ${i >= 12 ? mesRot(MESES[i - 12]) : "o ano anterior"}. Mês fechado não é base consolidada: registros atrasados ainda podem entrar.</p>`);
+  }
+  if (tem("grafico")) h.push(`<h2>${esc(nomeInd(k))}, por mês</h2>${barras(no.ser[k], 900, 210)}<p class="nota">Uma linha por ano; o ano corrente vai até ${mesRot(MESES[i])}.</p>`);
+  if (tem("alertas")) {
+    const l = [...sinais()].filter(([c]) => !no.cam || c === no.cam || c.startsWith(no.cam + " › ")).flatMap(([c, xs]) => xs.map(x => [c, x]));
+    l.sort((a, b) => (a[1].nivel !== "alta") - (b[1].nivel !== "alta") || a[0].localeCompare(b[0], "pt-BR"));
+    h.push(`<h2>Alertas de ${mesRot(MESES[i])}</h2>` + (l.length ? `<table><thead><tr><th class="l">Unidade ou equipe</th><th class="l">Prioridade</th><th class="l">Sinal</th><th class="l">Detalhe</th></tr></thead><tbody>${l.map(([c, x]) => `<tr><td class="l">${esc(no.cam && c.startsWith(no.cam + " › ") ? c.slice(no.cam.length + 3) : c)}</td><td class="l">${x.nivel === "alta" ? "alta" : "atenção"}</td><td class="l">${esc(x.rot)}</td><td class="l">${esc(x.det)}</td></tr>`).join("")}</tbody></table><p class="nota">São sinais para conferir com a equipe, não conclusões: zero pode ser registro ausente ou atrasado, férias ou afastamento. “Habitual” = mediana dos 12 meses anteriores ao mês avaliado.</p>` : `<p>Nenhum alerta nesta unidade.</p>`));
+  }
+  if (tem("unidades")) h.push(`<h2>${esc(nomeInd(k))}, por ${no.rot === "Equipe" ? "equipe" : no.rot}</h2><table>${cabS(no.rot)}<tbody>${linS(no.nome, no.ser[k], "dest")}${no.filhos.filter(f => f.ser[k]).map(f => linS(f.nome, f.ser[k])).join("")}</tbody></table>`);
+  if (tem("bp")) {
+    const c = Object.keys(GRP_KS).filter(g => g !== "bucal" && g !== "outras").map(g => { const ks = GRP_KS[g].filter(x => no.ser[x] && !x.startsWith("m_")); return ks.length ? `<tr><th class="l" colspan="5">${esc(GRUPOS.find(x => x[0] === g)[1])}</th></tr>` + ks.map(x => linS(nomeInd(x), no.ser[x])).join("") : ""; }).join("");
+    h.push(`<h2>Produção por boa prática: ${esc(no.nome)}</h2><table>${cabS("Indicador")}<tbody>${c}</tbody></table><p class="nota">Produção registrada (atendimentos e procedimentos) ligada a cada boa prática do cofinanciamento. Não é o indicador oficial, que conta pessoas acompanhadas. DIU e implante contraceptivo aparecem separados; hemoglobina glicada não existe na fonte.</p>`);
+  }
+  if (tem("comparar")) {
+    const tipo = tipoCmp(), C = ctxCmp(k, tipo, "1"); let c = "";
+    no.gsaps.forEach(g => { const ls = (no.ubs ? [no.ubs] : g.ubs).map(u => ({ u, eq: C.todas.filter(y => y.u === u) })).filter(r => r.eq.length); if (ls.length) c += (no.gsaps.length > 1 ? `<h3>${esc(g.nome)}</h3>` : "") + svgCmp(C, ls, "Equipes contra a Região"); });
+    h.push(`<h2>Equipes ${esc(tipo)} contra a Região: ${esc(nomeInd(k))}, ${mesRot(MESES[i])}</h2>` + (c ? c + `<p class="nota">Cada ponto é uma equipe. Faixa = metade central das ${C.todas.length} equipes ${esc(tipo)} da Região; tracejado = mediana (${fmt(C.q50)}); vermelho = entre os 10% mais baixos.</p>` : "<p>Sem equipes deste tipo com dados.</p>"));
+  }
+  if (tem("perfil")) {
+    const pc = (v, d = 0) => (v == null ? "–" : (v * 100).toFixed(d).replace(".", ",") + "%");
+    const lin = (f, cls) => { const x = medP(f); return x.tot ? `<tr class="${cls || ""}"><td class="l">${esc(f.nome)}</td><td>${fmt(x.tot)}</td><td>${pc(x.dia)}</td><td>${pc(x.med)}</td><td>${x.apc == null ? "–" : x.apc.toFixed(1).replace(".", ",")}</td><td>${pc(x.hf, 1)}</td><td>${r1(x.mil)}</td></tr>` : ""; };
+    h.push(`<h2>Perfil dos atendimentos, ${janelaRot()}</h2><table><thead><tr><th class="l">${no.rot}</th><th>Atendimentos</th><th>Consulta no dia</th><th>Atendido por médico</th><th>Atendimentos por pessoa</th><th>Pessoas com 12 ou mais</th><th>Consultas de médico por mil cadastrados</th></tr></thead><tbody>${lin(no, "dest")}${no.filhos.map(f => lin(f)).join("")}</tbody></table><p class="nota">Descreve o atendimento realizado em 12 meses; não mede espera nem demanda não atendida. “Por mil cadastrados” usa o cadastro de ${RZ ? mesRot(RZ.cad_comp) : "data não informada"}: comparação exploratória.</p>`);
+  }
+  if (tem("acesso")) {
+    const tot = s => TIPOS.reduce((a, [x]) => a + (s[x] ? s[x][i] : 0), 0), pp = (s, x) => { const tt = tot(s); return tt ? Math.round((s[x] ? s[x][i] : 0) / tt * 100) + "%" : "–"; };
+    const lin = (f, cls) => tot(f.ser) ? `<tr class="${cls || ""}"><td class="l">${esc(f.nome)}</td><td>${fmt(tot(f.ser))}</td>${TIPOS.map(([x]) => `<td>${pp(f.ser, x)}</td>`).join("")}<td>${pp(f.ser, "atend_med")}</td><td>${pp(f.ser, "atend_enf")}</td></tr>` : "";
+    h.push(`<h2>Perfil dos atendimentos em ${mesRot(MESES[i])}: tipo de atendimento e quem atendeu</h2><table><thead><tr><th class="l">${no.rot}</th><th>Atendimentos</th><th>No dia</th><th>Agendada</th><th>Programada</th><th>Urgência</th><th>Escuta inicial</th><th>Por médico</th><th>Por enfermeiro</th></tr></thead><tbody>${lin(no, "dest")}${no.filhos.map(f => lin(f)).join("")}</tbody></table><p class="nota">O tipo depende de como o profissional classifica o registro no PEC; diferença entre unidades pode ser hábito de registro.</p>`);
+  }
+  if (tem("pessoas") && US) {
+    const lin = (f, cls) => { const x = medU(f.usu, f.cad); return x ? `<tr class="${cls || ""}"><td class="l">${esc(f.nome)}</td><td>${fmt(x.pess)}</td><td>${fmt(x.atend)}</td><td>${x.apc.toFixed(1).replace(".", ",")}</td><td>${p1(x.d.fp[0], x.pess)}</td><td>${p1(x.hfn, x.pess)} (${fmt(x.hfn)})</td><td>${p1(x.d.fa[4] + x.d.fa[5], x.atend)}</td></tr>` : ""; };
+    h.push(`<h2>Pessoas atendidas, ${mesRot(US.janela[0])} a ${mesRot(US.janela[1])}</h2><table><thead><tr><th class="l">${no.rot}</th><th>Pessoas</th><th>Atendimentos</th><th>Por pessoa</th><th>Uma só vez</th><th>Com 12 ou mais</th><th>Agenda ocupada por elas</th></tr></thead><tbody>${lin(no, "dest")}${no.filhos.map(f => lin(f)).join("")}</tbody></table><p class="nota">Só contagens, sem identificar ninguém. Quem foi atendido por duas equipes conta em cada uma, mas uma vez só na UBS, na GSAP e na Região.</p>`);
+  }
+  if (tem("razao") && RZ) {
+    const s12 = (s, fim) => { let a = 0; if (s.atend_med) for (let j = fim - 11; j <= fim; j++) a += s.atend_med[j] || 0; return a; };
+    const lin = (f, cls) => { if (!f.cad) return ""; const a = s12(f.ser, i) / f.cad * 1000, b = s12(f.ser, i - 12) / f.cad * 1000; return `<tr class="${cls || ""}"><td class="l">${esc(f.nome)}</td><td>${fmt(f.cad)}</td><td>${fmt(s12(f.ser, i))}</td><td>${r1(a)}</td><td>${r1(b)}</td><td>${b ? pctv(a / b - 1) : "–"}</td></tr>`; };
+    h.push(`<h2>Consultas de médico por mil cadastrados, ${janelaRot()}</h2><table><thead><tr><th class="l">${no.rot}</th><th>Cadastrados</th><th>Consultas (12 meses)</th><th>Por mil cadastrados</th><th>12 meses anteriores</th><th>Variação</th></tr></thead><tbody>${lin(no, "dest")}${no.filhos.map(f => lin(f)).join("")}</tbody></table><p class="nota">Denominador: população cadastrada em ${mesRot(RZ.cad_comp)} (última competência publicada). Denominador desatualizado: a comparação entre unidades é exploratória e não se compara com a população residente.</p>`);
+  }
+  if (tem("prof") && NOM.aberto) {
+    let c = "";
+    no.gsaps.forEach(g => (no.ubs ? [no.ubs] : g.ubs).forEach(u => u.equipes.forEach(e => {
+      const ps = e.prof.filter(p => p.ativo); if (!ps.length) return;
+      const cols = COLS_PROF.filter(([x]) => ps.some(p => p.serie[x] && p.serie[x].slice(0, i + 1).some(y => y)));
+      c += `<h3>${esc(no.ubs ? e.nome : u.nome + " › " + e.nome)}</h3><table><thead><tr><th class="l">Profissional</th><th class="l">Categoria</th>${cols.map(([, r]) => `<th>${esc(r)}</th>`).join("")}</tr></thead><tbody>${ps.map(p =>
+        `<tr><td class="l">${esc(p.nome)}${p.lotado ? "" : " (fora do RH)"}${p.mat ? " · mat. " + esc(p.mat) : ""}</td><td class="l">${esc([p.cat, p.chs ? p.chs + " h" : ""].filter(Boolean).join(" · "))}</td>${cols.map(([x]) => `<td>${p.serie[x] && p.serie[x].slice(0, i + 1).some(y => y) ? fmt(p.serie[x][i]) : "–"}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
+    })));
+    h.push(`<h2>Profissionais por equipe: produção em ${mesRot(MESES[i])}</h2>${c || "<p>Nenhum profissional em atividade nesta unidade.</p>"}<p class="nota">Lotação: RH da APS Norte de ${RH}. “Fora do RH” = produziu nos últimos 3 meses, mas não consta na lotação; quem não consta e não produziu (vínculo atual não confirmado) fica de fora. Zero não prova ausência de trabalho: pode ser registro ausente, férias ou afastamento.</p>`);
+  }
+  if (tem("incons") && NOM.aberto) {
+    const l = (NOM.incons || []).filter(x => !no.cam || `${x.gsap} › ${x.ubs}`.startsWith(no.cam));
+    h.push(`<h2>Inconsistências de código e de vínculo, ${mesRot(MESES[Math.max(i - 2, 0)])} a ${mesRot(MESES[i])}</h2>` + (l.length ? `<table><thead><tr><th class="l">Tipo</th><th class="l">UBS e equipe</th><th class="l">Profissional</th><th class="l">O que foi encontrado</th></tr></thead><tbody>${l.map(x => `<tr><td class="l">${esc(rotInc(x.tipo))}</td><td class="l">${esc(x.ubs)}${x.equipe ? " › " + esc(x.equipe) : ""}</td><td class="l">${x.nome ? esc(x.nome) + (x.cat ? " (" + esc(x.cat) + ")" : "") : "–"}</td><td class="l">${esc(x.det)}</td></tr>`).join("")}</tbody></table><p class="nota">Pontos para conferir e corrigir o cadastro (CNES, lotação no PEC, planilha de RH de ${RH}); não são juízo sobre o trabalho de ninguém.</p>` : "<p>Nenhuma inconsistência nesta unidade.</p>"));
+  }
+  if (tem("prov")) {
+    const l = [...sinais()].filter(([c]) => !no.cam || c === no.cam || c.startsWith(no.cam + " › ")).flatMap(([c, xs]) => xs.map(x => [c, x]));
+    h.push(`<h2>Quadro de providências</h2><table><thead><tr><th class="l">Unidade ou equipe</th><th class="l">Problema observado</th><th class="l">Confirmado?</th><th class="l">Responsável</th><th class="l">Providência pactuada</th><th class="l">Prazo</th><th class="l">Revisão</th></tr></thead><tbody>${l.map(([c, x]) => `<tr><td class="l">${esc(no.cam && c.startsWith(no.cam + " › ") ? c.slice(no.cam.length + 3) : c)}</td><td class="l">${esc(x.rot)}</td><td></td><td></td><td></td><td></td><td></td></tr>`).join("")}${"<tr><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>".repeat(3)}</tbody></table><p class="nota">Uma linha por alerta de ${mesRot(MESES[i])}; as três últimas ficam em branco para outros pontos. A planilha completa de acompanhamento sai pelo botão “Baixar planilha de providências”.</p>`);
+  }
+  return h.join("\n");
+}
+const REL_LUZ = { bg: "#fff", card: "#fff", txt: "#1d2430", muted: "#5b6575", line: "#d5dae2", accent: "#1f5fa8", s1: "#1f5fa8", s2: "#5a8fcf", s3: "#13915a", s4: "#b9770e", s5: "#d33a2c", s6: "#5b6575", s7: "#9bb7d8", s8: "#7fb89c", s9: "#1d2430", s0: "#c3cad4", faixa: "#e3ebf5" };
+function svgParaPng(svg) {   // o Word não lê SVG em HTML: cada gráfico vira imagem
+  return new Promise((ok, erro) => {
+    const vb = (svg.getAttribute("viewBox") || "").split(/\s+/).map(Number), w = vb[2] || +svg.getAttribute("width") || 300, hh = vb[3] || +svg.getAttribute("height") || 100;
+    const c = svg.cloneNode(true); c.querySelectorAll(".col, title").forEach(x => x.remove());
+    c.setAttribute("xmlns", "http://www.w3.org/2000/svg"); c.setAttribute("width", w); c.setAttribute("height", hh);
+    const st = document.createElementNS("http://www.w3.org/2000/svg", "style"); st.textContent = "text{font:10px 'Segoe UI',Arial,sans-serif;fill:#5b6575}"; c.insertBefore(st, c.firstChild);
+    const xml = new XMLSerializer().serializeToString(c).replace(/var\(--([a-z0-9]+)\)/g, (_, v) => REL_LUZ[v] || "#5b6575");
+    const img = new Image(), E = 2;
+    img.onload = () => { const cv = document.createElement("canvas"); cv.width = w * E; cv.height = hh * E; const x = cv.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, cv.width, cv.height); x.drawImage(img, 0, 0, cv.width, cv.height); ok({ w, h: hh, b64: cv.toDataURL("image/png").split(",")[1] }); };
+    img.onerror = () => erro(new Error("Não consegui desenhar um gráfico do relatório."));
+    img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(xml);
+  });
+}
+async function relatorioWord(html, titulo) {   // página web de arquivo único (MHTML), que o Word abre e salva como .docx
+  const doc = new DOMParser().parseFromString(`<div id="r">${html}</div>`, "text/html"), imgs = [];
+  for (const s of [...doc.querySelectorAll("svg")]) {
+    const p = await svgParaPng(s), larg = Math.min(p.w, 640), el = doc.createElement("img");
+    el.setAttribute("src", `img${imgs.length + 1}.png`); el.setAttribute("width", Math.round(larg)); el.setAttribute("height", Math.round(p.h * larg / p.w)); imgs.push(p.b64); s.replaceWith(el);
+  }
+  doc.querySelectorAll("table").forEach(x => { x.setAttribute("border", "1"); x.setAttribute("cellspacing", "0"); x.setAttribute("cellpadding", "3"); });
+  const pag = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>${esc(titulo)}</title><!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]--><style>@page{size:21cm 29.7cm;margin:2cm 1.8cm}body{font-family:Calibri,Arial,sans-serif;font-size:10.5pt;color:#1d2430}h1{font-size:16pt;margin:0}h2{font-size:12.5pt;margin:14pt 0 4pt;color:#1f5fa8}h3{font-size:10.5pt;margin:9pt 0 3pt}table{border-collapse:collapse;width:100%;font-size:9pt}th,td{border:1px solid #c3cad4;padding:2pt 4pt;text-align:right;vertical-align:top}th{background:#eef1f5}td.l,th.l{text-align:left}tr.dest td{font-weight:bold;background:#e3ebf5}.nota{color:#5b6575;font-size:8.5pt}</style></head><body>${doc.getElementById("r").innerHTML}</body></html>`;
+  const b64 = s => { const by = new TextEncoder().encode(s); let bin = ""; for (let j = 0; j < by.length; j += 0x8000) bin += String.fromCharCode.apply(null, by.subarray(j, j + 0x8000)); return btoa(bin); };
+  const q76 = s => s.replace(/(.{76})/g, "$1\r\n"), B = "----=_relatorio_aps_norte", base = "file:///C:/relatorio/";
+  let m = `MIME-Version: 1.0\r\nContent-Type: multipart/related; boundary="${B}"; type="text/html"\r\n\r\n--${B}\r\nContent-Type: text/html; charset="utf-8"\r\nContent-Transfer-Encoding: base64\r\nContent-Location: ${base}relatorio.htm\r\n\r\n${q76(b64(pag))}\r\n`;
+  imgs.forEach((x, j) => { m += `\r\n--${B}\r\nContent-Type: image/png\r\nContent-Transfer-Encoding: base64\r\nContent-Location: ${base}img${j + 1}.png\r\n\r\n${q76(x)}\r\n`; });
+  return new Blob([m + `\r\n--${B}--\r\n`], { type: "application/msword" });
+}
+function abrirRelatorio() {
+  if (!NOM.aberto) return;
+  $("#rel-escopo").innerHTML = `<option value="r">Região Norte (todas as GSAPs)</option>` + P.gsaps.map((g, gi) => `<optgroup label="${esc(g.nome)}"><option value="g:${gi}">${esc(g.nome)} (inteira)</option>${g.ubs.map((u, ui) => `<option value="u:${gi}:${ui}">${esc(u.nome)}</option>`).join("")}</optgroup>`).join("");
+  const ab = document.querySelector("details.caixa.u[open]") || document.querySelector("details.caixa.g[open]");   // sugere a unidade que está aberta na tela
+  if (ab) $("#rel-escopo").value = ab.dataset.t === "u" ? `u:${ab.dataset.gi}:${ab.dataset.ui}` : `g:${ab.dataset.gi}`;
+  if (!$("#rel-secoes").children.length) $("#rel-secoes").innerHTML = REL_SEC.map(([k, r, d]) => `<label class="chk"><input type="checkbox" name="rel-sec" value="${k}"${d ? " checked" : ""}> ${esc(r)}</label>`).join("");
+  $("#rel-aviso").textContent = ""; $("#dlg-rel").showModal();
+}
+async function gerarRelatorio() {
+  const secoes = [...document.querySelectorAll("input[name='rel-sec']:checked")].map(x => x.value), esc0 = $("#rel-escopo").value, fmtR = document.querySelector("input[name='rel-fmt']:checked").value;
+  if (!secoes.length) { $("#rel-aviso").textContent = "Marque pelo menos um item."; return; }
+  const html = relatorioHTML(esc0, secoes), nome = noRel(esc0).nome;
+  if (fmtR === "pdf") {
+    $("#rel-print").innerHTML = html; $("#dlg-rel").close(); document.body.classList.add("imprimindo-rel");
+    const fim = () => { document.body.classList.remove("imprimindo-rel"); $("#rel-print").innerHTML = ""; window.removeEventListener("afterprint", fim); };
+    window.addEventListener("afterprint", fim); const tit = document.title; document.title = `Relatório APS Norte - ${nome} - ${MESES[IU]}`;
+    setTimeout(() => { window.print(); document.title = tit; }, 50);
+  } else {
+    $("#rel-ok").disabled = true; $("#rel-aviso").textContent = "Montando o arquivo…";
+    try {
+      const blob = await relatorioWord(html, `Relatório APS Norte - ${nome}`), a = document.createElement("a");
+      a.href = URL.createObjectURL(blob); a.download = `relatorio_aps_norte_${nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Za-z0-9]+/g, "_").replace(/^_|_$/g, "").toLowerCase()}_${MESES[IU]}.doc`;
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000); $("#dlg-rel").close();
+    } catch (e) { $("#rel-aviso").textContent = e.message || "Não consegui gerar o arquivo."; }
+    $("#rel-ok").disabled = false;
+  }
+}
+
+function mudar() {
+  estado.ind = $("#sel-ind").value; estado.per = +$("#sel-per").value; ultimoDoGrupo[estado.grp] = estado.ind; atualizarMulti();
+  const abertos = [...document.querySelectorAll("details.caixa[open]")].map(d => d.id);
+  if (estado.ind.startsWith("odonto")) $("#mapa-tipo").value = "eSB"; else if ($("#mapa-tipo").value === "eSB") $("#mapa-tipo").value = "eSF";
+  if (estado.ind.startsWith("odonto")) $("#cmp-tipo").value = "eSB"; else if ($("#cmp-tipo").value === "eSB") $("#cmp-tipo").value = "eSF";
+  renderTopo(); renderArvore(); if (vistaAtual !== "h") VISTAS[vistaAtual]();
+  abertos.forEach(id => { const el = document.getElementById(id); if (el) { el.open = true; preencher(el); } });
+  gravarURL();
+}
+function iniciar() {
+  $("#sub").textContent = `Dados do InfoSaúde-DF · último mês completo: ${mesRot(MESES[IU])} · gerado em ${P.gerado.replace("T", " ")}` + (P.mes_parcial ? ` · ${mesRot(P.mes_parcial)} (parcial) não exibido` : "");
+  $("#ult").textContent = mesRot(MESES[IU]);
+  $("#grp-ind").innerHTML = GRUPOS.map(([g, r, d]) => `<button type="button" data-g="${g}" aria-pressed="false"${d ? ` title="${esc(d)}"` : ""}>${esc(r)}</button>`).join("");
+  $("#grp-ind").addEventListener("click", e => { const b = e.target.closest("button[data-g]"); if (b && b.dataset.g !== estado.grp) { montarInd(b.dataset.g); mudar(); } });
+  montarInd("prod", "atend");
+  $("#multi-itens").addEventListener("change", () => { estado.cmpInd = [...document.querySelectorAll("#multi-itens input:checked")].map(c => c.value).filter(x => x !== estado.ind).slice(0, 5); mudar(); });
+  $("#multi-limpar").addEventListener("click", () => { estado.cmpInd = []; $("#multi").open = false; mudar(); });
+  document.addEventListener("click", e => { const m = $("#multi"); if (m.open && !m.contains(e.target)) m.open = false; });
+  $("#sel-ind").addEventListener("change", mudar); $("#sel-per").addEventListener("change", mudar);
+  $("#chk-inativos").addEventListener("change", e => document.body.classList.toggle("ocultar-inativos", !e.target.checked));
+  document.body.classList.add("ocultar-inativos");
+  ["x", "r", "u", "p", "i"].forEach(v => $("#aba-" + v).addEventListener("click", () => mostrarVista(v)));
+  $("#sub-p").addEventListener("click", () => mostrarVista("p")); $("#p-ord").addEventListener("change", renderPerfil);
+  P.gsaps.forEach(g => $("#i-gsap").insertAdjacentHTML("beforeend", `<option>${esc(g.nome)}</option>`));
+  $("#i-tipo").addEventListener("change", e => { is.tipo = e.target.value; renderIncons(); }); $("#i-gsap").addEventListener("change", e => { is.gsap = e.target.value; renderIncons(); });
+  $("#i-q").addEventListener("input", e => { is.q = e.target.value; renderIncons(); });
+  $("#i-csv").addEventListener("click", () => baixarCSV(`inconsistencias_aps_norte_${MESES[IU]}.csv`, [["Tipo", "GSAP", "UBS", "Equipe", "Profissional", "Categoria", "O que foi encontrado"], ...filtInc().map(x => [rotInc(x.tipo), x.gsap, x.ubs, x.equipe, x.nome, x.cat, x.det])]));
+  document.querySelectorAll(".rh-rot").forEach(x => x.textContent = RH);
+  document.addEventListener("toggle", e => { if (e.target.matches && e.target.matches("#arvore details.caixa")) gravarURL(); }, true);
+  document.addEventListener("click", e => { const b = e.target.closest("button.abrir-cmp"); if (b) abrirCmp(b.dataset.g); });
+  $("#cmp-voltar").addEventListener("click", () => mostrarVista("h"));
+  P.gsaps.forEach(g => ["#cmp-gsap"].forEach(id => $(id).insertAdjacentHTML("beforeend", `<option>${esc(g.nome)}</option>`)));
+  $("#x-mes").innerHTML = MESES.map((m, j) => [j, m]).reverse().slice(0, 36).map(([j, m]) => `<option value="${j}"${j === IU ? " selected" : ""}>${mesRot(m)}</option>`).join("");
+  $("#x-mes").addEventListener("change", e => { xs.mes = +e.target.value; renderAcesso(); }); $("#x-ord").addEventListener("change", renderAcesso); $("#r-ind").addEventListener("change", renderRazao); $("#r-base").addEventListener("change", renderRazao); $("#r-ord").addEventListener("change", renderRazaoUbs); $("#u-ord").addEventListener("change", renderUsuarios);
+  ["#cmp-tipo", "#cmp-gsap", "#cmp-modo"].forEach(id => $(id).addEventListener("change", renderComparar));
+  $("#aba-m").addEventListener("click", () => mostrarVista("m")); $("#mapa-tipo").addEventListener("change", renderMapa); $("#mapa-ord").addEventListener("change", renderMapa);
+  $("#aba-h").addEventListener("click", () => mostrarVista("h")); $("#f-alerta").addEventListener("change", e => { estado.fil = e.target.value; resumoFiltro(); renderArvore(); gravarURL(); });
+  $("#btn-csv").addEventListener("click", csv);
+  $("#btn-rel").addEventListener("click", abrirRelatorio); $("#rel-cancelar").addEventListener("click", () => $("#dlg-rel").close());
+  $("#form-rel").addEventListener("submit", e => { e.preventDefault(); gerarRelatorio(); });
+  $("#rel-todas").addEventListener("click", () => document.querySelectorAll("input[name='rel-sec']").forEach(x => x.checked = true));
+  $("#rel-nenhuma").addEventListener("click", () => document.querySelectorAll("input[name='rel-sec']").forEach(x => x.checked = false));
+  $("#rodape").textContent = P.fonte + ". Painel de apoio à gestão da GAPAPS/DIRAPS Norte; dados de produção conforme registro no PEC.";
+  renderTopo(); renderFiltro(); renderArvore();
+  lerURL(); URL_OK = true;
+}
+/* Dica com os números ao passar o mouse (ou tocar): aparece na hora, no lugar do balão lento do navegador.
+   Vale para qualquer elemento com <title> (SVG) ou atributo title; o texto passa para data-dica na primeira vez. */
+(function () {
+  const d = document.createElement("div"); d.id = "dica"; d.setAttribute("role", "tooltip"); document.body.appendChild(d);
+  const SVG = "http://www.w3.org/2000/svg";
+  function achar(el) {
+    for (let n = el; n && n.nodeType === 1 && n !== document.body; n = n.parentNode) {
+      if (n.dataset && n.dataset.dica) return n.dataset.dica;
+      if (n.namespaceURI === SVG) {
+        const t = [...n.children].find(c => c.tagName === "title");
+        if (t && t.textContent.trim()) { const s = t.textContent; t.remove(); n.dataset.dica = s; if (!n.getAttribute("aria-label")) n.setAttribute("aria-label", s); return s; }
+      } else if (n.title) { const s = n.title; n.removeAttribute("title"); n.dataset.dica = s; if (!n.textContent.trim() && !n.getAttribute("aria-label")) n.setAttribute("aria-label", s); return s; }
+    }
+    return "";
+  }
+  function mostrar(ev) {
+    const s = achar(ev.target);
+    if (!s) { d.style.display = "none"; return; }
+    if (d.dataset.t !== s) { const i = s.indexOf("\n"); d.innerHTML = i < 0 ? esc(s) : `<b>${esc(s.slice(0, i))}</b>${esc(s.slice(i + 1))}`; d.dataset.t = s; }
+    d.style.display = "block";
+    const w = d.offsetWidth, h = d.offsetHeight, vw = document.documentElement.clientWidth, vh = document.documentElement.clientHeight;
+    let x = ev.clientX + 14, y = ev.clientY + 18;
+    if (x + w > vw - 6) x = Math.max(6, ev.clientX - w - 12);
+    if (y + h > vh - 6) y = Math.max(6, ev.clientY - h - 12);
+    d.style.left = x + "px"; d.style.top = y + "px";
+  }
+  const sumir = () => { d.style.display = "none"; };
+  document.addEventListener("pointerover", mostrar); document.addEventListener("pointermove", mostrar);
+  document.addEventListener("scroll", sumir, true); document.addEventListener("pointerleave", sumir); window.addEventListener("blur", sumir);
+})();
+
+/* ---------- área dos gestores ----------
+   site/nominal.js traz, cifrado (AES-GCM), tudo o que identifica servidor. A chave sai da senha por PBKDF2-SHA256.
+   Nada disso está em texto aberto na página. "Lembrar" guarda a chave derivada (não a senha) só neste navegador. */
+const CH_LS = "aps_norte_chave";
+const lsLer = () => { try { return localStorage.getItem(CH_LS); } catch (e) { return null; } };
+const lsGravar = v => { try { if (v == null) localStorage.removeItem(CH_LS); else localStorage.setItem(CH_LS, v); } catch (e) {} };
+const deB64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const paraB64 = b => btoa(String.fromCharCode.apply(null, b));
+function carregarNominal() {
+  if (window.NOMINAL) return Promise.resolve(window.NOMINAL);
+  return new Promise((ok, erro) => {
+    const s = document.createElement("script"); s.src = "nominal.js?v=" + encodeURIComponent(P.gerado);
+    s.onload = () => (window.NOMINAL ? ok(window.NOMINAL) : erro(new Error("arquivo"))); s.onerror = () => erro(new Error("arquivo"));
+    document.head.appendChild(s);
+  });
+}
+async function chaveDaSenha(senha, N) {
+  const km = await crypto.subtle.importKey("raw", new TextEncoder().encode(senha.normalize("NFC")), "PBKDF2", false, ["deriveBits"]);
+  return new Uint8Array(await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: deB64(N.sal), iterations: N.it }, km, 256));
+}
+async function decifrar(chave, N) {
+  const k = await crypto.subtle.importKey("raw", chave, "AES-GCM", false, ["decrypt"]);
+  const claro = await crypto.subtle.decrypt({ name: "AES-GCM", iv: deB64(N.iv), additionalData: new TextEncoder().encode("aps-norte-v1") }, k, deB64(N.ct));
+  const txt = await new Response(new Blob([claro]).stream().pipeThrough(new DecompressionStream("gzip"))).text();
+  return JSON.parse(txt);
+}
+function aplicarNominal(D) {
+  P.gsaps.forEach(g => g.ubs.forEach(u => u.equipes.forEach(e => { e.prof = D.prof[`${u.cnes}|${e.ine || "SEM"}`] || []; })));
+  const txt = new Map(D.alertas.map(a => [a.caminho + "|" + a.tipo, a.texto]));
+  P.alertas.forEach(a => { const t = txt.get(a.caminho + "|" + a.tipo); if (t) a.texto = t; });
+  P.com_matricula = !!D.com_matricula; NOM.aberto = true; NOM.incons = D.incons || [];
+  document.body.classList.add("aberto");
+  $("#btn-entrar").textContent = "Sair"; $("#btn-entrar").title = "Fechar a área dos gestores neste navegador";
+  $("#busca").placeholder = P.com_matricula ? "Buscar nome, matrícula, equipe ou UBS" : "Buscar nome, equipe ou UBS";
+  montarPessoas(); SIN = null; renderFiltro(); mudar();   // os alertas passam a trazer os nomes: refaz as etiquetas
+  if (vistaPendente) { const v = vistaPendente; vistaPendente = ""; mostrarVista(v); }
+}
+/* devolve "" se entrou, ou a mensagem de erro */
+async function entrar(senha, lembrar) {
+  if (!window.crypto || !crypto.subtle || typeof DecompressionStream === "undefined") return "Este navegador não tem os recursos necessários para abrir a área dos gestores. Atualize o navegador ou use outro.";
+  let N; try { N = await carregarNominal(); } catch (e) { return "Não foi possível carregar a parte restrita. Confira a conexão e tente de novo."; }
+  let chave; try { chave = await chaveDaSenha(senha, N); } catch (e) { return "Não foi possível verificar a senha neste navegador."; }
+  let D; try { D = await decifrar(chave, N); } catch (e) { return "Senha incorreta."; }
+  if (lembrar) lsGravar(paraB64(chave));
+  aplicarNominal(D); return "";
+}
+async function entrarLembrado() {
+  const g = lsLer(); if (!g || !P.restrito) return;
+  try { aplicarNominal(await decifrar(deB64(g), await carregarNominal())); } catch (e) { lsGravar(null); }   // senha trocada: esquece a chave antiga
+}
+function abrirSenha() {
+  if (!P.restrito) return;
+  $("#senha-erro").hidden = true; $("#senha").value = ""; $("#senha-lembrar").checked = false;
+  if (!$("#dlg-senha").open) $("#dlg-senha").showModal(); $("#senha").focus();
+}
+if (P.restrito) document.body.classList.add("restrito");
+$("#btn-entrar").addEventListener("click", () => { if (NOM.aberto) { lsGravar(null); location.reload(); } else abrirSenha(); });
+$("#senha-cancelar").addEventListener("click", () => $("#dlg-senha").close());
+$("#dlg-senha").addEventListener("click", e => { if (e.target === $("#dlg-senha")) $("#dlg-senha").close(); });
+$("#form-senha").addEventListener("submit", async ev => {
+  ev.preventDefault();
+  const ok = $("#senha-ok"), er = $("#senha-erro"); ok.disabled = true; ok.textContent = "Conferindo…"; er.hidden = true;
+  const msg = await entrar($("#senha").value.trim(), $("#senha-lembrar").checked);
+  ok.disabled = false; ok.textContent = "Entrar"; $("#senha").value = "";
+  if (msg) { er.textContent = msg; er.hidden = false; $("#senha").focus(); } else $("#dlg-senha").close();
+});
+document.addEventListener("click", e => { if (e.target.closest("button.lk-entrar")) abrirSenha(); });
+
+iniciar();
+entrarLembrado();
+</script>
+</body>
+</html>

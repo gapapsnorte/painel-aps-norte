@@ -1,0 +1,19 @@
+dados/
+site/painel.js
+testes/*.png
+testes/_pagina.js
+__pycache__/
+*.pyc
+.DS_Store
+dados_v0/
+coleta/referencia_privada.json
+coleta/pepper.local
+publicar.py
+# área dos gestores e lotação: nada disto vai para o repositório público
+site/nominal.js
+coleta/senha.local
+coleta/referencia.json
+coleta/chave_rh*
+testes/_dicas/
+_backup_*/
+_analise_*/

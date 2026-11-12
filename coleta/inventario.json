@@ -1,0 +1,2693 @@
+[
+ {
+  "titulo": "Atendimentos Individuais na APS",
+  "url": "https://info.saude.df.gov.br/sala-de-situacao/painel-infosaude-atencao-primaria-atendimento-individual-na-aps/",
+  "model_id": 10723271,
+  "cluster": "wabi-brazil-south-api",
+  "paginas": [
+   [
+    "Dados abertos",
+    13
+   ],
+   [
+    "infotec.",
+    1
+   ],
+   [
+    "Página 1",
+    76
+   ]
+  ],
+  "tabelas": {
+   "Lotação": [
+    "Parâmetro",
+    "Parâmetro Campos",
+    "Parâmetro Pedido"
+   ],
+   "Tipo": [
+    "tipo_atd",
+    "tipo_atd Campos",
+    "tipo_atd Pedido"
+   ],
+   "_Medidas": [
+    "Coluna 1",
+    "Total atendimentos",
+    "Atendimentos ano anterior",
+    "YoY atd",
+    "Variação atd",
+    "Variação de atendimentos",
+    "Cor Titulo atendimentos",
+    "Titulo Lotação",
+    "Titulo atd",
+    "UBS",
+    "Domicilio",
+    "Unidade prisional",
+    "Rua",
+    "Abrigo",
+    "Unidade móvel",
+    "Escola / Creche",
+    "Socioeducativa",
+    "Outros",
+    "% UBS",
+    "% Domicílio",
+    "% Prisional",
+    "% Rua",
+    "% abrigo",
+    "% Unidade movel",
+    "% Escolas",
+    "% Socioeducativa",
+    "% Outros",
+    "Rank",
+    "mais atendimentos",
+    "Tendas",
+    "Atend + tendas",
+    "usuarios_atendidos",
+    "ID tab cid/ciap",
+    "novo atendimentos",
+    "CID",
+    "AnoSelecionado",
+    "MesSelecionado",
+    "@RegiaoSaudeSelecionado",
+    "estabSelecionado",
+    "@CidSelecionado",
+    "@CiapSelecionado",
+    "@EquipeSelecionado",
+    "!Exportar Dados (API)",
+    "@TipoEquipeSelecionado",
+    "!Filtro INE",
+    "@IneSelecionado",
+    "!Filtro CID",
+    "!Filtro CIAP",
+    "!Filtro EQUIPE"
+   ],
+   "dCalendario": [
+    "dt_atend",
+    "Ano",
+    "Mês",
+    "nome_mes",
+    "Dia"
+   ],
+   "Ano": [
+    "Ano"
+   ],
+   "dt_att": [
+    "Ultima Atualização",
+    "Ultima Atualização - Copiar"
+   ],
+   "fTendas": [
+    "i_id_fato",
+    "i_mes_compt",
+    "i_ano_compt",
+    "i_faixa_etaria",
+    "i_desc_sexo",
+    "i_nu_cns_prof",
+    "i_estab_cnes",
+    "i_sigla_estab_cnes",
+    "i_turno",
+    "i_data_atendimento",
+    "nome_tenda",
+    "i_ine",
+    "Chave",
+    "chave_composta",
+    "i_tipo_atendimento",
+    "i_tipo_demanda",
+    "i_local_atendimento",
+    "i_cod_ciap",
+    "i_cod_cid"
+   ],
+   "dProfissionais": [
+    "i_no_profissional",
+    "i_nu_cns_prof",
+    "i_desc_cbo",
+    "i_cat_prof"
+   ],
+   "dEstabelecimentos": [
+    "i_ine",
+    "i_tipo_equipe",
+    "i_sigla_estab_cnes",
+    "i_estab_cnes",
+    "i_ra_ses_desc",
+    "i_desc_regiao_saude",
+    "Chave",
+    "nivel_atencao",
+    "chave_composta",
+    "i_ra_ses_desc_2",
+    "i_tipo_equipe_2",
+    "ra",
+    "nivel"
+   ],
+   "dFaixa_etaria": [
+    "i_faixa_etaria"
+   ],
+   "dSexo": [
+    "i_desc_sexo"
+   ],
+   "dTurno": [
+    "i_turno"
+   ],
+   "dDemandas": [
+    "i_tipo_atendimento",
+    "i_tipo_demanda"
+   ],
+   "dTendas": [
+    "i_ine",
+    "i_tipo_equipe",
+    "i_sigla_estab_cnes",
+    "i_estab_cnes",
+    "i_ra_ses_desc",
+    "i_desc_regiao_saude",
+    "Chave",
+    "nivel_atencao",
+    "chave_composta"
+   ],
+   "dLocal_atend": [
+    "i_local_atendimento"
+   ],
+   "fAtd_indiv": [
+    "atendimento_id",
+    "i_ano_compt",
+    "ciap",
+    "cid",
+    "i_desc_sexo",
+    "i_estab_cnes",
+    "i_faixa_etaria",
+    "i_ine",
+    "i_local_atendimento",
+    "i_mes_compt",
+    "i_nu_cns_prof",
+    "i_qtd_atendimento_prof",
+    "i_sigla_estab_cnes",
+    "i_tipo_atendimento",
+    "i_turno",
+    "chave_composta",
+    "Data",
+    "i_data_extracao",
+    "soma2",
+    "soma 3"
+   ],
+   "fAtendimentos": [
+    "atendimento_id",
+    "i_qtd_atendimento_prof"
+   ],
+   "dCid": [
+    "cid",
+    "desc",
+    "concatenate",
+    "cid_desc"
+   ],
+   "dCiap": [
+    "ciap",
+    "desc",
+    "cod_desc",
+    "concatenate"
+   ],
+   "fUsuarios_unicos": [
+    "linha_id",
+    "cns_cpf",
+    "i_nu_cns_prof",
+    "i_ine",
+    "i_estab_cnes",
+    "i_sigla_estab_cnes",
+    "i_ano_compt",
+    "i_mes_compt",
+    "cid",
+    "ciap",
+    "Data",
+    "chave_composta",
+    "i_desc_sexo",
+    "i_data_nascimento",
+    "Faixa Etária"
+   ],
+   "Consulta_Cid": [
+    "i_cod_cid",
+    "i_desc_cid"
+   ],
+   "Consulta_Ciap": [
+    "i_cod_ciap",
+    "i_desc_ciap"
+   ],
+   "Consulta_niveis_atencao": [
+    "i_estab_cnes",
+    "i_desc_estab_cnes",
+    "i_nivel_atencao_saude"
+   ],
+   "dAno": [
+    "i_ano_compt",
+    "Índice"
+   ],
+   "dMes": [
+    "i_mes_compt",
+    "Índice"
+   ]
+  },
+  "recortes": {
+   "regiao": [
+    "_Medidas.@RegiaoSaudeSelecionado",
+    "dEstabelecimentos.i_desc_regiao_saude",
+    "dTendas.i_desc_regiao_saude"
+   ],
+   "estab": [
+    "_Medidas.Unidade prisional",
+    "_Medidas.Unidade móvel",
+    "_Medidas.% Unidade movel",
+    "_Medidas.estabSelecionado",
+    "fTendas.i_estab_cnes",
+    "fTendas.i_sigla_estab_cnes",
+    "dEstabelecimentos.i_sigla_estab_cnes",
+    "dEstabelecimentos.i_estab_cnes",
+    "dTendas.i_sigla_estab_cnes",
+    "dTendas.i_estab_cnes",
+    "fAtd_indiv.i_estab_cnes",
+    "fAtd_indiv.i_sigla_estab_cnes",
+    "fUsuarios_unicos.i_estab_cnes",
+    "fUsuarios_unicos.i_sigla_estab_cnes",
+    "Consulta_niveis_atencao.i_estab_cnes",
+    "Consulta_niveis_atencao.i_desc_estab_cnes"
+   ],
+   "equipe": [
+    "_Medidas.@EquipeSelecionado",
+    "_Medidas.@TipoEquipeSelecionado",
+    "_Medidas.!Filtro EQUIPE",
+    "fTendas.i_ine",
+    "dEstabelecimentos.i_ine",
+    "dEstabelecimentos.i_tipo_equipe",
+    "dEstabelecimentos.i_tipo_equipe_2",
+    "dTendas.i_ine",
+    "dTendas.i_tipo_equipe",
+    "fAtd_indiv.i_ine",
+    "fUsuarios_unicos.i_ine"
+   ],
+   "ra": [
+    "dEstabelecimentos.i_ra_ses_desc",
+    "dEstabelecimentos.i_ra_ses_desc_2",
+    "dEstabelecimentos.ra",
+    "dTendas.i_ra_ses_desc"
+   ],
+   "tempo": [
+    "dCalendario.dt_atend",
+    "dCalendario.Ano",
+    "dCalendario.Mês",
+    "Ano.Ano",
+    "fTendas.i_mes_compt",
+    "fTendas.i_ano_compt",
+    "fTendas.i_data_atendimento",
+    "fAtd_indiv.i_ano_compt",
+    "fAtd_indiv.i_mes_compt",
+    "fAtd_indiv.Data",
+    "fAtd_indiv.i_data_extracao",
+    "fUsuarios_unicos.i_ano_compt",
+    "fUsuarios_unicos.i_mes_compt",
+    "fUsuarios_unicos.Data",
+    "fUsuarios_unicos.i_data_nascimento",
+    "dAno.i_ano_compt",
+    "dMes.i_mes_compt"
+   ]
+  },
+  "ultimas_competencias": {
+   "fTendas": [
+    [
+     "2024",
+     "05",
+     155599
+    ],
+    [
+     "2024",
+     "06",
+     33083
+    ],
+    [
+     "2024",
+     "10",
+     9
+    ]
+   ],
+   "fAtd_indiv": [
+    [
+     "2026",
+     "09",
+     382856
+    ],
+    [
+     "2026",
+     "10",
+     357421
+    ],
+    [
+     "2026",
+     "11",
+     77460
+    ]
+   ],
+   "fUsuarios_unicos": []
+  },
+  "valores_regiao": "erro: 'DS'",
+  "segundos": 6.1
+ },
+ {
+  "titulo": "Atendimentos Individuais na APS – Condição Avaliada",
+  "url": "https://info.saude.df.gov.br/sala-de-situacao/painel-infosaude-atencao-primaria-atendimentos-individuais-na-aps-condicao-avaliada/",
+  "model_id": 10734375,
+  "cluster": "wabi-brazil-south-api",
+  "paginas": [
+   [
+    "Condição Avaliada",
+    27
+   ]
+  ],
+  "tabelas": {
+   "cond_aval": [
+    "i_ano_mes_compt",
+    "i_sigla_estab_cnes",
+    "i_desc_regiao_saude",
+    "i_ine",
+    "i_tipo_equipe",
+    "i_desc_equipe",
+    "i_data_extracao",
+    "i_mes_compt",
+    "i_ano_compt",
+    "Hipertensão arterial",
+    "Pré-natal",
+    "Puerpério (até 42 dias)",
+    "Saúde sexual e reprodutiva",
+    "Usuário de álcool",
+    "Usuário de outras drogas",
+    "Saúde mental",
+    "Rast. câncer de mama",
+    "Rast. câncer do colo do útero",
+    "Rast. risco cardiovascular",
+    "i_qtd_total",
+    "Asma",
+    "Desnutrição",
+    "Diabetes",
+    "Obesidade",
+    "Puericultura",
+    "Tabagismo",
+    "Reabilitação",
+    "D.Transmissíveis - Dengue",
+    "D.Transmissíveis - Hanseníase",
+    "D.Transmissíveis - Tuberculose",
+    "desc_mes",
+    "i_estab_cnes",
+    "D.Transmissíveis - DST",
+    "D.Transmissíveis - Chikungunya",
+    "D.Transmissíveis - Síndrome Gripal",
+    "i_sem_epidemiologica",
+    "DPOC",
+    "i_ano_sem_epidemiologica",
+    "i_desc_sexo",
+    "i_faixa_etaria",
+    "qtd_atendimento"
+   ]
+  },
+  "recortes": {
+   "regiao": [
+    "cond_aval.i_desc_regiao_saude"
+   ],
+   "estab": [
+    "cond_aval.i_sigla_estab_cnes",
+    "cond_aval.i_estab_cnes"
+   ],
+   "equipe": [
+    "cond_aval.i_ine",
+    "cond_aval.i_tipo_equipe",
+    "cond_aval.i_desc_equipe"
+   ],
+   "ra": [],
+   "tempo": [
+    "cond_aval.i_ano_mes_compt",
+    "cond_aval.i_data_extracao",
+    "cond_aval.i_mes_compt",
+    "cond_aval.i_ano_compt"
+   ]
+  },
+  "ultimas_competencias": {},
+  "valores_regiao": [],
+  "segundos": 6.1
+ },
+ {
+  "titulo": "Atividade Coletiva na APS",
+  "url": "https://info.saude.df.gov.br/painel-infosaude-atencao-primaria-atividade-coletiva/",
+  "model_id": 10734212,
+  "cluster": "wabi-brazil-south-api",
+  "paginas": [
+   [
+    "Atividade Coletiva",
+    66
+   ]
+  ],
+  "tabelas": {
+   "fDados": [
+    "i_id_fato",
+    "i_nu_cns",
+    "i_no_profissional",
+    "i_categoria_profissional",
+    "i_desc_cbo",
+    "i_ine",
+    "i_desc_equipe",
+    "i_tipo_equipe",
+    "i_estab_cnes",
+    "i_sigla_estab_cnes",
+    "i_ra_ses_desc",
+    "i_desc_regiao_saude",
+    "i_qtd_participantes",
+    "i_tipo_atividade",
+    "i_procedimento",
+    "data_compt",
+    "i_pse_educacao",
+    "i_pse_saude",
+    "i_turno",
+    "i_mes_compt",
+    "i_ano_compt",
+    "i_qtd_participantes_registrados",
+    "ra",
+    "i_data_extracao"
+   ],
+   "fTema_Saude": [
+    "i_id_fato",
+    "i_cod_tema_saude"
+   ],
+   "fTema_Reuniao": [
+    "i_id_fato",
+    "i_tema_reuniao"
+   ],
+   "fPublico_Alvo": [
+    "i_id_fato",
+    "i_publico_alvo"
+   ],
+   "dCalendario": [
+    "Data",
+    "Ano",
+    "Nome do Mês",
+    "Nome do Dia",
+    "Dia",
+    "Mês",
+    "Quadrimestre"
+   ],
+   "fPratica_saude": [
+    "i_id_fato",
+    "i_pratica_saude"
+   ],
+   "Medidas": [
+    "Práticas em Saúde",
+    "Tema de Saúde",
+    "Público Alvo",
+    "Tema de Reunião",
+    "Total de Participações",
+    "Apenas Educação",
+    "Saúde",
+    "Total de Atividade Coletiva",
+    "Outros Procedimentos",
+    "Total de Participantes Identificados",
+    "Não faz parte do programa PSE",
+    "Faz parte do programa PSE",
+    "Apenas Saúde",
+    "Saúde e Educação",
+    "Texto Titulo card PSE",
+    "Cor Titulo card Atividades",
+    "% Educação",
+    "YoY Atividade Coeltiva",
+    "Atividade Ano Anterior",
+    "YoY",
+    "Participações Ano Anterior",
+    "YoY Participações",
+    "Card Valor",
+    "Texto Card participações",
+    "UBS + participações",
+    "Texto Card Atividades",
+    "UBS + Atividades",
+    "Cor Titulo card Participações",
+    "Texto card Turno",
+    "Percentual Manha",
+    "% Manha",
+    "Percentual Tarde",
+    "Percentual Noite",
+    "% Tarde",
+    "% Noite",
+    "Período Selecionado",
+    "Cor Periodo",
+    "Texto data/hora",
+    "Destacar Melhor Mes Atividade",
+    "Total Manha",
+    "Total tarde",
+    "Total Noite",
+    "Eixo Y (máximo) dinamico",
+    "educacao",
+    "saude",
+    "acoes_pse",
+    "%PSE",
+    "& pse",
+    "id",
+    "Exportar Dados (API)",
+    "MesSelecionado",
+    "AnoSelecionado",
+    "RegiaoSaudeSelecionado",
+    "RASelecionado",
+    "SiglaCnesSelecionado",
+    "IneSelecionado",
+    "Indicador Filtro INE",
+    "Total de Atividade Coletiva2"
+   ],
+   "Atualizacao": [
+    "Ultima Atualização"
+   ],
+   "dINE": [
+    "i_ine"
+   ],
+   "dRA": [
+    "i_ra_ses_desc"
+   ],
+   "dRegiaoSaude": [
+    "i_desc_regiao_saude"
+   ],
+   "dUBS": [
+    "i_sigla_estab_cnes"
+   ]
+  },
+  "recortes": {
+   "regiao": [
+    "fDados.i_desc_regiao_saude",
+    "Medidas.RegiaoSaudeSelecionado",
+    "dRegiaoSaude.i_desc_regiao_saude"
+   ],
+   "estab": [
+    "fDados.i_estab_cnes",
+    "fDados.i_sigla_estab_cnes",
+    "Medidas.SiglaCnesSelecionado",
+    "dUBS.i_sigla_estab_cnes"
+   ],
+   "equipe": [
+    "fDados.i_ine",
+    "fDados.i_desc_equipe",
+    "fDados.i_tipo_equipe",
+    "dINE.i_ine"
+   ],
+   "ra": [
+    "fDados.i_ra_ses_desc",
+    "fDados.ra",
+    "dRA.i_ra_ses_desc"
+   ],
+   "tempo": [
+    "fDados.data_compt",
+    "fDados.i_mes_compt",
+    "fDados.i_ano_compt",
+    "fDados.i_data_extracao",
+    "dCalendario.Data",
+    "dCalendario.Ano",
+    "dCalendario.Mês",
+    "Medidas.Texto data/hora"
+   ]
+  },
+  "ultimas_competencias": {
+   "fDados": [
+    [
+     "2026",
+     "09",
+     5438
+    ],
+    [
+     "2026",
+     "10",
+     4702
+    ],
+    [
+     "2026",
+     "11",
+     829
+    ]
+   ]
+  },
+  "valores_regiao": [],
+  "segundos": 4.9
+ },
+ {
+  "titulo": "Atendimentos Odontológicos na APS",
+  "url": "https://info.saude.df.gov.br/sala-de-situacao/painel-infosaude-atencao-primaria-atendimentos-odontologicos-na-aps/",
+  "model_id": 10735162,
+  "cluster": "wabi-brazil-south-api",
+  "paginas": [
+   [
+    "Tipo de Consulta",
+    15
+   ],
+   [
+    "Info",
+    0
+   ]
+  ],
+  "tabelas": {
+   "odont_tipo_consulta": [
+    "i_ano_mes_compt",
+    "i_estab_cnes",
+    "i_sigla_estab_cnes",
+    "i_desc_regiao_saude",
+    "i_ine",
+    "i_tipo_equipe",
+    "i_desc_equipe",
+    "i_data_extracao",
+    "i_mes_compt",
+    "i_ano_compt",
+    "Primeira consulta odontológica",
+    "Consulta de retorno",
+    "Consulta de manutenção",
+    "i_qtd_total",
+    "Não informado",
+    "desc_mes"
+   ],
+   "odont_tipo_demanda": [
+    "i_ano_mes_compt",
+    "i_estab_cnes",
+    "i_sigla_estab_cnes",
+    "i_desc_regiao_saude",
+    "i_ine",
+    "i_tipo_equipe",
+    "i_desc_equipe",
+    "i_data_extracao",
+    "i_mes_compt",
+    "i_ano_compt",
+    "i_qtd_consulta",
+    "i_qtd_consulta_esp",
+    "i_qtd_total",
+    "Cons. agen. prog/cuid. cont.",
+    "Consulta agendada",
+    "Dem. esp. esc. inicial/orient.",
+    "Dem. esp. consulta no dia",
+    "Dem. esp. atendimento urgência",
+    "Não informado"
+   ],
+   "distintos_estab_proc": [
+    "i_estab_cnes"
+   ],
+   "odont_proc": [
+    "i_ano_mes_compt",
+    "i_mes_compt",
+    "i_ano_compt",
+    "i_estab_cnes",
+    "i_sigla_estab_cnes",
+    "i_desc_regiao_saude",
+    "i_ine",
+    "i_tipo_equipe",
+    "i_desc_equipe",
+    "ATF (indiv. por sessão)",
+    "Aces. polpa/medica.(por dente)",
+    "Adaptação de prótese dentária",
+    "Apl. de selante (por dente)",
+    "Aplic. de carios.(por dente)",
+    "Capeamento pulpar",
+    "Cimentação de prótese dentária",
+    "Curativo c/ ou s/ prep. Biom.",
+    "Evi. de placa bacteriana",
+    "Exodontia de dente decíduo",
+    "Exodontia de dente permanente",
+    "Ins. de prótese dentaria",
+    "Mold. dento-gengival p/  prot.",
+    "Orientação de higiene bucal",
+    "Pulpotomia dentária",
+    "RAP subgengival(por sextante)",
+    "RAP supra. (por sextante)",
+    "Rad. periapical/interproximal",
+    "Remoção de placa bacteriana",
+    "Rest. dente permanente post.",
+    "Restauração de dente decíduo",
+    "Ret. de pontos de cirurgias",
+    "Sel. provisório de cavidade",
+    "Tratamento de alveolite",
+    "Ulotomia / ulectomia",
+    "i_qtd_total",
+    "i_data_extracao",
+    "Drenagem de abscesso",
+    "Rest. dente permanente ant."
+   ]
+  },
+  "recortes": {
+   "regiao": [
+    "odont_tipo_consulta.i_desc_regiao_saude",
+    "odont_tipo_demanda.i_desc_regiao_saude",
+    "odont_proc.i_desc_regiao_saude"
+   ],
+   "estab": [
+    "odont_tipo_consulta.i_estab_cnes",
+    "odont_tipo_consulta.i_sigla_estab_cnes",
+    "odont_tipo_demanda.i_estab_cnes",
+    "odont_tipo_demanda.i_sigla_estab_cnes",
+    "distintos_estab_proc.i_estab_cnes",
+    "odont_proc.i_estab_cnes",
+    "odont_proc.i_sigla_estab_cnes"
+   ],
+   "equipe": [
+    "odont_tipo_consulta.i_ine",
+    "odont_tipo_consulta.i_tipo_equipe",
+    "odont_tipo_consulta.i_desc_equipe",
+    "odont_tipo_demanda.i_ine",
+    "odont_tipo_demanda.i_tipo_equipe",
+    "odont_tipo_demanda.i_desc_equipe",
+    "odont_proc.i_ine",
+    "odont_proc.i_tipo_equipe",
+    "odont_proc.i_desc_equipe"
+   ],
+   "ra": [],
+   "tempo": [
+    "odont_tipo_consulta.i_ano_mes_compt",
+    "odont_tipo_consulta.i_data_extracao",
+    "odont_tipo_consulta.i_mes_compt",
+    "odont_tipo_consulta.i_ano_compt",
+    "odont_tipo_demanda.i_ano_mes_compt",
+    "odont_tipo_demanda.i_data_extracao",
+    "odont_tipo_demanda.i_mes_compt",
+    "odont_tipo_demanda.i_ano_compt",
+    "odont_proc.i_ano_mes_compt",
+    "odont_proc.i_mes_compt",
+    "odont_proc.i_ano_compt",
+    "odont_proc.i_data_extracao"
+   ]
+  },
+  "ultimas_competencias": {},
+  "valores_regiao": [],
+  "segundos": 5.2
+ },
+ {
+  "titulo": "Atendimentos Odontológicos na APS – Agendados e Demanda Espontânea",
+  "url": "https://info.saude.df.gov.br/sala-de-situacao/painel-infosaude-atencao-primaria-atendimentos-odontologicos-na-aps-agendados-e-demanda-espontanea/",
+  "model_id": 10734234,
+  "cluster": "wabi-brazil-south-api",
+  "paginas": [
+   [
+    "Tipo de Demanda",
+    15
+   ]
+  ],
+  "tabelas": {
+   "odont_tipo_demanda": [
+    "i_ano_mes_compt",
+    "i_estab_cnes",
+    "i_sigla_estab_cnes",
+    "i_desc_regiao_saude",
+    "i_ine",
+    "i_tipo_equipe",
+    "i_desc_equipe",
+    "i_data_extracao",
+    "i_mes_compt",
+    "i_ano_compt",
+    "i_qtd_consulta",
+    "i_qtd_consulta_esp",
+    "i_qtd_total",
+    "Cons. agen. prog/cuid. cont.",
+    "Consulta agendada",
+    "Dem. esp. esc. inicial/orient.",
+    "Dem. esp. consulta no dia",
+    "Dem. esp. atendimento urgência",
+    "Não informado",
+    "desc_mes"
+   ]
+  },
+  "recortes": {
+   "regiao": [
+    "odont_tipo_demanda.i_desc_regiao_saude"
+   ],
+   "estab": [
+    "odont_tipo_demanda.i_estab_cnes",
+    "odont_tipo_demanda.i_sigla_estab_cnes"
+   ],
+   "equipe": [
+    "odont_tipo_demanda.i_ine",
+    "odont_tipo_demanda.i_tipo_equipe",
+    "odont_tipo_demanda.i_desc_equipe"
+   ],
+   "ra": [],
+   "tempo": [
+    "odont_tipo_demanda.i_ano_mes_compt",
+    "odont_tipo_demanda.i_data_extracao",
+    "odont_tipo_demanda.i_mes_compt",
+    "odont_tipo_demanda.i_ano_compt"
+   ]
+  },
+  "ultimas_competencias": {},
+  "valores_regiao": [],
+  "segundos": 5.5
+ },
+ {
+  "titulo": "Cadastros Individuais na APS",
+  "url": "https://info.saude.df.gov.br/sala-de-situacao/painel-infosaude-atencao-primaria-cadastros-individuais-na-aps/",
+  "model_id": 10734366,
+  "cluster": "wabi-brazil-south-api",
+  "paginas": [
+   [
+    "Principal",
+    2
+   ],
+   [
+    "Região",
+    73
+   ],
+   [
+    "Equipe",
+    76
+   ],
+   [
+    "Validação",
+    64
+   ],
+   [
+    "Página 1",
+    1
+   ]
+  ],
+  "tabelas": {
+   "atualizacao": [
+    "Última Atualização"
+   ],
+   "fCadastro_individual": [
+    "i_ine",
+    "i_estab_cnes",
+    "i_sexo",
+    "i_deficiencia",
+    "i_sit_acamado",
+    "i_sit_hanseniase",
+    "i_sit_tuberculose",
+    "i_sit_domiciliado",
+    "i_sit_fumante",
+    "i_sit_gestante",
+    "i_sit_alcool",
+    "i_sit_outras_drogas",
+    "i_sit_pic",
+    "i_sit_diabete",
+    "i_sit_hipert_arterial",
+    "i_sit_cancer",
+    "i_sit_avc_derrame",
+    "i_sit_saude_mental",
+    "i_sit_infarto",
+    "i_sit_intern_12_meses",
+    "i_planta_medicinal",
+    "i_doenca_respiratoria",
+    "i_defi_auditiva",
+    "i_defi_intelectual_cognitiva",
+    "i_defi_outra",
+    "i_defi_fisica",
+    "i_defi_visual",
+    "i_doenca_cardiaca",
+    "i_doenca_rins",
+    "i_nacionalidade",
+    "i_escolaridade",
+    "i_raca_cor",
+    "i_orient_sexual",
+    "i_cond_peso",
+    "i_ra_ses_desc",
+    "i_desc_regiao_saude",
+    "i_faixa_etaria",
+    "i_sigla_estab_cnes",
+    "i_equipe",
+    "i_check_relatorio_total",
+    "data_atualizacao",
+    "i_doenca_card_insufic",
+    "i_doenca_card_n_sabe",
+    "i_doenca_card_outras",
+    "i_doenca_rins_insuf",
+    "i_doenca_rins_outras",
+    "i_doenca_rins_n_sabe",
+    "i_pic",
+    "i_doenca_resp_outras",
+    "i_id_fato",
+    "i_mes_compt",
+    "i_ano_compt",
+    "i_cns_prof",
+    "i_profissional",
+    "i_identificacao",
+    "i_cbo_cidadao",
+    "i_dt_nascimento",
+    "i_idade_anos",
+    "i_idade_meses",
+    "i_ident_genero",
+    "i_parentesco_resp",
+    "i_desconhece_mae",
+    "i_desconhece_pai",
+    "i_resp_familiar",
+    "i_tipo_ficha",
+    "i_recusa_cadastro",
+    "i_sit_morador_rua",
+    "i_tempo_morador_rua",
+    "i_referencia_familiar",
+    "i_orig_alim_doacao_popular",
+    "i_orig_alim_gp_relig",
+    "i_orig_alim_doacao_restaur",
+    "i_orig_alim_outros",
+    "i_orig_alim_rest_pop",
+    "i_freq_alimentacao",
+    "i_acomp_instituicao",
+    "i_ref_familiar",
+    "i_recebe_beneficio",
+    "i_visita_familiar_freq",
+    "i_acesso_hig_pessoal",
+    "i_hig_pess_banho",
+    "i_hig_pess_bucal",
+    "i_hig_pess_outros",
+    "i_hig_pess_sanitario",
+    "i_tipo_saida_cadastro",
+    "i_data_extracao",
+    "i_co_dim_tempo",
+    "i_co_dim_tempo_valdd_equipe",
+    "i_co_dim_tempo_valdd_municipio",
+    "i_co_dim_tempo_valdd_unidd_saud",
+    "nu_cns",
+    "nu_cpf_cidadao",
+    "i_desc_cbo"
+   ],
+   "Medidas": [
+    "Texto data/hora",
+    "Cadastros",
+    "Sexo Masculino",
+    "Sexo Feminino",
+    "Deficiência Visual",
+    "Deficiência Fisica",
+    "Deficiencia Outra",
+    "Deficiência Auditiva",
+    "Deficiência Intelectual/Cognitiva",
+    "Indígena",
+    "Parda",
+    "Branca",
+    "Amarela",
+    "Preta",
+    "Ensino Fundamental",
+    "Ensino Médio",
+    "Ensino Superior",
+    "Outras escolaridades",
+    "Percentual Fundamental",
+    "Percentual Médio",
+    "Percentual Superior",
+    "Percentual outras",
+    "Gestante",
+    "Fumante",
+    "Alcool",
+    "PlantasMedicinais",
+    "Outras Drogas",
+    "Doença Respiratória",
+    "Hanseniase",
+    "Doença Cardiaca",
+    "Doença Rins",
+    "AvcDerrame",
+    "Infarto",
+    "Cancer",
+    "Acamado",
+    "Internacao",
+    "Domiciliado",
+    "Tubercolose",
+    "SaudeMental",
+    "hipertensao",
+    "Vermelho",
+    "Amarelo",
+    "Verde",
+    "Azul",
+    "% Cadastro",
+    "Deficiência",
+    "Sem deficiência",
+    "Cadastro",
+    "Sexo Masculino (V)",
+    "Sexo Feminino (V)",
+    "PraticasInteg",
+    "Diabete",
+    "Cadastro Geral",
+    "Cadastro Geral (V)",
+    "Deficiência Visual (V)",
+    "Deficiência Fisica (V)",
+    "Deficiencia Outra (V)",
+    "Deficiência Auditiva (V)",
+    "Deficiência Intelectual/Cognitiva (V)",
+    "Parda (V)",
+    "Valor Total",
+    "Relatorio Total",
+    "Unidade de Saúde",
+    "Equipe",
+    "Gestante (V)",
+    "Fumante (V)",
+    "Alcool (V)",
+    "Outras Drogas (V)",
+    "PlantasMedicinais (V)",
+    "PraticasInteg (V)",
+    "Doença Respiratória (V)",
+    "Hanseniase (V)",
+    "Doença Cardiaca (V)",
+    "Doença Rins (V)",
+    "AvcDerrame (V)",
+    "Infarto (V)",
+    "Cancer (V)",
+    "Acamado (V)",
+    "Internacao (V)",
+    "Domiciliado (V)",
+    "Tubercolose (V)",
+    "SaudeMental (V)",
+    "Diabete (V)",
+    "Hipertensão (V)",
+    "#Amarela",
+    "#Indígena",
+    "#Preta",
+    "#Branca",
+    "#Parda",
+    "#Sexo Feminino",
+    "#Sexo Masculino",
+    "GERAL",
+    "#Gestante"
+   ]
+  },
+  "recortes": {
+   "regiao": [
+    "fCadastro_individual.i_desc_regiao_saude"
+   ],
+   "estab": [
+    "fCadastro_individual.i_estab_cnes",
+    "fCadastro_individual.i_sigla_estab_cnes",
+    "Medidas.Unidade de Saúde"
+   ],
+   "equipe": [
+    "fCadastro_individual.i_ine",
+    "fCadastro_individual.i_equipe",
+    "fCadastro_individual.i_co_dim_tempo_valdd_equipe",
+    "Medidas.Equipe"
+   ],
+   "ra": [
+    "fCadastro_individual.i_raca_cor",
+    "fCadastro_individual.i_ra_ses_desc"
+   ],
+   "tempo": [
+    "fCadastro_individual.data_atualizacao",
+    "fCadastro_individual.i_mes_compt",
+    "fCadastro_individual.i_ano_compt",
+    "fCadastro_individual.i_dt_nascimento",
+    "fCadastro_individual.i_data_extracao",
+    "Medidas.Texto data/hora"
+   ]
+  },
+  "ultimas_competencias": {
+   "fCadastro_individual": [
+    [
+     "2026",
+     "09",
+     165160
+    ],
+    [
+     "2026",
+     "10",
+     165243
+    ],
+    [
+     "2026",
+     "11",
+     31897
+    ]
+   ]
+  },
+  "valores_regiao": [],
+  "segundos": 10.8
+ },
+ {
+  "titulo": "Cobertura da APS",
+  "url": "https://info.saude.df.gov.br/sala-de-situacao/painel-infosaude-atencao-primaria-cobertura-da-aps/",
+  "model_id": 11558129,
+  "cluster": "wabi-brazil-south-api",
+  "paginas": [
+   [
+    "Consolidado geral",
+    22
+   ]
+  ],
+  "tabelas": {
+   "Medidas": [
+    "Coluna 1",
+    "População",
+    "Total de equipes",
+    "Total esf",
+    "competencia atual - anterior",
+    "cobertura real",
+    "cobertura potencial",
+    "Cadastros <> esf",
+    "Variação de cadastros",
+    "Total Mês Anterior",
+    "Total de cadastrados",
+    "Total de cadastrados eCR",
+    "Total de cadastrados eAPP",
+    "Equipe com mais cadastros",
+    "media_cadastros"
+   ],
+   "Parâmetro": [
+    "Parâmetro",
+    "Parâmetro Campos",
+    "Parâmetro Pedido"
+   ],
+   "data_att": [
+    "Ultima Atualização",
+    "Ultima Atualização - Copiar"
+   ],
+   "base_cadastros": [
+    "id",
+    "cod_formulario",
+    "dt_extracao",
+    "cnes",
+    "estabelecimento",
+    "ine",
+    "sigla_da_equipe",
+    "competencia",
+    "cadastros",
+    "Mesclado"
+   ],
+   "base_populacional": [
+    "ano",
+    "competencia",
+    "ra_ses_desc",
+    "pop_total_ra",
+    "pop_total_df",
+    "pop_total_regiao",
+    "regiao_saude_desc"
+   ],
+   "dAno": [
+    "i_ano_compt_num"
+   ],
+   "dCalendario": [
+    "competencia",
+    "Mês",
+    "Nome do Mês",
+    "Ano"
+   ],
+   "dIne": [
+    "i_estab_cnes",
+    "i_desc_regiao",
+    "i_desc_estab_cnes",
+    "ine_equipe",
+    "i_desc_ine_equipe",
+    "i_desc_tipo_equipe",
+    "i_desc_radf"
+   ],
+   "dEstabelecimento": [
+    "i_estab_cnes",
+    "i_desc_estab_cnes",
+    "i_desc_radf"
+   ],
+   "dRegiao": [
+    "i_desc_radf",
+    "i_desc_regiao_saude",
+    "ra_mapa"
+   ]
+  },
+  "recortes": {
+   "regiao": [
+    "base_populacional.pop_total_regiao",
+    "base_populacional.regiao_saude_desc",
+    "dIne.i_desc_regiao",
+    "dRegiao.i_desc_regiao_saude"
+   ],
+   "estab": [
+    "base_cadastros.cnes",
+    "base_cadastros.estabelecimento",
+    "dIne.i_estab_cnes",
+    "dIne.i_desc_estab_cnes",
+    "dEstabelecimento.i_estab_cnes",
+    "dEstabelecimento.i_desc_estab_cnes"
+   ],
+   "equipe": [
+    "Medidas.Total de equipes",
+    "Medidas.Equipe com mais cadastros",
+    "base_cadastros.ine",
+    "base_cadastros.sigla_da_equipe",
+    "dIne.ine_equipe",
+    "dIne.i_desc_ine_equipe",
+    "dIne.i_desc_tipo_equipe"
+   ],
+   "ra": [],
+   "tempo": [
+    "base_cadastros.dt_extracao",
+    "base_cadastros.competencia",
+    "base_populacional.ano",
+    "base_populacional.competencia",
+    "dAno.i_ano_compt_num",
+    "dCalendario.competencia",
+    "dCalendario.Mês",
+    "dCalendario.Ano"
+   ]
+  },
+  "ultimas_competencias": {},
+  "valores_regiao": [],
+  "segundos": 3.4
+ },
+ {
+  "titulo": "Fórum GSAP",
+  "url": "https://info.saude.df.gov.br/sala-de-situacao/painel-infosaude-atencao-primaria-forum-gsap/",
+  "erro": "AttributeError: 'NoneType' object has no attribute 'group'",
+  "segundos": 2.7
+ },
+ {
+  "titulo": "Internações por Condições Sensíveis à Atenção Primária",
+  "url": "https://info.saude.df.gov.br/sala-de-situacao/painel-infosaude-atencao-primaria-internacoes-por-condicoes-sensiveis-a-atencao-primaria/",
+  "model_id": 10734445,
+  "cluster": "wabi-brazil-south-api",
+  "paginas": [
+   [
+    "ICSAP",
+    27
+   ],
+   [
+    "Duplicata de ICSAP",
+    26
+   ]
+  ],
+  "tabelas": {
+   "ICSAB": [
+    "i_ano_compt",
+    "i_mes_compt",
+    "i_estab_cnes",
+    "i_desc_sigla_estab_cnes",
+    "i_desc_estab_cnes",
+    "i_desc_regiao_saude",
+    "i_desc_munic_res",
+    "i_desc_uf_res",
+    "i_cid_principal",
+    "i_desc_cid_principal",
+    "i_qtd_aih",
+    "i_bimestre",
+    "i_trimestre",
+    "i_quadrimestre",
+    "i_semestre",
+    "dip",
+    "gsatro_infec",
+    "anemia",
+    "defic_nutri",
+    "infec_ouvido_nariz_garganta",
+    "peneumo_bacteria",
+    "asma",
+    "bronquite",
+    "hipertensao",
+    "angina",
+    "insuf_cardiaca",
+    "diabetes",
+    "epilepsia",
+    "infec_rins_trato_urinario",
+    "infec_pele_tecido_sub",
+    "doenca_inflam_pelvico_fem",
+    "rubeola_congenita",
+    "i_desc_espec_leito",
+    "i_grupo",
+    "i_mes_nome_compt",
+    "data_extracao",
+    "i_causa",
+    "i_desc_sexo",
+    "i_faixa_etaria",
+    "i_desc_obito",
+    "i_utilizou_uti",
+    "i_ride",
+    "Bimestre",
+    "i_desc_radf_res",
+    "i_desc_regiao_res",
+    "Total casos",
+    "INDICADOR",
+    "INDICADOR2"
+   ],
+   "Parâmetro": [
+    "Parâmetro",
+    "Parâmetro Campos",
+    "Parâmetro Pedido"
+   ]
+  },
+  "recortes": {
+   "regiao": [
+    "ICSAB.i_desc_regiao_saude",
+    "ICSAB.i_desc_regiao_res"
+   ],
+   "estab": [
+    "ICSAB.i_estab_cnes",
+    "ICSAB.i_desc_sigla_estab_cnes",
+    "ICSAB.i_desc_estab_cnes"
+   ],
+   "equipe": [],
+   "ra": [],
+   "tempo": [
+    "ICSAB.i_ano_compt",
+    "ICSAB.i_mes_compt",
+    "ICSAB.i_mes_nome_compt",
+    "ICSAB.data_extracao"
+   ]
+  },
+  "ultimas_competencias": {},
+  "valores_regiao": [],
+  "segundos": 5.8
+ },
+ {
+  "titulo": "Painel Previne Brasil – ISF AGL DF",
+  "url": "https://info.saude.df.gov.br/sala-de-situacao/painel-infosaude-atencao-primaria-atendimento-por-categoria-profissional-e-sus/",
+  "model_id": 10734245,
+  "cluster": "wabi-brazil-south-api",
+  "paginas": [
+   [
+    "Capa",
+    5
+   ],
+   [
+    "Região de saúde",
+    70
+   ],
+   [
+    "Unidades e INE",
+    70
+   ],
+   [
+    "ISF",
+    22
+   ]
+  ],
+  "tabelas": {
+   "Medidas": [
+    "Medidas",
+    "DM actual end",
+    "DM actual start",
+    "DM target end",
+    "DM target start",
+    "CIT actual end",
+    "CIT actual start",
+    "CIT max",
+    "CIT min",
+    "CIT target start",
+    "CIT target end",
+    "6 gestante actual end",
+    "6 gestante actual start",
+    "6 gestante max",
+    "6 gestante min",
+    "6 gestante target end",
+    "6 gestante target start",
+    "Exames gestantes actual end",
+    "Exames gestantes actual start",
+    "Exames gestantes max",
+    "Exames gestantes min",
+    "Exames gestantes target end",
+    "Exames gestantes target start",
+    "Odonto actual end",
+    "Odonto actual start",
+    "Odonto max",
+    "Odonto min",
+    "Odonto target end",
+    "Odonto target start",
+    "Vacina actual end",
+    "Vacina actual start",
+    "Vacina target end",
+    "Vacina target start",
+    "Vacina max",
+    "Vacina min",
+    "HAS actual end",
+    "HAS actual start",
+    "HAS target end",
+    "HAS target start",
+    "HAS max",
+    "HAS min",
+    "Min",
+    "Max",
+    "isf act start",
+    "isf act end",
+    "isf target start",
+    "isf target end"
+   ],
+   "st_stick_drive tab_base_painel_previne_brasil_aps": [
+    "ano",
+    "quadrimestre",
+    "competencia",
+    "rs",
+    "ra",
+    "cnes",
+    "nome_ubs",
+    "ine",
+    "numerador_gestante_6",
+    "denominador_identificado_gestante_6",
+    "quadrimestre_gestante_6",
+    "denominador_ajustado_gestante_6",
+    "quad_ajustado_gestante_6",
+    "valor_final_relativo_a_meta_gestante_6",
+    "valor_final_ajustado_gestante_6",
+    "numerador_odonto",
+    "denominador_identificado_odonto",
+    "quadrimestre_odonto",
+    "denominador_ajustado_odonto",
+    "quad_ajustado_odonto",
+    "valor_final_relativo_a_meta_odonto",
+    "valor_final_ajustado_odonto",
+    "numerador_citopatologico",
+    "denominador_identificado_citopatologico",
+    "quadrimestre_citopatologico",
+    "denominador_ajustado_citopatologico",
+    "quad_ajustado_citopatologico",
+    "valor_final_relativo_a_meta_citopatologico",
+    "valor_final_ajustado_citopatologico",
+    "numerador_vacina",
+    "denominador_identificado_vacina",
+    "quadrimestre_vacina",
+    "denominador_ajustado_vacina",
+    "quad_ajustado_vacina",
+    "valor_final_relativo_a_meta_vacina",
+    "valor_final_ajustado_vacina",
+    "numerador_has",
+    "denominador_identificado_has",
+    "quadrimestre_has",
+    "denominador_ajustado_has",
+    "quad_ajustado_has",
+    "valor_final_relativo_a_meta_has",
+    "valor_final_ajustado_has",
+    "numerador_dm",
+    "denominador_identificado_dm",
+    "quadrimestre_dm",
+    "denominador_ajustado_dm",
+    "quad_ajustado_dm",
+    "valor_final_relativo_a_meta_dm",
+    "valor_final_ajustado_dm",
+    "i_data_extracao",
+    "quadrimestre_hiv_sifilis",
+    "valor_final_relativo_a_meta_hiv_sifilis",
+    "classificacao_territorial",
+    "denominador_ajustado_hiv_sifilis",
+    "denominador_identificado_hiv_sifilis",
+    "numerador_hiv_sifilis",
+    "quad_ajustado_hiv_sifilis",
+    "valor_final_ajustado_hiv_sifilis"
+   ],
+   "st_stick_drive tab_base_painel_previne_brasil_isf": [
+    "ano",
+    "quadrimestre",
+    "competencia",
+    "rs",
+    "ra",
+    "classificacao_territorial",
+    "cnes",
+    "nome_ubs",
+    "gestante_6",
+    "hiv_sífilis",
+    "odonto",
+    "citopato",
+    "vacina",
+    "has",
+    "dm",
+    "isf",
+    "i_data_extracao",
+    "ine"
+   ]
+  },
+  "recortes": {
+   "regiao": [],
+   "estab": [
+    "st_stick_drive tab_base_painel_previne_brasil_aps.cnes",
+    "st_stick_drive tab_base_painel_previne_brasil_isf.cnes"
+   ],
+   "equipe": [
+    "st_stick_drive tab_base_painel_previne_brasil_aps.ine",
+    "st_stick_drive tab_base_painel_previne_brasil_isf.ine"
+   ],
+   "ra": [
+    "st_stick_drive tab_base_painel_previne_brasil_aps.ra",
+    "st_stick_drive tab_base_painel_previne_brasil_isf.ra"
+   ],
+   "tempo": [
+    "st_stick_drive tab_base_painel_previne_brasil_aps.ano",
+    "st_stick_drive tab_base_painel_previne_brasil_aps.competencia",
+    "st_stick_drive tab_base_painel_previne_brasil_aps.i_data_extracao",
+    "st_stick_drive tab_base_painel_previne_brasil_isf.ano",
+    "st_stick_drive tab_base_painel_previne_brasil_isf.competencia",
+    "st_stick_drive tab_base_painel_previne_brasil_isf.i_data_extracao"
+   ]
+  },
+  "ultimas_competencias": {},
+  "segundos": 4.0
+ },
+ {
+  "titulo": "Painel de Procedimentos",
+  "url": "https://info.saude.df.gov.br/sala-de-situacao/painel-infosaude-atencao-primaria-painel-de-procedimentos/",
+  "model_id": 10724088,
+  "cluster": "wabi-brazil-south-api",
+  "paginas": [
+   [
+    "Procedimento",
+    68
+   ]
+  ],
+  "tabelas": {
+   "f_vw_procedimentos_invidualizados_sem_codigo_ab": [
+    "i_desc_regiao_saude",
+    "i_ra_ses_desc",
+    "i_estab_cnes",
+    "i_sigla_estab_cnes",
+    "i_ine",
+    "i_desc_equipe",
+    "i_cod_procedimento",
+    "i_desc_procedimento",
+    "i_faixa_etaria",
+    "i_desc_sexo",
+    "i_nu_cns",
+    "i_no_profissional",
+    "i_cat_prof",
+    "i_qtd",
+    "data_compt",
+    "grupo_procedimento",
+    "data_atualizacao",
+    "i_desc_cbo",
+    "mes_comp",
+    "mes",
+    "tipo_atencao"
+   ],
+   "Medidas": [
+    "Total",
+    "Teste Rápido",
+    "Administração de Medicamentos",
+    "Texto data/hora",
+    "Medida",
+    "AnoSelecionado",
+    "MesSelecionado",
+    "Exportar Dados (API)",
+    "regiaoSelecionado",
+    "estabSelecionado",
+    "ineSelecionado",
+    "procSelecionado"
+   ],
+   "dCalendario": [
+    "Data",
+    "Ano",
+    "Nome do Mês",
+    "Nome do Dia",
+    "Dia",
+    "Mês"
+   ],
+   "dRegiao": [
+    "regiao_saude",
+    "Índice"
+   ],
+   "dEstab": [
+    "estab_cnes",
+    "Índice"
+   ],
+   "dINE": [
+    "ine",
+    "Índice"
+   ],
+   "dProc": [
+    "procedimento",
+    "Índice"
+   ],
+   "dAno": [
+    "Ano"
+   ],
+   "dMes": [
+    "mes"
+   ]
+  },
+  "recortes": {
+   "regiao": [
+    "f_vw_procedimentos_invidualizados_sem_codigo_ab.i_desc_regiao_saude",
+    "Medidas.regiaoSelecionado",
+    "dRegiao.regiao_saude"
+   ],
+   "estab": [
+    "f_vw_procedimentos_invidualizados_sem_codigo_ab.i_estab_cnes",
+    "f_vw_procedimentos_invidualizados_sem_codigo_ab.i_sigla_estab_cnes",
+    "Medidas.estabSelecionado",
+    "dEstab.estab_cnes"
+   ],
+   "equipe": [
+    "f_vw_procedimentos_invidualizados_sem_codigo_ab.i_ine",
+    "f_vw_procedimentos_invidualizados_sem_codigo_ab.i_desc_equipe",
+    "dINE.ine"
+   ],
+   "ra": [
+    "f_vw_procedimentos_invidualizados_sem_codigo_ab.i_ra_ses_desc"
+   ],
+   "tempo": [
+    "f_vw_procedimentos_invidualizados_sem_codigo_ab.data_compt",
+    "f_vw_procedimentos_invidualizados_sem_codigo_ab.data_atualizacao",
+    "f_vw_procedimentos_invidualizados_sem_codigo_ab.mes",
+    "Medidas.Texto data/hora",
+    "dCalendario.Data",
+    "dCalendario.Ano",
+    "dCalendario.Mês",
+    "dAno.Ano",
+    "dMes.mes"
+   ]
+  },
+  "ultimas_competencias": {},
+  "valores_regiao": [],
+  "segundos": 3.8
+ },
+ {
+  "titulo": "Procedimentos Odontológicos na APS",
+  "url": "https://info.saude.df.gov.br/sala-de-situacao/painel-infosaude-atencao-primaria-procedimentos-odontologicos-na-aps/",
+  "model_id": 10734403,
+  "cluster": "wabi-brazil-south-api",
+  "paginas": [
+   [
+    "Procedimentos",
+    14
+   ],
+   [
+    "Info_técnica",
+    3
+   ]
+  ],
+  "tabelas": {
+   "odont_proc": [
+    "i_ano_mes_compt",
+    "i_estab_cnes",
+    "i_sigla_estab_cnes",
+    "i_desc_regiao_saude",
+    "i_ine",
+    "i_tipo_equipe",
+    "i_desc_equipe",
+    "i_data_extracao",
+    "i_mes_compt",
+    "i_ano_compt",
+    "ATF (indiv. por sessão)",
+    "Aces. polpa/medica.(por dente)",
+    "Adaptação de prótese dentária",
+    "Apl. de selante (por dente)",
+    "Aplic. de carios.(por dente)",
+    "Capeamento pulpar",
+    "Cimentação de prótese dentária",
+    "Curativo c/ ou s/ prep. Biom.",
+    "Evi. de placa bacteriana",
+    "Exodontia de dente decíduo",
+    "Exodontia de dente permanente",
+    "Ins. de prótese dentaria",
+    "Mold. dento-gengival p/  prot.",
+    "Orientação de higiene bucal",
+    "Pulpotomia dentária",
+    "RAP subgengival(por sextante)",
+    "RAP supra. (por sextante)",
+    "Rad. periapical/interproximal",
+    "Remoção de placa bacteriana",
+    "Rest. dente permanente post.",
+    "Restauração de dente decíduo",
+    "Ret. de pontos de cirurgias",
+    "Sel. provisório de cavidade",
+    "Tratamento de alveolite",
+    "Ulotomia / ulectomia",
+    "i_qtd_total",
+    "Drenagem de abscesso",
+    "Rest. dente permanente ant.",
+    "desc_mes",
+    "Info_tecnica"
+   ]
+  },
+  "recortes": {
+   "regiao": [
+    "odont_proc.i_desc_regiao_saude"
+   ],
+   "estab": [
+    "odont_proc.i_estab_cnes",
+    "odont_proc.i_sigla_estab_cnes"
+   ],
+   "equipe": [
+    "odont_proc.i_ine",
+    "odont_proc.i_tipo_equipe",
+    "odont_proc.i_desc_equipe"
+   ],
+   "ra": [],
+   "tempo": [
+    "odont_proc.i_ano_mes_compt",
+    "odont_proc.i_data_extracao",
+    "odont_proc.i_mes_compt",
+    "odont_proc.i_ano_compt"
+   ]
+  },
+  "ultimas_competencias": {},
+  "valores_regiao": [],
+  "segundos": 5.3
+ },
+ {
+  "titulo": "Programa Bolsa Família",
+  "url": "https://info.saude.df.gov.br/sala-de-situacao/painel-infosaude-atencao-primaria-programa-bolsa-familia/",
+  "model_id": 10734227,
+  "cluster": "wabi-brazil-south-api",
+  "paginas": [
+   [
+    "Consolidado Bolsa Família",
+    31
+   ],
+   [
+    "Bolsa Família",
+    34
+   ]
+  ],
+  "tabelas": {
+   "tb_bolsa_familia": [
+    "Qtd. beneficiários a serem acompanhados",
+    "Qtd. beneficiários acompanhados",
+    "crianca_serem_acomp",
+    "crianca_acomp",
+    "Qtd. criança com vac. em dia",
+    "Qtd. criança com dados nutricionais",
+    "Qtd. gestantes estimadas",
+    "Qtd. gestantes localizadas",
+    "cnes",
+    "vigencia",
+    "eas",
+    "Ano",
+    "semestre",
+    "data_extracao",
+    "Qtd. gestantes pré-natal em dia",
+    "Qtd. gestantes com dados nutric."
+   ],
+   "Medidas": [
+    "Column1",
+    "criança1",
+    "criança2",
+    "criança3",
+    "gestante1",
+    "perc_benef_acomp",
+    "gestante2",
+    "%perc_benef_acomp",
+    "gestante3",
+    "perc_crianca_acomp",
+    "perc_crianca_nutri",
+    "perc_crianca_vac_dia",
+    "perc_gestantes_localizada",
+    "qtd_crianca_nutri",
+    "perc_gestantes_pre_natal",
+    "qtd_gestantes_nutri",
+    "qtd_gestantes_localizada",
+    "qtd_crianca_serem_acomp",
+    "perc_gestantes_nutri",
+    "qtd_a_serem_acomp",
+    "qtd_gestantes_estim",
+    "qtd_acompanhados",
+    "qtd_crianca_vac_dia",
+    "qtd_crianca_acomp",
+    "qtd_gestantes_pre_natal",
+    "Base Atualizada"
+   ],
+   "Atualizado em": [
+    "Atualização"
+   ],
+   "consolidado": [
+    "vigencia",
+    "estado",
+    "data_extracao",
+    "ano",
+    "semestre",
+    "Qtd. beneficiários a serem acompanhados",
+    "Qtd. beneficiários acompanhados",
+    "Perc. cobertura de beneficiários acompanhados (%)",
+    "Qtd. criança a ser acompanhada",
+    "Qtd. criança acompanhada",
+    "Perc. cobertura do acomp. de crianças (%)",
+    "Qtd. criança com vac. em dia",
+    "Perc. crianças com vac. em dia (%)",
+    "Qtd. criança com dados nutricionais",
+    "Perc. crianças com dados nutricionais (%)",
+    "Qtd. gestantes estimadas",
+    "Qtd. gestantes localizadas",
+    "Perc. de cobertura de gestantes localizadas (%)",
+    "Qtd. gestantes pré-natal em dia",
+    "Perc. gestantes com pré em dia (%)",
+    "Qtd. gestantes com dados nutric.",
+    "Perc. gestantes com dados nutric. (%)"
+   ],
+   "Medidas Consolidadas": [
+    "Column1",
+    "A serem acompanhados",
+    "Acompanhados",
+    "Beneficiários",
+    "criança 1 cons",
+    "criança2 cons",
+    "criança3 cons",
+    "Crianças a ser acompanhadas",
+    "Crianças Acompanhadas",
+    "crianças com dados nutri",
+    "gestante estimada",
+    "gestante nutri",
+    "gestante1 cons",
+    "gestante2 cons",
+    "gestante3 cons",
+    "Gestantes Localizadas",
+    "gestantes pre natal",
+    "perccriancaacomp",
+    "vacina em dia",
+    "% crianças com dados nutricionais",
+    "% criancas_com_vac_em_dia",
+    "% de_cobertura_de_gestantes_localizadas",
+    "% gestantes_com_dados_nutric",
+    "% gestantes_com_pre_em_dia",
+    "Base Atualizada Conso"
+   ],
+   "Dim_CNES": [
+    "cnes",
+    "class_regiao_desc"
+   ]
+  },
+  "recortes": {
+   "regiao": [
+    "Dim_CNES.class_regiao_desc"
+   ],
+   "estab": [
+    "tb_bolsa_familia.cnes",
+    "Dim_CNES.cnes"
+   ],
+   "equipe": [],
+   "ra": [],
+   "tempo": [
+    "tb_bolsa_familia.Ano",
+    "tb_bolsa_familia.data_extracao",
+    "consolidado.data_extracao",
+    "consolidado.ano"
+   ]
+  },
+  "ultimas_competencias": {},
+  "valores_regiao": [],
+  "segundos": 8.8
+ },
+ {
+  "titulo": "SIGA APS",
+  "url": "https://info.saude.df.gov.br/sala-de-situacao/painel-infosaude-atencao-primaria-siga-aps/",
+  "model_id": 10734395,
+  "cluster": "wabi-brazil-south-api",
+  "paginas": [
+   [
+    "Resumo Geral",
+    28
+   ],
+   [
+    "Serviços ofertados",
+    20
+   ],
+   [
+    "Equipamentos e estrutura",
+    21
+   ],
+   [
+    "Dica mapa",
+    7
+   ]
+  ],
+  "tabelas": {
+   "Medidas": [
+    "Value",
+    "Total UBS",
+    "UBS",
+    "Total UBS eSF",
+    "Total UBS eAPP",
+    "Total cerpis",
+    "Total equipes",
+    "equipes eSF",
+    "equipes eSB",
+    "equipes eMulti",
+    "equipes eCR",
+    "equipes eAPP",
+    "cnes equipamentos",
+    "Quantidade equipamentos",
+    "Quantidade em uso",
+    "Eletrocardiógrafos",
+    "Eletrocardiógrafos em uso",
+    "Equipo odonto completo",
+    "Equipo odonto completo em uso",
+    "Instalações",
+    "Consultórios",
+    "Salas de odontologia",
+    "Salas de imunização",
+    "CNES serviços",
+    "Coleta laboratorial",
+    "Teleconsultoria",
+    "Farmácia",
+    "PIS",
+    "Equipes tipo I",
+    "Equipes tipo II",
+    "Eletrocardiógrafos sem funcionamento",
+    "Imunização",
+    "Equipo odonto em desuso",
+    "Equipos por esb",
+    "Controle tabagismo",
+    "Consultório por esf",
+    "Sala imuno por UBS",
+    "CNES horários",
+    "Abre sábado",
+    "Abre domingo",
+    "Profissionais",
+    "ine PROF",
+    "unidade eletro",
+    "Imunização texto",
+    "QUADRO TEXTO",
+    "Coleta texto",
+    "Farmácia texto",
+    "ECG texto",
+    "cnes tab serviços lf009",
+    "UBS com farmácia",
+    "Indic farmácia",
+    "FARMACIA SEM FARMACEUTICO CALC",
+    "TEXTO FARMÁCIA",
+    "% coleta",
+    "Fonte",
+    "Total_UBS_2",
+    "esf - total ubs",
+    "total_esf_2"
+   ],
+   "tab_cnes_unidades": [
+    "i_desc_regiao_saude",
+    "i_regiao_saude",
+    "i_estab_cnes",
+    "i_desc_sigla_estab_cnes",
+    "i_desc_cod_estab_cnes",
+    "i_desc_nat_jur",
+    "i_desc_cnes_geral",
+    "i_nome_empresarial",
+    "i_bairro",
+    "i_endereco",
+    "i_numero",
+    "i_complemento",
+    "i_cep",
+    "i_telefone",
+    "i_horario_funcionamento",
+    "i_atendimento_porta_aberta",
+    "i_cod_tipo_unidade",
+    "i_desc_tipo_unidade",
+    "i_qtd",
+    "data_extracao",
+    "i_ano_mes_compt",
+    "location",
+    "localiza",
+    "i_desc_radf",
+    "i_radf",
+    "horario_ampliado",
+    "inativo",
+    "latitude",
+    "longitude",
+    "farmacia",
+    "farmaceutico",
+    "psicotropico",
+    "imunizacao",
+    "bcg",
+    "atend_odont",
+    "url",
+    "cnes texto"
+   ],
+   "tab_resumo_tipo_ubs": [
+    "Total de equipes",
+    "tipo_ubs",
+    "cnes",
+    "nome_fanta",
+    "tp_equipe"
+   ],
+   "dEstabelecimentos": [
+    "cnes",
+    "nome_fanta",
+    "bairro",
+    "regiao_saude",
+    "RA",
+    "RS",
+    "RA1"
+   ],
+   "Parâmetro": [
+    "Parâmetro",
+    "Parâmetro Campos",
+    "Parâmetro Pedido"
+   ],
+   "Equipamentos": [
+    "codtpequip",
+    "ds_tipo_equipamento",
+    "ds_equipamento",
+    "cod_equip",
+    "ds_segmento",
+    "cod_mun",
+    "nome_fanta",
+    "unidade_id",
+    "cnes",
+    "qtde_exist",
+    "qtde_uso",
+    "qtde_def",
+    "i_data_extracao"
+   ],
+   "Estabelecimentos": [
+    "unidade_id",
+    "cnes",
+    "cnpj_mant",
+    "r_social",
+    "nome_fanta",
+    "logradouro",
+    "numero",
+    "complement",
+    "bairro",
+    "cod_cep",
+    "reg_saude",
+    "micro_reg",
+    "telefone",
+    "e_mail",
+    "cnpj",
+    "tp_unid_id",
+    "descricao_tp_unidade",
+    "data_atu",
+    "ds_motivo_desab",
+    "cd_motivo_desab",
+    "nu_longitude",
+    "nu_latitude",
+    "tp_estab_sempre_aberto",
+    "ds_tipo_estabelecimento",
+    "co_tipo_estabelecimento",
+    "ds_atividade",
+    "co_atividade_principal",
+    "i_data_extracao",
+    "num_latitude",
+    "num_longitude",
+    "cnes texto"
+   ],
+   "EquipesValidas": [
+    "cod_mun",
+    "ds_equipe",
+    "nome_fanta",
+    "cd_segmento",
+    "ds_segmento",
+    "ds_area",
+    "cnes",
+    "ine",
+    "tp_equipe",
+    "qtd_ine",
+    "tipologia_ubs",
+    "i_data_extracao"
+   ],
+   "Instal_fisi_assist": [
+    "nome_fanta",
+    "cnes",
+    "unidade_id",
+    "qtde_inst",
+    "num_leitos",
+    "cod_instal",
+    "descricao",
+    "data_atu",
+    "i_data_extracao",
+    "nome_estab",
+    "Personalizar"
+   ],
+   "Serviços": [
+    "cod_class",
+    "desc_classificacao",
+    "desc_servico",
+    "codservico",
+    "unidade_id",
+    "cnes",
+    "cod_mun",
+    "cod_caract",
+    "desc_caract",
+    "i_data_extracao",
+    "nome_estab"
+   ],
+   "lfces020_Equipamentos": [
+    "unidade_id.1",
+    "cnes",
+    "cod_equip",
+    "qtde_exist",
+    "qtde_uso",
+    "ind_sus",
+    "codtpequip",
+    "status",
+    "statusmov",
+    "data_atu",
+    "usuario",
+    "qt_sus"
+   ],
+   "lfces098_Horarios": [
+    "unidade_id.1",
+    "cnes",
+    "co_dia_semana",
+    "hr_inicio_atendimento",
+    "hr_fim_atendimento",
+    "data_atu",
+    "usuario",
+    "dia",
+    "dias_de_func",
+    "abre_22",
+    "horario_funcio",
+    "Teste",
+    "Especifico"
+   ],
+   "dt_att": [
+    "Ultima Atualização",
+    "Ultima Atualização - Copiar"
+   ],
+   "lfces009_codserviços": [
+    "unidade_id",
+    "codservico",
+    "cod_caract",
+    "status",
+    "statusmov",
+    "data_atu",
+    "usuario",
+    "cnes",
+    "nome_fanta"
+   ],
+   "lfces009_serviços_farmacia": [
+    "unidade_id",
+    "codservico",
+    "cod_caract",
+    "status",
+    "statusmov",
+    "data_atu",
+    "usuario",
+    "cnes"
+   ]
+  },
+  "recortes": {
+   "regiao": [
+    "tab_cnes_unidades.i_desc_regiao_saude",
+    "tab_cnes_unidades.i_regiao_saude",
+    "dEstabelecimentos.regiao_saude"
+   ],
+   "estab": [
+    "Medidas.cnes equipamentos",
+    "Medidas.CNES serviços",
+    "Medidas.CNES horários",
+    "Medidas.unidade eletro",
+    "Medidas.cnes tab serviços lf009",
+    "tab_cnes_unidades.i_estab_cnes",
+    "tab_cnes_unidades.i_desc_sigla_estab_cnes",
+    "tab_cnes_unidades.i_desc_cod_estab_cnes",
+    "tab_cnes_unidades.i_desc_cnes_geral",
+    "tab_cnes_unidades.i_cod_tipo_unidade",
+    "tab_cnes_unidades.i_desc_tipo_unidade",
+    "tab_cnes_unidades.cnes texto",
+    "tab_resumo_tipo_ubs.cnes",
+    "dEstabelecimentos.cnes",
+    "Equipamentos.unidade_id",
+    "Equipamentos.cnes",
+    "Estabelecimentos.unidade_id",
+    "Estabelecimentos.cnes",
+    "Estabelecimentos.descricao_tp_unidade",
+    "Estabelecimentos.tp_estab_sempre_aberto",
+    "Estabelecimentos.ds_tipo_estabelecimento",
+    "Estabelecimentos.co_tipo_estabelecimento",
+    "Estabelecimentos.cnes texto",
+    "EquipesValidas.cnes",
+    "Instal_fisi_assist.cnes",
+    "Instal_fisi_assist.unidade_id",
+    "Instal_fisi_assist.nome_estab",
+    "Serviços.unidade_id",
+    "Serviços.cnes",
+    "Serviços.nome_estab",
+    "lfces020_Equipamentos.unidade_id.1",
+    "lfces020_Equipamentos.cnes",
+    "lfces098_Horarios.unidade_id.1",
+    "lfces098_Horarios.cnes",
+    "lfces009_codserviços.unidade_id",
+    "lfces009_codserviços.cnes",
+    "lfces009_serviços_farmacia.unidade_id",
+    "lfces009_serviços_farmacia.cnes"
+   ],
+   "equipe": [
+    "Medidas.Total equipes",
+    "Medidas.equipes eSF",
+    "Medidas.equipes eSB",
+    "Medidas.equipes eMulti",
+    "Medidas.equipes eCR",
+    "Medidas.equipes eAPP",
+    "Medidas.Equipes tipo I",
+    "Medidas.Equipes tipo II",
+    "tab_resumo_tipo_ubs.Total de equipes",
+    "tab_resumo_tipo_ubs.tp_equipe",
+    "EquipesValidas.ds_equipe",
+    "EquipesValidas.ine",
+    "EquipesValidas.tp_equipe"
+   ],
+   "ra": [
+    "tab_cnes_unidades.i_radf",
+    "dEstabelecimentos.RA"
+   ],
+   "tempo": [
+    "tab_cnes_unidades.data_extracao",
+    "tab_cnes_unidades.i_ano_mes_compt",
+    "Equipamentos.i_data_extracao",
+    "Estabelecimentos.data_atu",
+    "Estabelecimentos.i_data_extracao",
+    "EquipesValidas.i_data_extracao",
+    "Instal_fisi_assist.data_atu",
+    "Instal_fisi_assist.i_data_extracao",
+    "Serviços.i_data_extracao",
+    "lfces020_Equipamentos.data_atu",
+    "lfces098_Horarios.data_atu",
+    "lfces009_codserviços.data_atu",
+    "lfces009_serviços_farmacia.data_atu"
+   ]
+  },
+  "ultimas_competencias": {},
+  "valores_regiao": [],
+  "segundos": 3.1
+ },
+ {
+  "titulo": "Visita Domiciliar dos ACS",
+  "url": "https://info.saude.df.gov.br/painel-infosaude-atencao-primaria-visita-domiciliar-dos-acs/",
+  "model_id": 10734606,
+  "cluster": "wabi-brazil-south-api",
+  "paginas": [
+   [
+    "infoTec",
+    1
+   ],
+   [
+    "Painel de visitas domiciliares",
+    158
+   ],
+   [
+    "Parâmetros de produtividade",
+    21
+   ]
+  ],
+  "tabelas": {
+   "tab_visita_domiciliar": [
+    "i_id_fato",
+    "i_mes_compt",
+    "i_ano_compt",
+    "i_data_nascimento",
+    "i_faixa_etaria",
+    "i_desc_sexo",
+    "i_nu_cns",
+    "i_no_profissional",
+    "i_categoria_profissional",
+    "i_desc_cbo",
+    "i_ine",
+    "i_desc_equipe",
+    "i_tipo_equipe",
+    "i_estab_cnes",
+    "i_sigla_estab_cnes",
+    "i_ra_ses_desc",
+    "i_desc_regiao_saude",
+    "i_desc_turno",
+    "i_tipo_imovel",
+    "i_altura",
+    "i_medicao_glicemia",
+    "i_tipo_glicemia",
+    "1_mot_vis_acompanhamento",
+    "i_acomp_gestante",
+    "i_acomp_pessoa_d_poc_enfisema",
+    "i_acomp_pessoa_cancer",
+    "i_acomp_pessoa_doenca_cronica",
+    "i_acomp_pessoa_hanseniase",
+    "i_acomp_pessoa_tuberculose",
+    "i_acomp_sintomaticos_respirat",
+    "i_acomp_tabagista",
+    "i_acomp_domiciliados_acamados",
+    "i_acomp_condi_vulnerab_social",
+    "i_acomp_condi_bolsa_familia",
+    "i_acomp_puerpera",
+    "i_acomp_saude_mental",
+    "i_acomp_usuario_alcool",
+    "i_acomp_outras_drogas",
+    "i_acomp_recem_nascido",
+    "i_acomp_crianca",
+    "i_acomp_pessoa_desnutricao",
+    "i_acomp_pessoa_desnutricaoreabil_deficie",
+    "i_acomp_pessoa_hipertensao",
+    "i_acomp_pessoa_diabetes",
+    "i_acomp_pessoa_asma",
+    "2_mot_vis_busca_ativa",
+    "i_busca_ativa_consulta",
+    "i_busca_ativa_exame",
+    "i_busca_ativa_vacina",
+    "i_busca_ativa_bolsa_familia",
+    "3_mot_vis_cad_att",
+    "4_mot_vis_convite_ativdd_cltva",
+    "5_mot_vis_ctrl_ambiente_vetor",
+    "6_mot_vis_egresso_intervencao",
+    "7_mot_vis_orientacao_prevencao",
+    "8_mot_vis_outros",
+    "9_mot_vis_visita_periodica",
+    "i_mot_ctrl_ambiente_vetor_acao_educativa",
+    "i_mot_ctrl_ambiente_vetor_imovel_foco",
+    "i_mot_ctrl_ambiente_vetor_acao_mecania",
+    "i_mot_ctrl_ambiente_vetor_tratamento_focal",
+    "i_visita_compartilhada",
+    "i_identificacao",
+    "i_co_dim_tempo",
+    "i_data_extracao",
+    "nu_cns",
+    "nu_cpf_cidadao",
+    "Data Compt",
+    "i_desc_desfecho_visita",
+    "Qtade",
+    "chave",
+    "usuarios_distintos",
+    "chave_teste",
+    "ra",
+    "Profissionais no período"
+   ],
+   "Medidas": [
+    "Medidas",
+    "Total de visitas",
+    "Total visitas por sexo",
+    "Acompanhamento",
+    "Busca ativa",
+    "Cadastramento / Atualização",
+    "Atividade coletiva / Campanha da saúde",
+    "Controle de ambientes / vetores",
+    "Egresso de internação",
+    "Orientação / prevenção",
+    "Outros",
+    "Visita periódica",
+    "Visita compartilhada",
+    "Acomp - Bolsa família",
+    "Acomp - Condições de vulnerabilidade social",
+    "Acomp - Criança",
+    "Acomp - Domiciliados / Acamados",
+    "Acomp - Gestante",
+    "Acomp - Outras drogas",
+    "Acomp - Pessoa c/ asma",
+    "Acomp - Pessoas c/ câncer",
+    "Acomp - Pessoas c/ DPOC/Enfisema",
+    "Acomp - Pessoa c/ desnutrição",
+    "Acomp - Pessoa em reabilitação ou c/ deficiência",
+    "Acomp - Pessoa c/ diabetes",
+    "Acomp - Pessoa c/ outras DCNT",
+    "Acomp - Pessoa c/ Hanseniase",
+    "Acomp - Pessoa c/ HAS",
+    "Acomp - Pessoa c/ Tb",
+    "Acomp - Puérpera",
+    "Acomp - Recém nascido",
+    "Acomp - Saúde mental",
+    "Acomp - Sintomáticos respiratórios",
+    "Acomp - Tabagista",
+    "Acomp - Usuário de álcool",
+    "Busca Consulta",
+    "Busca Bolsa famíla",
+    "Busca exame",
+    "Busca Vacina",
+    "Zn aperfeiçoamento",
+    "Amb e Vet - Educa",
+    "Amb e Vet - Ação mecânica",
+    "Amb e Vet - Imovél foco",
+    "Amb e Vet - Tratamento focal",
+    "Total de linhas",
+    "Contagem de visitas",
+    "Parâmetro mensal",
+    "Zona Crítica",
+    "Zn qualidade",
+    "Zona de Excelência",
+    "Zona de Qualidade",
+    "Zona de Aperfeiçoamento",
+    "Atingiu a meta",
+    "Não atingiu a meta",
+    "CNS acs",
+    "Usuários únicos",
+    "Profissionais com produtividade",
+    "CNS únicos",
+    "CPF únicos",
+    "Profissionais acs",
+    "Total acompanhamento",
+    "AnoSelecionado",
+    "MesSelecionado",
+    "Exportar Dados (API)",
+    "RGSelecionado"
+   ],
+   "Dt_att": [
+    "Dt_att"
+   ],
+   "Não atingiu o parâmetro": [
+    "i_no_profissional",
+    "i_ano_compt",
+    "i_mes_compt",
+    "Visitas realizadas"
+   ],
+   "Parâmetro zonas de classificação": [
+    "Faixa atingida",
+    "Parâmetro Campos",
+    "Parâmetro Pedido"
+   ],
+   "dCalendario": [
+    "Data",
+    "Ano",
+    "Trimestre",
+    "Mês",
+    "Nome mês",
+    "Dia"
+   ],
+   "tab_resumo": [
+    "i_no_profissional",
+    "i_nu_cns",
+    "i_ano_compt",
+    "i_mes_compt",
+    "Visitas realizadas",
+    "chave"
+   ],
+   "Profissionais zerados": [
+    "i_ano_comp",
+    "i_mes_comp",
+    "prof_id",
+    "i_cns_prof",
+    "i_nome_prof",
+    "i_cbo",
+    "i_ine_equipe",
+    "i_desc_regiao_saude_estab",
+    "i_estab_cnes",
+    "i_desc_estab_cnes",
+    "i_desc_ine_equipe",
+    "i_bairro_estab_cnes",
+    "chave_teste",
+    "Competência",
+    "profissionais cnes",
+    "equipes sf",
+    "Estabelecimentos",
+    "Profissionais id",
+    "Regiões de saúde",
+    "cnes + zona crítica"
+   ],
+   "tab_cnes": [
+    "i_ano_comp",
+    "i_mes_comp",
+    "i_cns_prof",
+    "i_estab_cnes",
+    "i_desc_estab_cnes",
+    "i_desc_regiao_saude_estab",
+    "i_desc_sigla_estab_cnes",
+    "i_ine_equipe",
+    "i_nome_prof",
+    "i_bairro_estab_cnes",
+    "chave_teste",
+    "ordem_mes",
+    "nome_mes",
+    "i_ano_mes_comp",
+    "mes_extraido",
+    "mes_extraido - Copiar",
+    "bairro"
+   ],
+   "dAno": [
+    "Índice",
+    "i_ano_compt"
+   ],
+   "dMes": [
+    "Índice",
+    "i_mes_compt"
+   ],
+   "dRegiao": [
+    "i_desc_regiao_saude",
+    "Índice"
+   ],
+   "dRA": [
+    "i_ra_ses_desc"
+   ],
+   "dEstab": [
+    "i_sigla_estab_cnes"
+   ],
+   "dINE": [
+    "i_ine"
+   ],
+   "dProf": [
+    "i_no_profissional",
+    "i_nu_cns"
+   ],
+   "dFaixa": [
+    "i_faixa_etaria"
+   ]
+  },
+  "recortes": {
+   "regiao": [
+    "tab_visita_domiciliar.i_desc_regiao_saude",
+    "Profissionais zerados.i_desc_regiao_saude_estab",
+    "tab_cnes.i_desc_regiao_saude_estab",
+    "dRegiao.i_desc_regiao_saude"
+   ],
+   "estab": [
+    "tab_visita_domiciliar.i_estab_cnes",
+    "tab_visita_domiciliar.i_sigla_estab_cnes",
+    "Profissionais zerados.i_desc_regiao_saude_estab",
+    "Profissionais zerados.i_estab_cnes",
+    "Profissionais zerados.i_desc_estab_cnes",
+    "Profissionais zerados.i_bairro_estab_cnes",
+    "Profissionais zerados.profissionais cnes",
+    "Profissionais zerados.Estabelecimentos",
+    "Profissionais zerados.cnes + zona crítica",
+    "tab_cnes.i_estab_cnes",
+    "tab_cnes.i_desc_estab_cnes",
+    "tab_cnes.i_desc_regiao_saude_estab",
+    "tab_cnes.i_desc_sigla_estab_cnes",
+    "tab_cnes.i_bairro_estab_cnes",
+    "dEstab.i_sigla_estab_cnes"
+   ],
+   "equipe": [
+    "tab_visita_domiciliar.i_ine",
+    "tab_visita_domiciliar.i_desc_equipe",
+    "tab_visita_domiciliar.i_tipo_equipe",
+    "Profissionais zerados.i_ine_equipe",
+    "Profissionais zerados.i_desc_ine_equipe",
+    "Profissionais zerados.equipes sf",
+    "tab_cnes.i_ine_equipe",
+    "dINE.i_ine"
+   ],
+   "ra": [
+    "tab_visita_domiciliar.i_ra_ses_desc",
+    "tab_visita_domiciliar.ra",
+    "dRA.i_ra_ses_desc"
+   ],
+   "tempo": [
+    "tab_visita_domiciliar.i_mes_compt",
+    "tab_visita_domiciliar.i_ano_compt",
+    "tab_visita_domiciliar.i_data_nascimento",
+    "tab_visita_domiciliar.i_data_extracao",
+    "tab_visita_domiciliar.Data Compt",
+    "Dt_att.Dt_att",
+    "Não atingiu o parâmetro.i_ano_compt",
+    "Não atingiu o parâmetro.i_mes_compt",
+    "dCalendario.Data",
+    "dCalendario.Ano",
+    "dCalendario.Mês",
+    "tab_resumo.i_ano_compt",
+    "tab_resumo.i_mes_compt",
+    "Profissionais zerados.Competência",
+    "dAno.i_ano_compt",
+    "dMes.i_mes_compt"
+   ]
+  },
+  "ultimas_competencias": {},
+  "valores_regiao": [],
+  "segundos": 3.9
+ },
+ {
+  "titulo": "Vacinas Aplicadas na APS",
+  "url": "https://info.saude.df.gov.br/sala-de-situacao/painel-infosaude-atencao-primaria-vacinas-aplicadas-na-aps/",
+  "model_id": 10734937,
+  "cluster": "wabi-brazil-south-api",
+  "paginas": [
+   [
+    "Vacinas",
+    38
+   ],
+   [
+    "info",
+    0
+   ]
+  ],
+  "tabelas": {
+   "tab_vacinacao_vacina": [
+    "i_mes_compt",
+    "i_ano_compt",
+    "i_nu_cns_prof",
+    "i_no_profissional",
+    "i_cat_prof",
+    "i_desc_cbo",
+    "i_ine",
+    "i_tipo_equipe",
+    "i_desc_equipe",
+    "i_estab_cnes",
+    "i_sigla_estab_cnes",
+    "i_ra_ses_desc",
+    "i_desc_regiao_saude",
+    "i_imunobiologico",
+    "i_estrategia_vacinacao",
+    "i_dose_imunobiologico",
+    "i_lote",
+    "i_fabricante",
+    "i_tipo_ficha",
+    "i_identificacao",
+    "i_tipo_origem",
+    "i_data_extracao",
+    "nu_cns",
+    "nu_cpf_cidadao",
+    "i_id_fato_vacinacao_vacina",
+    "i_id_fato_vacinacao",
+    "i_ano_mes_compt",
+    "i_dt_inicial_atendimento",
+    "i_dt_final_atendimento",
+    "Competência",
+    "i_local_atendimento",
+    "i_data_nascimento",
+    "i_faixa_etaria",
+    "i_sexo",
+    "Dia",
+    "i_viajante",
+    "i_comunicante_hanseniase",
+    "i_gestante",
+    "i_puerpera",
+    "i_cep",
+    "i_faixa_etaria - Copiar"
+   ],
+   "Medidas": [
+    "qtd_total_imuno_vacinacao_vacina",
+    "Texto data/hora",
+    "valor_total_gestante_atd",
+    "valor_total_puerpera_atd",
+    "valor_total_hanseniase_atd",
+    "valor_total_viajante_atd",
+    "qtd_total_vacinacao_atd",
+    "valor_%_viajante_atd",
+    "valor_%_puerpera_atd",
+    "valor_%_gestante_atd",
+    "valor_%_hanseniase_atd",
+    "qtd_total_imuno_vacinacao",
+    "AnoSelecionado",
+    "MesSelecionado",
+    "Exportar Dados (API)",
+    "sum_valor_medio2",
+    "valor_total_imuno_atd2"
+   ],
+   "Atualizacao": [
+    "Ultima Atualização"
+   ],
+   "dCalendário": [
+    "Mês",
+    "Ano",
+    "Data",
+    "Nome do Mês",
+    "Nome do Dia",
+    "Dia"
+   ],
+   "dAno": [
+    "i_ano_compt",
+    "Índice"
+   ],
+   "dMes": [
+    "i_mes_compt",
+    "Índice"
+   ],
+   "Custo_medio2": [
+    "id",
+    "imunobiologico",
+    "valor_medio",
+    "ano",
+    "i_data_extracao"
+   ]
+  },
+  "recortes": {
+   "regiao": [
+    "tab_vacinacao_vacina.i_desc_regiao_saude"
+   ],
+   "estab": [
+    "tab_vacinacao_vacina.i_estab_cnes",
+    "tab_vacinacao_vacina.i_sigla_estab_cnes"
+   ],
+   "equipe": [
+    "tab_vacinacao_vacina.i_ine",
+    "tab_vacinacao_vacina.i_tipo_equipe",
+    "tab_vacinacao_vacina.i_desc_equipe"
+   ],
+   "ra": [
+    "tab_vacinacao_vacina.i_ra_ses_desc"
+   ],
+   "tempo": [
+    "tab_vacinacao_vacina.i_mes_compt",
+    "tab_vacinacao_vacina.i_ano_compt",
+    "tab_vacinacao_vacina.i_data_extracao",
+    "tab_vacinacao_vacina.i_ano_mes_compt",
+    "tab_vacinacao_vacina.i_dt_inicial_atendimento",
+    "tab_vacinacao_vacina.i_dt_final_atendimento",
+    "tab_vacinacao_vacina.Competência",
+    "tab_vacinacao_vacina.i_data_nascimento",
+    "Medidas.Texto data/hora",
+    "dCalendário.Mês",
+    "dCalendário.Ano",
+    "dCalendário.Data",
+    "dAno.i_ano_compt",
+    "dMes.i_mes_compt",
+    "Custo_medio2.ano",
+    "Custo_medio2.i_data_extracao"
+   ]
+  },
+  "ultimas_competencias": {},
+  "valores_regiao": [],
+  "segundos": 17.6
+ }
+]
