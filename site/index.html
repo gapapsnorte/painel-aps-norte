@@ -428,10 +428,10 @@ table.eq tr.det>td{background:var(--bg);text-align:left;padding:10px 12px}
     <div class="rolagem" id="i-corpo"></div>
   </div>
   <div id="vista-m" class="mapa" hidden>
-    <p class="nota">Cada linha é uma equipe e cada coluna um mês. A cor compara o mês com o <b>habitual da própria equipe</b>: a mediana dos 12 meses anteriores ao último mês completo, a mesma referência das etiquetas de alerta (não muda com o período escolhido, que só define quantos meses aparecem). Quanto mais escuro o vermelho, mais abaixo do habitual. Clique no nome para abrir a equipe.</p>
+    <p class="nota">Cada linha é uma equipe e cada coluna um mês. A cor compara o mês com a <b>média da própria equipe</b> nos 12 meses anteriores ao último mês completo (não muda com o período escolhido, que só define quantos meses aparecem). Quanto mais escuro o vermelho, mais abaixo da média. As etiquetas de alerta seguem usando a mediana desses mesmos 12 meses, que um mês atípico não desloca. Clique no nome para abrir a equipe.</p>
     <div class="barra-mapa" style="display:flex;flex-wrap:wrap;gap:10px 16px;margin:8px 0">
       <label>Equipes <select id="mapa-tipo"><option value="eSF">eSF</option><option value="eSB">eSB (bucal)</option><option value="eMulti">eMulti</option><option value="*">Todas</option></select></label>
-      <label>Ordenar por <select id="mapa-ord"><option value="estrutura">GSAP e UBS</option><option value="queda">Último mês mais abaixo do habitual</option><option value="valor">Último mês (menor primeiro)</option></select></label>
+      <label>Ordenar por <select id="mapa-ord"><option value="estrutura">GSAP e UBS</option><option value="queda">Último mês mais abaixo da média</option><option value="valor">Último mês (menor primeiro)</option></select></label>
     </div>
     <div class="rolagem mapa-rol" id="mapa-corpo"></div>
   </div>
@@ -461,7 +461,7 @@ table.eq tr.det>td{background:var(--bg);text-align:left;padding:10px 12px}
       <li><b>Zero não é prova de que não houve trabalho:</b> pode ser registro ausente ou atrasado no PEC, ficha digitada em outra equipe, férias ou afastamento. Os alertas servem para <i>conferir</i>, não para concluir.</li>
       <li><b>Sem equipe vinculada:</b> produção registrada sem INE (aparece como uma "equipe" à parte em cada UBS).</li>
       <li><b>Vínculo atual não confirmado:</b> o profissional não consta na lotação de <span class="rh-rot"></span> e não tem registro nos últimos 3 meses. É uma inferência, não a confirmação de que saiu. Ficam ocultos até marcar a opção acima.</li>
-      <li><b>Habitual</b> = mediana dos 12 meses anteriores ao último mês completo (o mês avaliado não entra). Vale igual para as etiquetas de alerta e para o mapa de calor. “Bem abaixo do habitual” = menos de 70% dele.</li>
+      <li><b>Habitual</b> = mediana dos 12 meses anteriores ao último mês completo (o mês avaliado não entra). Vale para as etiquetas de alerta. “Bem abaixo do habitual” = menos de 70% dele. O mapa de calor usa a <b>média</b> dos mesmos 12 meses.</li>
       <li><b>Grupos de indicadores</b> seguem as boas práticas do cofinanciamento da APS (desenvolvimento infantil, gestação e puerpério, diabetes, hipertensão, pessoa idosa, saúde da mulher). Mostram a <i>produção registrada</i> ligada a cada boa prática (atendimentos e procedimentos), não o indicador oficial, que conta pessoas acompanhadas. Um mesmo indicador pode aparecer em mais de um grupo. Hemoglobina glicada não existe na fonte (o InfoSaúde não publica exames solicitados e avaliados).</li>
       <li><b>Doses de vacina</b> são volume de aplicação, não cobertura vacinal. <b>Visitas de ACS</b>: o total inclui visitas recusadas e com morador ausente; “visitas realizadas” é só o desfecho realizado. <b>Participantes</b> de atividades coletivas são participações somadas, não pessoas diferentes. <b>Pré-natal</b> aparece como condição avaliada e como procedimento: são dois registros do mesmo trabalho, não se somam.</li>
       <li><b>Mês fechado não é base consolidada:</b> o InfoSaúde pode receber registros atrasados de meses já encerrados. Queda forte no último mês pede primeiro conferir se a base já foi alimentada.</li>
@@ -586,6 +586,7 @@ function barras(s, w = 1100, h = 170) {   // uma linha por ano, de janeiro a dez
   return `<div class="nota" style="margin-bottom:2px">${leg}</div><svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="Série mensal">${g}${cols}</svg>`;
 }
 
+const media12 = s => { const v = s.slice(Math.max(IU - 12, 0), IU); return v.length ? v.reduce((a, x) => a + (x || 0), 0) / v.length : 0; };   // média dos 12 meses anteriores ao último mês completo: referência do mapa de calor
 const habitual = s => mediana(s.slice(Math.max(IU - 12, 0), IU));   // mediana dos 12 meses anteriores ao último mês completo (o mês avaliado não entra)
 function barrasPessoa(s, ini, w = 460, h = 120) {   // produção individual: uma barra por mês, em sequência, a partir do primeiro registro da pessoa
   const [a0] = faixa(), a = Math.max(a0, ini), n = IU - a + 1; if (n < 1) return "";
@@ -1368,7 +1369,7 @@ $("#ficha-x").addEventListener("click", () => $("#ficha").close());
 $("#ficha").addEventListener("click", e => { if (e.target === $("#ficha")) $("#ficha").close(); });
 
 /* mapa de calor */
-const FAIXAS = [[0, "var(--h0)", "zero"], [0.4, "var(--h1)", "menos de 40% do habitual"], [0.7, "var(--h2)", "40% a 70%"], [0.9, "var(--h3)", "70% a 90%"], [1.1, "var(--h4)", "dentro do habitual (90% a 110%)"], [1.3, "var(--h5)", "110% a 130%"], [Infinity, "var(--h6)", "mais de 130%"]];
+const FAIXAS = [[0, "var(--h0)", "zero"], [0.4, "var(--h1)", "menos de 40% da média"], [0.7, "var(--h2)", "40% a 70%"], [0.9, "var(--h3)", "70% a 90%"], [1.1, "var(--h4)", "perto da média (90% a 110%)"], [1.3, "var(--h5)", "110% a 130%"], [Infinity, "var(--h6)", "mais de 130%"]];
 function corMapa(v, ref) {
   if (v === 0) return FAIXAS[0][1]; const r = v / ref;
   return (FAIXAS.slice(1).find(f => r < f[0] || (f[0] === 1.1 && r <= 1.1)) || FAIXAS[FAIXAS.length - 1])[1];
@@ -1377,16 +1378,16 @@ function renderMapa() {
   const tipo = $("#mapa-tipo").value, ord = $("#mapa-ord").value, k = estado.ind, [a, b] = faixa(), L = [];
   P.gsaps.forEach(g => g.ubs.forEach(u => u.equipes.forEach(e => {
     if (!e.ine || e.migrou || (tipo !== "*" && e.tipo !== tipo) || !e.serie[k]) return;
-    const v = e.serie[k].slice(a, b), ref = habitual(e.serie[k]); if (!ref) return;
+    const v = e.serie[k].slice(a, b), ref = media12(e.serie[k]); if (!ref) return;
     L.push({ g: g.nome, u: u.nome, e, v, ref, rel: v[v.length - 1] / ref, caminho: `${g.nome} › ${u.nome} › ${e.nome}` });
   })));
   if (ord === "queda") L.sort((x, y) => x.rel - y.rel); else if (ord === "valor") L.sort((x, y) => x.v[x.v.length - 1] - y.v[y.v.length - 1]);
-  const leg = `<div class="leg-mapa"><b>${esc(nomeInd(k))}</b><span>habitual = mediana de ${mesRot(MESES[Math.max(IU - 12, 0)])} a ${mesRot(MESES[Math.max(IU - 1, 0)])}</span>${FAIXAS.map(f => `<span><i style="background:${f[1]}"></i>${f[2]}</span>`).join("")}</div>`;
-  let h = `<table><thead><tr><th></th>${MESES.slice(a, b).map(m => `<th class="mes">${mesRot(m)}</th>`).join("")}<th class="mes">habitual</th></tr></thead><tbody>`, grupo = "";
+  const leg = `<div class="leg-mapa"><b>${esc(nomeInd(k))}</b><span>referência = média da equipe de ${mesRot(MESES[Math.max(IU - 12, 0)])} a ${mesRot(MESES[Math.max(IU - 1, 0)])}</span>${FAIXAS.map(f => `<span><i style="background:${f[1]}"></i>${f[2]}</span>`).join("")}</div>`;
+  let h = `<table><thead><tr><th></th>${MESES.slice(a, b).map(m => `<th class="mes">${mesRot(m)}</th>`).join("")}<th class="mes">média</th></tr></thead><tbody>`, grupo = "";
   L.forEach(x => {
     if (ord === "estrutura" && x.g + x.u !== grupo) { grupo = x.g + x.u; h += `<tr class="grupo"><td colspan="${x.v.length + 2}">${esc(x.g)} › ${esc(x.u)}</td></tr>`; }
     h += `<tr><td class="rot" data-c="${esc(x.caminho)}" title="${esc(x.caminho)}">${ord === "estrutura" ? "" : esc(x.u) + " · "}${esc(x.e.nome)}</td>` +
-      x.v.map((y, i) => `<td class="c" data-v="${y}" style="background:${corMapa(y, x.ref)}" title="${esc(x.e.nome)} · ${mesRot(MESES[a + i])}: ${fmt(y)} (${Math.round(y / x.ref * 100)}% do habitual ${fmt(x.ref)})"></td>`).join("") + `<td class="c" data-v="${x.ref}" style="background:var(--card);color:var(--muted)">${fmt(x.ref)}</td></tr>`;
+      x.v.map((y, i) => `<td class="c" data-v="${y}" style="background:${corMapa(y, x.ref)}" title="${esc(x.e.nome)} · ${mesRot(MESES[a + i])}: ${fmt(y)} (${Math.round(y / x.ref * 100)}% da média ${fmt(x.ref)})"></td>`).join("") + `<td class="c" data-v="${x.ref}" style="background:var(--card);color:var(--muted)">${fmt(x.ref)}</td></tr>`;
   });
   $("#mapa-corpo").innerHTML = L.length ? leg + h + "</tbody></table>" : "<p class='nota'>Nenhuma equipe com dados deste indicador neste tipo.</p>";
   const lg = $("#mapa-corpo .leg-mapa"); if (lg) $("#mapa-corpo").style.setProperty("--leg-h", lg.offsetHeight + "px");

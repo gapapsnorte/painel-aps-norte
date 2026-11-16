@@ -35,13 +35,13 @@ with sync_playwright() as p:
     pg.click(".kpi[data-k='atend']"); pg.wait_for_timeout(200)
     conf("cartões do topo dizem contra qual mês é a variação", "versus" in pg.inner_text(".kpi[data-k='atend']"), pg.inner_text(".kpi[data-k='atend']").replace("\n", " "))
     conf("sem '−0%' nem '+0%' na tela", "−0%" not in pg.inner_text("body") and "+0%" not in pg.inner_text("body"))
-    # ---- habitual único (mapa = etiqueta)
+    # ---- referência do mapa: média dos 12 meses anteriores (as etiquetas seguem na mediana)
     pg.click("#aba-m"); pg.wait_for_selector("#mapa-corpo td.c"); t24 = pg.locator("#mapa-corpo tr:not(.grupo) td.c:last-child").all_inner_texts()
     pg.select_option("#sel-per", "12"); pg.wait_for_timeout(300); t12 = pg.locator("#mapa-corpo tr:not(.grupo) td.c:last-child").all_inner_texts()
     conf("mapa: o habitual não muda com o período escolhido", t24 == t12 and len(t24) > 50, f"{len(t24)} equipes")
     e0 = next(e for g in P["gsaps"] for u in g["ubs"] for e in u["equipes"] if e["ine"] and e["tipo"] == "eSF" and not e.get("migrou") and e["serie"].get("atend"))
-    v = sorted(e0["serie"]["atend"][iu - 12:iu]); med = (v[5] + v[6]) / 2
-    conf("habitual = mediana dos 12 meses anteriores (1ª eSF)", br(med) in t24, f"{e0['nome']}: {br(med)}")
+    v = e0["serie"]["atend"][iu - 12:iu]; med = int(sum(v) / 12 + 0.5); i0 = [e["ine"] for g in P["gsaps"] for u in g["ubs"] for e in u["equipes"] if e["ine"] and not e.get("migrou") and e["serie"].get("atend") and sum(e["serie"]["atend"][iu - 12:iu])].index(e0["ine"])
+    conf("mapa: referência = média dos 12 meses anteriores (1ª eSF)", br(med) == t24[i0].strip(), f"{e0['nome']}: {br(med)}")
     pg.select_option("#sel-per", "24")
     # ---- Perfil dos atendimentos
     pg.click("#aba-p"); pg.wait_for_selector("#p-tab")
