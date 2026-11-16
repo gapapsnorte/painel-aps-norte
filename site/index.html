@@ -269,6 +269,7 @@ svg .col:hover{fill-opacity:.08}
 /* ficha do servidor */
 dialog#ficha{border:1px solid var(--line);border-radius:10px;padding:0;width:min(860px,96vw);max-height:92vh;background:var(--card);color:var(--txt)}
 dialog#ficha::backdrop{background:rgba(0,0,0,.5)}
+.consol{margin:10px 0 0;padding:9px 12px;border:1px solid var(--s4);border-left-width:4px;border-radius:6px;background:var(--card);font-size:.9rem}
 #ficha .topo{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:12px 14px 8px;background:var(--bg);border-bottom:1px solid var(--line)}
 #ficha h2{margin:0;font-size:1.1rem}
 #ficha .cx{padding:10px 14px 14px;overflow:auto;max-height:calc(92vh - 70px)}
@@ -339,6 +340,7 @@ table.eq tr.det>td{background:var(--bg);text-align:left;padding:10px 12px}
   <h1>Painel da Atenção Primária – Região Norte</h1>
   <p id="sub"></p>
 </div></header>
+<div class="pagina"><p id="consol" class="consol" hidden></p></div>
 
 <div class="pagina">
   <nav class="abas" role="tablist" aria-label="Seção">
@@ -468,7 +470,7 @@ table.eq tr.det>td{background:var(--bg);text-align:left;padding:10px 12px}
       <li><b>Link desta tela:</b> o endereço do navegador guarda a aba, o indicador, o período, o filtro e a unidade aberta; copie e envie para abrir no mesmo ponto.</li>
       <li><b>Pré-natal, hipertensão, diabetes, saúde mental, colo do útero, IST e odontologia</b> existem só por equipe (a fonte não traz o profissional).</li>
       <li><b>Procedimentos</b> são agrupados em famílias por código SIGTAP (rastreio do colo do útero, testes rápidos, DIU, implante contraceptivo, pé diabético, pressão arterial, peso e altura, curativos etc.). Um procedimento só aparece se foi <i>registrado</i> como tal no PEC; acolhimento e escuta inicial, por exemplo, quase sempre entram como tipo de atendimento, não como procedimento.</li>
-      <li><b>Motivos de consulta</b> usam o CID-10 registrado no atendimento, agrupado em linhas de cuidado (a lista está em <code>coleta/motivos.py</code>). Um atendimento pode ter mais de um CID, e cerca de <b>4 em cada 10 não têm CID</b>: a linha "Sem CID registrado" mostra isso. Leia como perfil, não como contagem exata de doenças.</li>
+      <li><b>Motivos de consulta</b> usam o CID-10 registrado no atendimento, agrupado em linhas de cuidado; quando o registro não tem CID, vale o <b>CIAP-2</b>, agrupado nas mesmas linhas (as duas listas estão em <code>coleta/motivos.py</code>). Um atendimento pode ter mais de um código. Cerca de 4 em cada 10 registros não têm CID, mas a maior parte deles tem CIAP: a linha "Sem CID nem CIAP registrado" mostra só os que não têm nenhum dos dois. Leia como perfil, não como contagem exata de atendimentos.</li>
       <li><b>Alertas</b> são etiquetas nas equipes e UBS (nenhum atendimento, bem abaixo do habitual, queda sobre o ano anterior, sem médico, ACS sem visita, sem registro de procedimento); o filtro Mostrar lista só quem tem o sinal. Dentro de cada GSAP e UBS, a faixa <b>contra a Região</b> põe cada equipe como um ponto contra as demais: estar entre as mais baixas não prova desempenho inadequado, porque população, território e composição da equipe diferem. <b>Perfil dos atendimentos</b> descreve o atendimento realizado (tipo, quem atendeu, pessoas atendidas e consultas por mil); não mede espera nem demanda não atendida. <b>Inconsistências</b> (área dos gestores) lista problemas de código e de vínculo.</li>
       <li>Cobertura da APS, Previne Brasil/ISF e Bolsa Família estão parados no InfoSaúde (abr/2025, 2024 e 2025-2) e por isso não entram.</li>
     </ul>
@@ -489,7 +491,7 @@ const estado = { ind: "atend", per: 24, fil: "", grp: "prod", cmpInd: [] };
 const BP = "Produção registrada ligada a esta boa prática do cofinanciamento; não é o indicador oficial, que conta pessoas acompanhadas";
 const GRUPOS = [["prod", "Acesso e produção", "Atendimentos, visitas, vacinas, atividades coletivas, tipo de atendimento e procedimentos gerais"], ["inf", "Desenvolvimento infantil", BP], ["gest", "Gestação e puerpério", BP],
   ["dm", "Diabetes", BP], ["has", "Hipertensão", BP], ["idoso", "Pessoa idosa", BP], ["mulher", "Saúde da mulher", BP + " (prevenção do câncer e contracepção)"], ["bucal", "Saúde bucal", "Só por equipe de saúde bucal"],
-  ["outras", "Saúde mental e outras", "Saúde mental, IST, tuberculose e hanseníase, tabagismo, PrEP e práticas integrativas"], ["mot", "Motivos de consulta", "CID registrado no atendimento; só por equipe"]];
+  ["outras", "Saúde mental e outras", "Saúde mental, IST, tuberculose e hanseníase, tabagismo, PrEP e práticas integrativas"], ["mot", "Motivos de consulta", "CID registrado no atendimento (ou CIAP, quando não há CID); só por equipe"]];
 const GRP_KS = { inf: ["p_puer", "vacinas", "m_crianca"], gest: ["prenatal", "p_prenatal", "p_puerp", "p_ts_sif", "p_penic", "p_ts_hiv", "p_ts_hep", "m_gravidez"],
   dm: ["dm", "p_pe", "p_glic", "p_pa", "p_antropo", "m_dm"], has: ["has", "p_pa", "p_antropo", "m_has", "m_obesi"], idoso: ["p_idoso", "p_domic"],
   mulher: ["colo", "p_cito", "mama", "p_diu", "p_implante", "m_contracep", "m_rastreio"], bucal: ["odonto1", "odonto"], outras: ["mental", "m_mental", "ist", "m_ist", "m_tbhan", "p_tabag", "p_prep", "p_pic"] };
@@ -587,6 +589,9 @@ function barras(s, w = 1100, h = 170) {   // uma linha por ano, de janeiro a dez
 }
 
 const media12 = s => { const v = s.slice(Math.max(IU - 12, 0), IU); return v.length ? v.reduce((a, x) => a + (x || 0), 0) / v.length : 0; };   // média dos 12 meses anteriores ao último mês completo: referência do mapa de calor
+const DIAS_CONSOL = 10;   // nos primeiros dias do mês o InfoSaúde ainda recebe registros do mês anterior
+const CONSOL = !!P.mes_parcial && P.gerado.slice(0, 7) === P.mes_parcial && +P.gerado.slice(8, 10) <= DIAS_CONSOL;
+const NOTA_CONSOL = () => `${mesRot(MESES[IU])} ainda em consolidação: confirme antes de agir. `;
 const habitual = s => mediana(s.slice(Math.max(IU - 12, 0), IU));   // mediana dos 12 meses anteriores ao último mês completo (o mês avaliado não entra)
 function barrasPessoa(s, ini, w = 460, h = 120) {   // produção individual: uma barra por mês, em sequência, a partir do primeiro registro da pessoa
   const [a0] = faixa(), a = Math.max(a0, ini), n = IU - a + 1; if (n < 1) return "";
@@ -684,7 +689,7 @@ function passa(cam) {   // com filtro ligado: o próprio nó ou algum nó abaixo
   return false;
 }
 function etiquetas(cam, nivel) {
-  const proprias = (sinais().get(cam) || []).map(x => `<span class="chip ${x.nivel}" title="${esc(x.det)}">${esc(x.rot)}</span>`).join("");
+  const proprias = (sinais().get(cam) || []).map(x => `<span class="chip ${x.nivel}" title="${esc((CONSOL ? NOTA_CONSOL() : "") + x.det)}">${esc(x.rot)}${CONSOL ? " (em consolidação)" : ""}</span>`).join("");
   let conta = "";
   if (nivel !== "e") {   // GSAP e UBS: quantas equipes abaixo têm algum sinal
     let n = 0, alta = 0;
@@ -784,7 +789,7 @@ function pizzaSecao(grupo, ks, e) {
     const L = ks.map(k => ({ k, n: e.serie[k][IU], rot: IND[k].nome })).filter(x => x.n > 0).sort((a, b) => b.n - a.n), topo = L.slice(0, 8), resto = L.slice(8).reduce((a, x) => a + x.n, 0);
     const itens = topo.map((x, i) => ({ n: x.n, rot: x.rot, cor: x.k === "m_sem" ? "var(--s6)" : PALETA_PIZZA[i % PALETA_PIZZA.length], ord: 0 }));
     if (resto) itens.push({ n: resto, rot: "Demais linhas de cuidado", cor: "var(--s0)", ord: -1 });
-    return pizza(itens, "CID em " + mesRot(MESES[IU]));
+    return pizza(itens, "CID ou CIAP em " + mesRot(MESES[IU]));
   }
   if (grupo.startsWith("Perfil de acesso")) {
     const tipos = TIPOS.map(([k, rot, cor]) => ({ n: e.serie[k] ? e.serie[k][IU] : 0, rot, cor, ord: 0 }));
@@ -800,7 +805,7 @@ function tabelaEquipe(e) {
   Object.entries(porGrupo).forEach(([g, lista]) => {
     const mot = g.startsWith("Motivos"), tot = mot ? lista.reduce((t, k) => t + e.serie[k][IU], 0) : 0, nome = g.replace(/ \(.*\)$/, "").toLowerCase();
     const ord = mot ? [...lista].sort((a, b) => e.serie[b][IU] - e.serie[a][IU]) : lista, pz = pizzaSecao(g, lista, e);
-    corpo += `<tr class="grp"><td class="l" colspan="7"><button type="button" class="btn-sec" aria-expanded="false" data-g="${gi}" data-r="${esc(nome)}" data-n="${lista.length}">▸ Mostrar ${esc(nome)} (${lista.length})</button>${mot ? ` <span class="nota">· ${fmt(tot)} registros (com e sem CID) em ${mesRot(MESES[IU])}</span>` : ""}</td></tr>`;
+    corpo += `<tr class="grp"><td class="l" colspan="7"><button type="button" class="btn-sec" aria-expanded="false" data-g="${gi}" data-r="${esc(nome)}" data-n="${lista.length}">▸ Mostrar ${esc(nome)} (${lista.length})</button>${mot ? ` <span class="nota">· ${fmt(tot)} registros (CID ou CIAP) em ${mesRot(MESES[IU])}</span>` : ""}</td></tr>`;
     if (pz) corpo += `<tr data-g="${gi}" hidden><td colspan="7">${pz}</td></tr>`;
     corpo += ord.map(k => linhaInd(k, e.serie[k], tot, gi)).join("");
     gi++;
@@ -1564,7 +1569,8 @@ function mudar() {
   gravarURL();
 }
 function iniciar() {
-  $("#sub").textContent = `Dados do InfoSaúde-DF · último mês completo: ${mesRot(MESES[IU])} · gerado em ${P.gerado.replace("T", " ")}` + (P.mes_parcial ? ` · ${mesRot(P.mes_parcial)} (parcial) não exibido` : "");
+  if (CONSOL) { const c = $("#consol"); c.hidden = false; c.innerHTML = `<b>${mesRot(MESES[IU])} ainda em consolidação.</b> Nos primeiros ${DIAS_CONSOL} dias do mês o InfoSaúde ainda recebe registros atrasados do mês anterior. Zeros, quedas e alertas de ${mesRot(MESES[IU])} podem mudar nos próximos dias: confirme com a equipe antes de agir.`; }
+  $("#sub").textContent = `Dados do InfoSaúde-DF · último mês completo: ${mesRot(MESES[IU])}${CONSOL ? " (em consolidação)" : ""} · gerado em ${P.gerado.replace("T", " ")}` + (P.mes_parcial ? ` · ${mesRot(P.mes_parcial)} (parcial) não exibido` : "");
   $("#ult").textContent = mesRot(MESES[IU]);
   $("#grp-ind").innerHTML = GRUPOS.map(([g, r, d]) => `<button type="button" data-g="${g}" aria-pressed="false"${d ? ` title="${esc(d)}"` : ""}>${esc(r)}</button>`).join("");
   $("#grp-ind").addEventListener("click", e => { const b = e.target.closest("button[data-g]"); if (b && b.dataset.g !== estado.grp) { montarInd(b.dataset.g); mudar(); } });

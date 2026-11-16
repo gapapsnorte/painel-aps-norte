@@ -47,7 +47,7 @@ from familias import FAMILIAS, COD2FAM
 GRP = {k: "Atendimento e produção" for k in IND}
 for _k in ("prenatal", "has", "dm", "mental", "colo", "mama", "ist", "odonto1", "odonto"): GRP[_k] = "Condições avaliadas e odontologia (só por equipe)"
 for _k, (_nome, _c) in FAMILIAS.items(): IND[_k] = (_nome, "procedimentos", "prof"); GRP[_k] = "Procedimentos"
-from motivos import NOMES as MOT_NOMES, fam_cid
+from motivos import NOMES as MOT_NOMES, fam_cid, fam_ciap, SEM_CID
 for _k, _n in MOT_NOMES.items(): IND[_k] = (_n, "CID registrados", "eq"); GRP[_k] = "Motivos de consulta (CID, só por equipe)"
 TIPOS_ACESSO = {"Consulta no dia": "a_dia", "Consulta agendada": "a_agend", "Consulta agendada programada / Cuidado continuado": "a_prog",
                 "Atendimento de urgência": "a_urg", "Escuta inicial / Orientação": "a_escuta"}
@@ -197,7 +197,14 @@ def f_odo(eq, _, l, i, cnes):
 
 def f_mot(eq, _, l, i, cnes):
     if eq is None: return
-    eq["serie"][fam_cid(l["cid"])][i] += l["n"] or 0
+    fam = fam_cid(l["cid"])
+    if fam == SEM_CID[0] and TEM_CIAP: return     # sem CID: o motivo vem do CIAP (motivos_ciap), para não contar duas vezes
+    eq["serie"][fam][i] += l["n"] or 0
+
+TEM_CIAP = (BR / "motivos_ciap.json").exists()   # registros sem CID, por CIAP (coleta.py); sem o arquivo, vale a regra antiga (sem CID = sem motivo)
+def f_motc(eq, _, l, i, cnes):
+    if eq is None: return
+    eq["serie"][fam_ciap(l["ciap"])][i] += l["n"] or 0
 
 def f_proc(eq, _, l, i, cnes):
     fam = COD2FAM.get(str(l["cod"]))
@@ -205,7 +212,7 @@ def f_proc(eq, _, l, i, cnes):
     n = l["n"] or 0; p = no_prof(eq, l["cns"], l["nome"], titulo(l["cat"]))
     soma_serie(p, fam, i, n); eq["serie"][fam][i] += n
 
-for arq, fn in (("motivos", f_mot), ("procedimentos", f_proc), ("atendimentos", f_atend), ("visitas", f_vis), ("vacinas", f_vac), ("coletivas", f_col), ("condicoes", f_cond), ("odonto", f_odo)):
+for arq, fn in (("motivos", f_mot),) + ((("motivos_ciap", f_motc),) if TEM_CIAP else ()) + (("procedimentos", f_proc), ("atendimentos", f_atend), ("visitas", f_vis), ("vacinas", f_vac), ("coletivas", f_col), ("condicoes", f_cond), ("odonto", f_odo)):
     processa(arq, fn)
 
 # ---------- séries agregadas, estatísticas e alertas ----------
@@ -443,6 +450,12 @@ for g in saida_g:
             if profs: nominal_prof[f"{u['cnes']}|{e['ine'] or 'SEM'}"] = profs
             nomes_todos.update(p["nome"] for p in profs)
 GERADO = dt.datetime.now(BRT).replace(tzinfo=None).isoformat(timespec="minutes")   # sempre hora de Brasília
+if EM_CI:
+    _h = AQUI.parent / "historico_consolidacao.csv"
+    _at = regiao.get("atend", zeros())
+    with open(_h, "a", encoding="utf-8", newline="") as _fh:
+        if _h.stat().st_size == 0: _fh.write("gerado_em,mes,atendimentos_regiao\n")
+        for _i in range(max(NM - 3, 0), NM): _fh.write(f"{GERADO},{MESES[_i]},{_at[_i]}\n")
 nominal = {"gerado": GERADO, "com_matricula": bool(PRIV), "prof": nominal_prof, "alertas": alertas_nominais, "incons": incons}
 if EM_CI and (PRIV or any("mat" in p for l in nominal_prof.values() for p in l)):
     raise SystemExit("Matrícula encontrada numa geração feita no GitHub: abortado. A matrícula só pode existir na geração local.")

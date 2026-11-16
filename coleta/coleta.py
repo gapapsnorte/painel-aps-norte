@@ -113,33 +113,38 @@ def coleta_proc():
     msg = f"[procedimentos] {len(todas)} linhas em {time.time()-t0:.0f}s"; print(msg); log.append(msg)
 coleta_proc()
 
-# 8. Motivos de consulta (CID): equipe x CID por mês, particionado por UBS para não bater no teto de linhas
+# 8. Motivos de consulta: equipe x CID por mês e, para os registros sem CID, equipe x CIAP. Particionado por UBS para não bater no teto de linhas
 def coleta_motivos():
-    t0 = time.time(); p = Painel(URL["Atendimentos Individuais na APS"])
+    p = Painel(URL["Atendimentos Individuais na APS"])
     ref = json.load(open(AQUI / "referencia.json", encoding="utf-8"))
     cnes_aps = sorted(c for c, u in ref["ubs"].items() if re.match(r"UBS", u["nome_rh"] or ""))
-    E = {"f": "fAtd_indiv", "e": "dEstabelecimentos", "fa": "fAtendimentos", "c": "dCid"}
-    sel = [("cnes", col("e", "i_estab_cnes")), ("ine", col("e", "i_ine")), ("cid", col("c", "cid")), ("n", soma("fa", "i_qtd_atendimento_prof"))]
-    def q(a, m, lista):
-        where = [regiao("e")] + mes_where("f", "i_ano_compt", "i_mes_compt", a, m) + [em(col("e", "i_estab_cnes"), [lit_txt(c) for c in lista])]
-        for tentativa in range(3):
-            try:
-                r = p.consulta(E, sel, where, limite=TETO); break
-            except Exception:
-                if tentativa == 2: raise
-                time.sleep(5)
-        if len(r) >= TETO:
-            if len(lista) == 1: raise RuntimeError(f"motivos {a}-{m:02d} cnes {lista[0]}: {len(r)} linhas = teto")
-            h = len(lista) // 2; return q(a, m, lista[:h]) + q(a, m, lista[h:])
-        return r
-    todas = []
-    for a, m in MESES:
-        for i in range(0, len(cnes_aps), 8):
-            for l in q(a, m, cnes_aps[i:i + 8]):
-                l["compt"] = f"{a}-{m:02d}"; todas.append(l)
-    if not todas: raise RuntimeError("motivos: a coleta voltou vazia (coluna ou filtro mudou no InfoSaúde?)")
-    (OUT / "motivos.json").write_text(json.dumps(todas, ensure_ascii=False), "utf-8")
-    msg = f"[motivos] {len(todas)} linhas em {time.time()-t0:.0f}s"; print(msg); log.append(msg)
+    def rodada(nome, E, sel, extra, passo):
+        t0 = time.time()
+        def q(a, m, lista):
+            where = [regiao("e")] + mes_where("f", "i_ano_compt", "i_mes_compt", a, m) + [em(col("e", "i_estab_cnes"), [lit_txt(c) for c in lista])] + extra
+            for tentativa in range(3):
+                try:
+                    r = p.consulta(E, sel, where, limite=TETO); break
+                except Exception:
+                    if tentativa == 2: raise
+                    time.sleep(5)
+            if len(r) >= TETO:
+                if len(lista) == 1: raise RuntimeError(f"{nome} {a}-{m:02d} cnes {lista[0]}: {len(r)} linhas = teto")
+                h = len(lista) // 2; return q(a, m, lista[:h]) + q(a, m, lista[h:])
+            return r
+        todas = []
+        for a, m in MESES:
+            for i in range(0, len(cnes_aps), passo):
+                for l in q(a, m, cnes_aps[i:i + passo]):
+                    l["compt"] = f"{a}-{m:02d}"; todas.append(l)
+        if not todas: raise RuntimeError(f"{nome}: a coleta voltou vazia (coluna ou filtro mudou no InfoSaúde?)")
+        (OUT / f"{nome}.json").write_text(json.dumps(todas, ensure_ascii=False), "utf-8")
+        msg = f"[{nome}] {len(todas)} linhas em {time.time()-t0:.0f}s"; print(msg); log.append(msg)
+    base = [("cnes", col("e", "i_estab_cnes")), ("ine", col("e", "i_ine"))]; n = [("n", soma("fa", "i_qtd_atendimento_prof"))]
+    if "--so-ciap" not in sys.argv:
+        rodada("motivos", {"f": "fAtd_indiv", "e": "dEstabelecimentos", "fa": "fAtendimentos", "c": "dCid"}, base + [("cid", col("c", "cid"))] + n, [], 8)
+    # registros sem CID (campo vazio na fato): o motivo vem do CIAP; vazio nos dois = sem motivo registrado
+    rodada("motivos_ciap", {"f": "fAtd_indiv", "e": "dEstabelecimentos", "fa": "fAtendimentos"}, base + [("ciap", col("f", "ciap"))] + n, [em(col("f", "cid"), [lit_txt("")])], 20)
 coleta_motivos()
 
 (OUT / "_log.json").write_text(json.dumps({"quando": dt.datetime.now().isoformat(timespec="seconds"), "meses": [f"{a}-{m:02d}" for a, m in MESES], "log": log}, ensure_ascii=False, indent=1), "utf-8")

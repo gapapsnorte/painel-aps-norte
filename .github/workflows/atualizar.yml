@@ -57,7 +57,7 @@ jobs:
           date -u +%F > ultima_atualizacao.txt
           git config user.name "painel-aps-norte[bot]"
           git config user.email "actions@users.noreply.github.com"
-          git add ultima_atualizacao.txt
+          git add ultima_atualizacao.txt historico_consolidacao.csv   # o histórico mede em quantos dias o InfoSaúde fecha cada mês
           git diff --cached --quiet || (git commit -q -m "Atualização de $(cat ultima_atualizacao.txt)" && git push)
       - if: ${{ vars.PUBLICAR == 'sim' }}       # sem publicar, não deixa cópia do site baixável nos artefatos
         uses: actions/upload-artifact@v4

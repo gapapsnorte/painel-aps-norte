@@ -47,7 +47,8 @@ Depois é só reabrir `site\index.html`. Não usar `python -I` (não acha `pbi_l
 - Cada consulta devolve no máximo 30 mil linhas, **sem erro**: a coleta é por mês e aborta se bater no teto.
 - CNS/CPF/matrícula são usados só para ligar profissional à lotação e **nunca vão para a página**.
 - Alertas (último mês completo): eSF sem atendimento (média anterior ≥ 100), sem médico (média ≥ 30), queda ≥ 30% sobre o mesmo mês do ano anterior (base ≥ 150 na equipe, ≥ 600 na UBS), ACS lotado sem visita, produção sem equipe ≥ 30% na UBS. São sinais para conferir, não conclusões.
-- Motivos (CID): um atendimento pode ter mais de um CID e ~4 em 10 vêm sem CID; ler como perfil, não como contagem exata.
+- Motivos (CID e, na falta dele, CIAP; desde 16/11/2026): um atendimento pode ter mais de um código. ~4 em 10 registros vêm sem CID, mas a maioria tem CIAP (`fam_ciap()` em `coleta/motivos.py`, coleta em `dados/brutos/motivos_ciap.json`); só ~6% ficam sem nenhum dos dois. Ler como perfil, não como contagem exata.
+- Mês em consolidação (16/11/2026): nos 10 primeiros dias do mês a página avisa que o último mês completo ainda pode mudar (`CONSOL` em `site/index.html`, calculado da data de geração). O GitHub grava a cada rodada `historico_consolidacao.csv` (total de atendimentos da Região nos 3 últimos meses), para medir em quantos dias o InfoSaúde fecha o mês.
 - Fora da v1: ICSAP (filtro por residência na Norte só vai até fev/2025), procedimentos, Cobertura/Previne/Bolsa Família (painéis parados no InfoSaúde).
 
 ## Aba Consultas por mil hab. (11/11/2026)
