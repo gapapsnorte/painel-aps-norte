@@ -41,7 +41,7 @@ def fam_cid(cid):
         if any(c.startswith(p) for p in pref): return k
     return "m_outros"
 
-# ---- CIAP-2 (só para registros sem CID). Tabela de 16/11/2026, feita sobre os 709 códigos da dCiap do InfoSaúde; validação clínica da Rebeca pendente.
+# ---- CIAP-2 (só para registros sem CID). Tabela de 16/11/2026, feita sobre os 709 códigos da dCiap do InfoSaúde; validada pela Rebeca em 16/11/2026, sem alterações.
 # Regra: código específico (CIAP_COD) > capítulo (CIAP_CAP). Sintomas ficam na linha do aparelho; neoplasias vão com "sangue e tumores", como no CID.
 def _c(letra, *nums): return [f"{letra}{n:02d}" for n in nums]
 def _f(letra, a, b): return [f"{letra}{n:02d}" for n in range(a, b + 1)]
