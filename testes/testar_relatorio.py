@@ -42,7 +42,7 @@ with sync_playwright() as pw:
     pg.locator("#arvore > details.g > summary").first.click(); pg.wait_for_timeout(300); pg.locator("#g0u0 > summary").click(); pg.wait_for_timeout(300)
     pg.click("#btn-rel"); pg.wait_for_selector("#dlg-rel[open]")
     confere("a unidade sugerida é a UBS aberta na tela", pg.input_value("#rel-escopo") == "u:0:0")
-    confere("13 itens para escolher; o nominal vem desmarcado", pg.locator("input[name='rel-sec']").count() == 13 and not pg.is_checked("input[name='rel-sec'][value='prof']"))
+    confere("14 itens para escolher; o nominal vem desmarcado", pg.locator("input[name='rel-sec']").count() == 14 and not pg.is_checked("input[name='rel-sec'][value='prof']"))
     pg.screenshot(path=str(SAIDA / "relatorio_janela.png"))
     pg.click("#rel-nenhuma"); pg.click("#rel-ok"); pg.wait_for_timeout(150)
     confere("nada marcado: avisa e não gera", "pelo menos um" in pg.inner_text("#rel-aviso") and pg.locator("#dlg-rel[open]").count() == 1)

@@ -90,7 +90,7 @@ with sync_playwright() as p:
     confere("sem senha: equipes abertas", pg.locator("details.e[open]").count() > 150, pg.locator("details.e[open]").count())
     confere("sem senha: aviso de acesso restrito no lugar da tabela", pg.locator(".restrito-nota").count() > 150 and pg.locator("button.pess").count() == 0)
     acs = [x for x in P["alertas"] if x["tipo"] == "ACS sem visita"]
-    confere("sem senha: alerta de ACS só com a contagem", all(re.fullmatch(r"\d+ de \d+ ACS lotados sem visita registrada em \d{4}-\d{2}", x["texto"]) for x in acs), f"{len(acs)} alertas")
+    confere("sem senha: alerta de ACS só com a contagem", all(re.fullmatch(r"\d+ de \d+ ACS lotados sem visita registrada em [a-z]{3}/\d{2}", x["texto"]) for x in acs), f"{len(acs)} alertas")
     pg.select_option("#f-alerta", "acs"); pg.wait_for_timeout(900); h_f = pg.evaluate("() => document.documentElement.outerHTML")
     confere("sem senha: filtro de ACS ligado, etiquetas sem nomes", pg.locator("#arvore details.e").count() == len(acs) and not nomes_em(h_f), f"{len(acs)} equipes")
     pg.select_option("#f-alerta", ""); pg.wait_for_timeout(300)

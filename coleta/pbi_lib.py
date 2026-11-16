@@ -74,6 +74,7 @@ def decodificar(js, nomes):
     res = js["results"][0]["result"]["data"]
     ds = res["dsr"]["DS"][0]
     dicts = ds.get("ValueDicts", {})
+    if not ds.get("PH"): return []          # consulta sem nenhuma linha
     ph = ds["PH"][0]
     chave = next((k for k in ph if k.startswith("DM")), None)
     if chave is None:

@@ -6,7 +6,7 @@ def _pepper():
     p = os.environ.get("APS_PEPPER")
     if not p:
         f = pathlib.Path(__file__).parent / "pepper.local"
-        if f.exists(): p = f.read_text(encoding="utf-8").strip()
+        if f.exists(): p = f.read_text(encoding="utf-8-sig").strip()
     if not p: raise SystemExit("Falta o segredo APS_PEPPER (variável de ambiente, ou arquivo coleta/pepper.local).")
     return p
 PEPPER = _pepper()

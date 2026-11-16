@@ -1,6 +1,6 @@
 # Painel da APS – Região Norte (InfoSaúde)
 
-**Publicação:** repositório público `gapapsnorte/painel-aps-norte`, página em https://gapapsnorte.github.io/painel-aps-norte/ (GitHub Pages), atualizada pelo GitHub Actions às 07h15 e 14h30. A página mostra os **nomes dos profissionais** (decisão da responsável, 08/11/2026); **matrícula, CPF e CNS nunca vão ao ar**: o CNS é embaralhado com um segredo (`APS_PEPPER`, guardado só no seu computador em `coleta/pepper.local` e nos Segredos do GitHub) e a matrícula só existe na versão gerada localmente. Para tirar a página do ar: no repositório, Settings > Pages > Unpublish, ou apagar a variável `PUBLICAR`.
+**Publicação:** repositório público `gapapsnorte/painel-aps-norte`, página em https://gapapsnorte.github.io/painel-aps-norte/ (GitHub Pages), atualizada pelo GitHub Actions duas vezes ao dia (agendado para 03h07 e 10h07; o GitHub costuma iniciar 4 a 7 horas depois, então a página muda de manhã e no meio da tarde). A página mostra os **nomes dos profissionais** (decisão da responsável, 08/11/2026); **matrícula, CPF e CNS nunca vão ao ar**: o CNS é embaralhado com um segredo (`APS_PEPPER`, guardado só no seu computador em `coleta/pepper.local` e nos Segredos do GitHub) e a matrícula só existe na versão gerada localmente. Para tirar a página do ar: no repositório, Settings > Pages > Unpublish, ou apagar a variável `PUBLICAR`.
 
 
 Painel estático: GSAP → UBS → equipe → lista de profissionais, com série mensal em cada caixa, alertas e busca.
@@ -54,7 +54,8 @@ Depois é só reabrir `site\index.html`. Não usar `python -I` (não acha `pbi_l
 - Indicador RIPSA COB.1.01 (3ª ed., jun/2026): consultas de médico na APS por população. Ao lado, enfermeiro e médico + enfermeiro (acréscimo do painel). Aqui “por mil” = razão da ficha (por 100) × 10; a ficha não traz meta.
 - **Região, DF e regiões de saúde:** numerador = atendimentos individuais do InfoSaúde (categoria MÉDICO inclui residentes, ~3%); denominador = série de população por RA do painel Cobertura (`base_populacional`). Brasil = tabela da ficha RIPSA (2022–2024), só para médico. Decisão dela (11/11): série do InfoSaúde, não o Censo fixo (que daria Norte ~9% maior).
 - **GSAP, UBS e equipe:** denominador = população **cadastrada** (`base_cadastros`, última competência **abr/2025**, parada no InfoSaúde), com aviso na tela; não se compara com a tabela de cima. Variação = 12 meses contra os 12 anteriores, mesmo denominador.
-- Coleta em `coletaazao.py` (~1 min); `montar.py` grava `razao` no painel.json e `cad` por UBS/equipe; `validar.py` barra se faltar. Teste: `testes	estar_razao.py` (confere os números da tela contra o JSON).
+- Coleta em `coleta
+azao.py` (~1 min); `montar.py` grava `razao` no painel.json e `cad` por UBS/equipe; `validar.py` barra se faltar. Teste: `testes	estar_razao.py` (confere os números da tela contra o JSON).
 - **Filtro "População (denominador)" (11/11/2026, pedido dela):** série do InfoSaúde por RA (padrão), Censo 2022 (fixo; só Norte 345.286 e DF 2.817.381, as outras regiões ficam "–") ou população cadastrada (abr/2025, por região). Vale para a tabela Brasil/DF/regiões; a tabela GSAP/UBS/equipe sempre usa a cadastrada. Coleta extra: `cadastros_regiao.json`.
 
 ## Área dos gestores (nomes sob senha) — preparado em 11/11/2026, ainda não publicado
@@ -107,3 +108,10 @@ Feito a partir da avaliação externa do painel e das escolhas dela. Tudo local;
 - **Rótulos:** "já saiu" virou "vínculo atual não confirmado"; variação diz contra qual mês; taxa por mil cadastrados leva o selo "comparação exploratória".
 - **Testes:** `testes/testar_lote.py` cobre o lote; os demais foram ajustados às abas novas.
 - **Cópia de antes:** `_backup_2026-11-12_antes_lote`.
+
+## Revisão de 13/11/2026 (código, metodologia, depuração, valor de uso)
+
+- Relatório: `_analise_2026-11/revisao_2026-11-13/REVISAO_geral.md` (+ `1_codigo_python.md`, `2_codigo_pagina.md`, `3_debug.md`, `4_bibliografia.md`). Estado anterior em `_backup_2026-11-13_antes_revisao`.
+- Corrigido: lotados na UBS sem equipe deixam de aparecer como "não consta na lotação"; "registros" das inconsistências soma só séries que não se sobrepõem (`BASE_REG` em `montar.py`); equipes com o mesmo nome na mesma UBS ganham "(INE …)"; cadastro de equipe que mudou de UBS fica só na UBS atual; `usuarios.py` junta as pessoas da mesma INE em duas UBS; coleta vazia vira erro; `validar.py` exige as séries principais, barra mês do meio pela metade, arquivo estranho em `site/` e geração no GitHub sem a área dos gestores; hora de geração sempre de Brasília; textos de alerta com "out/26"; na página: dica no celular, "lembrar" que resiste a falha de rede, link com valor inválido, busca por número, mensagem quando `painel.js` não carrega.
+- Alertas (último mês completo): o "habitual" é a **mediana** dos 12 meses anteriores (o texto antigo deste arquivo fala em média).
+- Pendente de decisão: regra de queda (2 meses seguidos abaixo de 70% do habitual dá 8 sinais/mês com 73% de confirmação, contra 25 e 51% da regra atual); mês "em consolidação" nos primeiros dias; CIAP nos motivos de consulta (só 6% dos registros não têm CID nem CIAP); as duas INE da "eSF 0369/33 - Azul" (UBS 4 Planaltina).

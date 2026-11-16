@@ -114,7 +114,7 @@ with sync_playwright() as p:
     conf("clicar na unidade abre a Visão geral nela", pg.locator("#vista-h").is_visible() and pg.locator("#arvore details.u[open]").count() >= 1)
     conf("rótulo 'já saiu' trocado", "já saiu" not in pg.inner_text("body") and "vínculo atual confirmado" in pg.inner_text("label:has(#chk-inativos)"))
     # ---- relatório acompanha
-    conf("relatório: 13 partes para escolher", pg.evaluate("REL_SEC.length") == 13)
+    conf("relatório: 14 partes para escolher", pg.evaluate("REL_SEC.length") == 14)
     h = pg.evaluate("relatorioHTML('g:0', REL_SEC.map(x => x[0]))")
     for t in ("Produção por boa prática", "Inserção de DIU", "Perfil dos atendimentos, ", "Perfil dos atendimentos em ", "Inconsistências de código e de vínculo", "Quadro de providências", "comparação exploratória", "versus"):
         conf(f"relatório traz: {t}", t in h)

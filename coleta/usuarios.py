@@ -66,8 +66,13 @@ def main():
 
     por_eq, por_ubs, por_gsap, regiao = {}, {}, {}, defaultdict(int)
     ubs_p = defaultdict(lambda: defaultdict(int)); gsap_p = defaultdict(lambda: defaultdict(int)); sem_u = defaultdict(int); sem_g = defaultdict(int)
+    ine_p = defaultdict(lambda: defaultdict(int)); sem_i = defaultdict(int)     # a mesma INE pode registrar em duas UBS: junta as pessoas
+    for (cnes, ine), n in sem_id.items(): sem_i[ine] += n
     for (cnes, ine), d in pess.items():
-        if ine != "-": por_eq[ine] = resumo(d.values(), sem_id.get((cnes, ine), 0))
+        if ine != "-":
+            for k, n in d.items(): ine_p[ine][k] += n
+    for ine, d in ine_p.items(): por_eq[ine] = resumo(d.values(), sem_i.get(ine, 0))
+    for (cnes, ine), d in pess.items():
         g = ubs[cnes].get("gsap")
         for k, n in d.items():
             ubs_p[cnes][k] += n; gsap_p[g][k] += n; regiao[k] += n

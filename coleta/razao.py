@@ -27,12 +27,13 @@ def com_tentativas(fn, *a, **k):
 cob = Painel(URL["Cobertura da APS"])
 pop = com_tentativas(cob.consulta, {"b": "base_populacional"},
                      [("ano", col("b", "ano")), ("reg", col("b", "regiao_saude_desc")), ("ra", col("b", "ra_ses_desc")), ("pop", col("b", "pop_total_ra"))], [], limite=TETO)
+if not pop or len(pop) >= TETO: raise RuntimeError(f"populacao: {len(pop)} linhas (vazio ou no teto)")
 (OUT / "populacao.json").write_text(json.dumps(pop, ensure_ascii=False), "utf-8")
 print(f"[populacao] {len(pop)} linhas")
 
 cad = com_tentativas(cob.consulta, {"b": "base_cadastros"},
                      [("comp", col("b", "competencia")), ("cnes", col("b", "cnes")), ("ine", col("b", "ine")), ("n", soma("b", "cadastros"))], [], limite=TETO)
-if len(cad) >= TETO: raise RuntimeError("cadastros bateu no teto de linhas; dividir a consulta")
+if not cad or len(cad) >= TETO: raise RuntimeError("cadastros bateu no teto de linhas; dividir a consulta")
 for l in cad:   # competência vem em milissegundos desde 1970 (UTC)
     d = dt.datetime.fromtimestamp(l["comp"] / 1000, dt.timezone.utc); l["comp"] = f"{d.year}-{d.month:02d}"
 (OUT / "cadastros.json").write_text(json.dumps(cad, ensure_ascii=False), "utf-8")
@@ -40,6 +41,7 @@ print(f"[cadastros] {len(cad)} linhas, competências até {max(l['comp'] for l i
 
 cr = com_tentativas(cob.consulta, {"b": "base_cadastros", "d": "dIne"},
                     [("comp", col("b", "competencia")), ("reg", col("d", "i_desc_regiao")), ("n", soma("b", "cadastros"))], [], limite=TETO)
+if not cr or len(cr) >= TETO: raise RuntimeError(f"cadastros_regiao: {len(cr)} linhas (vazio ou no teto)")
 for l in cr:
     d = dt.datetime.fromtimestamp(l["comp"] / 1000, dt.timezone.utc); l["comp"] = f"{d.year}-{d.month:02d}"
 (OUT / "cadastros_regiao.json").write_text(json.dumps(cr, ensure_ascii=False), "utf-8")

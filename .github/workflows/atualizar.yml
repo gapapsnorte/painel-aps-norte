@@ -1,8 +1,9 @@
 name: Atualizar painel da APS Norte
 on:
   schedule:
-    - cron: "15 10 * * *"   # 07h15 em Brasília (o InfoSaúde recarrega cedo)
-    - cron: "30 17 * * *"   # 14h30 (segunda carga do dia)
+    # O GitHub tem iniciado as rodadas agendadas 4 a 7 horas depois do horário pedido (medido de 12 a 15/11/2026).
+    - cron: "7 6 * * *"     # pedido para 03h07 em Brasília: costuma sair entre 07h e 10h
+    - cron: "7 13 * * *"    # pedido para 10h07: costuma sair entre 14h e 17h (segunda carga do dia)
   workflow_dispatch:
 permissions:
   contents: write
@@ -10,7 +11,7 @@ permissions:
   id-token: write
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false     # uma rodada manual não cancela a publicação em andamento
 jobs:
   construir:
     runs-on: ubuntu-latest
@@ -58,7 +59,8 @@ jobs:
           git config user.email "actions@users.noreply.github.com"
           git add ultima_atualizacao.txt
           git diff --cached --quiet || (git commit -q -m "Atualização de $(cat ultima_atualizacao.txt)" && git push)
-      - uses: actions/upload-artifact@v4
+      - if: ${{ vars.PUBLICAR == 'sim' }}       # sem publicar, não deixa cópia do site baixável nos artefatos
+        uses: actions/upload-artifact@v4
         with:
           name: painel-site
           path: site

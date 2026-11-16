@@ -41,6 +41,7 @@ def coleta(nome, titulo, entidades, select, filtro_regiao, tempo, por_mes=True):
         else:
             for l in r: l["compt"] = f"{alvo}-{str(l['mes']).zfill(2)}"
         todas += r
+    if not todas: raise RuntimeError(f"{nome}: a coleta voltou vazia (coluna ou filtro mudou no InfoSaúde?)")
     (OUT / f"{nome}.json").write_text(json.dumps(todas, ensure_ascii=False), "utf-8")
     msg = f"[{nome}] {len(todas)} linhas em {time.time()-t0:.0f}s"; print(msg); log.append(msg)
     return todas
@@ -107,6 +108,7 @@ def coleta_proc():
         if len(r) >= TETO: raise RuntimeError(f"procedimentos {a}-{m:02d}: {len(r)} linhas = teto; dividir a consulta")
         for l in r: l["compt"] = f"{a}-{str(m).zfill(2)}"
         todas += r
+    if not todas: raise RuntimeError("procedimentos: a coleta voltou vazia (coluna ou filtro mudou no InfoSaúde?)")
     (OUT / "procedimentos.json").write_text(json.dumps(todas, ensure_ascii=False), "utf-8")
     msg = f"[procedimentos] {len(todas)} linhas em {time.time()-t0:.0f}s"; print(msg); log.append(msg)
 coleta_proc()
@@ -135,6 +137,7 @@ def coleta_motivos():
         for i in range(0, len(cnes_aps), 8):
             for l in q(a, m, cnes_aps[i:i + 8]):
                 l["compt"] = f"{a}-{m:02d}"; todas.append(l)
+    if not todas: raise RuntimeError("motivos: a coleta voltou vazia (coluna ou filtro mudou no InfoSaúde?)")
     (OUT / "motivos.json").write_text(json.dumps(todas, ensure_ascii=False), "utf-8")
     msg = f"[motivos] {len(todas)} linhas em {time.time()-t0:.0f}s"; print(msg); log.append(msg)
 coleta_motivos()

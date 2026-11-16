@@ -16,10 +16,13 @@ _m = re.search(r"(\d{2})[ .](\d{4})", ref.get("fonte", ""))   # competência da 
 RH_ROT = (["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"][int(_m.group(1)) - 1] + "/" + _m.group(2)) if _m and 1 <= int(_m.group(1)) <= 12 else "data não identificada"
 log = json.load(open(BR / "_log.json", encoding="utf-8"))
 MESES = log["meses"]; NM = len(MESES); IX = {m: i for i, m in enumerate(MESES)}
-hoje = dt.date.today()
+BRT = dt.timezone(dt.timedelta(hours=-3))                 # Brasília (sem horário de verão); no GitHub o relógio é UTC
+hoje = dt.datetime.now(BRT).date()
 MES_PARCIAL = f"{hoje.year}-{hoje.month:02d}"          # mês em curso: incompleto, fora de alertas
 ULT = MESES[-2] if MESES[-1] == MES_PARCIAL else MESES[-1]   # último mês completo
 IU = IX[ULT]
+_MA = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"]
+def rot_mes(m): return f"{_MA[int(m[5:7]) - 1]}/{m[2:4]}" if m else "–"
 
 IND = {  # id: (nome, unidade, nível: 'prof' = por profissional e equipe; 'eq' = só equipe)
     "atend": ("Atendimentos individuais", "atendimentos", "prof"),
@@ -58,11 +61,12 @@ def L(n): return json.load(open(BR / f"{n}.json", encoding="utf-8"))
 # ---- indicador 'consultas por mil hab.' (RIPSA COB.1.01): denominadores ----
 _cad = L("cadastros") if (BR / "cadastros.json").exists() else []
 CAD_COMP = max((c["comp"] for c in _cad), default=None)          # última competência de cadastros no InfoSaúde (parada em abr/2025)
-CAD_CNES, CAD_INE = defaultdict(int), defaultdict(int)
+CAD_CNES, CAD_INE, CAD_INE_CNES = defaultdict(int), defaultdict(int), defaultdict(set)
 for _c in _cad:
     if _c["comp"] != CAD_COMP: continue
     CAD_CNES[str(_c["cnes"]).zfill(7)] += _c["n"] or 0
-    if _c["ine"] and str(_c["ine"]).isdigit(): CAD_INE[str(_c["ine"]).zfill(10)] += _c["n"] or 0
+    if _c["ine"] and str(_c["ine"]).isdigit():
+        CAD_INE[str(_c["ine"]).zfill(10)] += _c["n"] or 0; CAD_INE_CNES[str(_c["ine"]).zfill(10)].add(str(_c["cnes"]).zfill(7))
 CENSO_2022 = {"Região Norte": 345286, "Distrito Federal": 2817381}   # DF: IBGE SIDRA 4709; Norte: soma das 4 RAs pelo IPEDF (malha preliminar, mar/2024). Sem valor para as outras regiões.
 BRASIL_RIPSA = {"2022": 883, "2023": 1021, "2024": 1128}           # RIPSA 3ª ed. (jun/2026), ficha COB.1.01, consultas médicas na APS por mil hab.
 def zeros(): return [0] * NM
@@ -78,14 +82,15 @@ def _pepper():
     p = os.environ.get("APS_PEPPER")
     if not p:
         f = pathlib.Path(__file__).parent / "pepper.local"
-        if f.exists(): p = f.read_text(encoding="utf-8").strip()
+        if f.exists(): p = f.read_text(encoding="utf-8-sig").strip()
     if not p: raise SystemExit("Falta o segredo APS_PEPPER (variável de ambiente, ou arquivo coleta/pepper.local).")
     return p
 PEPPER = _pepper()
 def hc(c): return hashlib.sha256((PEPPER + "|" + str(c)).encode()).hexdigest()[:12] if c else ""   # igual nos dois scripts
 _SEQ = {}
 def pid(chave): return _SEQ.setdefault(chave, f"p{len(_SEQ) + 1}")   # id sequencial: nada derivado do CNS sai do gerador
-def norm_nome(s): return re.sub(r"[^A-Z]", "", str(s or "").upper().replace("Ç", "C").replace("Ã", "A").replace("Á", "A").replace("É", "E").replace("Ê", "E").replace("Í", "I").replace("Ó", "O").replace("Ô", "O").replace("Ú", "U"))
+import unicodedata
+def norm_nome(s): return re.sub(r"[^A-Z]", "", unicodedata.normalize("NFD", str(s or "")).upper())   # tira qualquer acento (antes a lista era parcial)
 def ine10(x):
     x = str(x or "")
     return x.zfill(10) if x.isdigit() else ""
@@ -138,6 +143,11 @@ for ine, lista in lot_ref.items():
         p = no_prof(eqn, x["cns"], x["nome"], x["cat"])
         p.update(lotado=True, cargo=x["cargo"], chs=x["chs"], cat=x["cat"] or p["cat"])
         por_cns_lot[x["cns"]] = ine
+
+lot_ubs = {}   # chave do profissional -> CNES, para quem está no RH lotado na UBS sem equipe (antes era descartado e virava "não consta na lotação")
+for _k, _lista in lot_ref.items():
+    if _k.startswith("UBS:"):
+        for _x in _lista: lot_ubs[_x["cns"] or norm_nome(_x["nome"])] = _k[4:]
 
 def soma_serie(p, ind, i, v):
     s = p["serie"].setdefault(ind, zeros()); s[i] += v
@@ -232,8 +242,16 @@ for _ine, _v in _por_ine.items():
     if len(_v) < 2: continue
     _vivo = max(_v, key=lambda t: t[2])
     for _cnes, _nome, _ult in _v:
-        if _cnes != _vivo[0] and _ult < _vivo[2] and _vivo[2] >= IU:
+        if _cnes != _vivo[0] and _ult < IU and _vivo[2] >= IU:
             migrou[(_cnes, _ine)] = {"para": _vivo[1], "ultimo": MESES[_ult] if _ult >= 0 else None}
+
+# duas equipes com o mesmo nome na mesma UBS: o caminho "GSAP › UBS › equipe" identifica a equipe na página e nos alertas, então precisa ser único
+for _u in estr.values():
+    _nm = defaultdict(list)
+    for _e in _u["eq"].values(): _nm[_e["nome"]].append(_e)
+    for _l in _nm.values():
+        if len(_l) > 1:
+            for _e in _l: _e["nome"] += f" (INE {_e['ine']})"
 
 gsaps = defaultdict(lambda: {"ubs": []})
 for cnes, u in estr.items():
@@ -255,37 +273,39 @@ for cnes, u in estr.items():
         mig = migrou.get((cnes, e["ine"])) if e["ine"] else None
         if mig:
             e["migrou"] = mig
-            alerta("media", "equipe mudou de UBS", caminho, f"Esta equipe (INE {e['ine']}) passou a registrar na {mig['para']}; o último registro aqui foi em {mig['ultimo']}. Não é equipe parada: confira se a lotação no RH está atualizada.", 0)
+            alerta("media", "equipe mudou de UBS", caminho, f"Esta equipe (INE {e['ine']}) passou a registrar na {mig['para']}; o último registro aqui foi em {rot_mes(mig['ultimo'])}. Não é equipe parada: confira se a lotação no RH está atualizada.", 0)
         elif e["tipo"] == "eSF":
             hist = med12(s)
             if s[IU] == 0 and hist >= 100:
-                alerta("alta", "equipe zerada", caminho, f"Nenhum atendimento individual em {ULT} (habitual, mediana dos 12 meses anteriores: {hist:.0f}).", 0)
+                alerta("alta", "equipe zerada", caminho, f"Nenhum atendimento individual em {rot_mes(ULT)} (habitual, mediana dos 12 meses anteriores: {hist:.0f}).", 0)
             elif var_ano(s) is not None and var_ano(s) <= -ALERTA_QUEDA and s[IU - 12] >= BASE_MIN_EQ:
-                alerta("media", "queda de atendimentos", caminho, f"Atendimentos {var_ano(s):+.0%} contra {MESES[IU-12]} ({s[IU-12]} → {s[IU]}).", var_ano(s))
+                alerta("media", "queda de atendimentos", caminho, f"Atendimentos {var_ano(s):+.0%} contra {rot_mes(MESES[IU-12])} ({s[IU-12]} → {s[IU]}).", var_ano(s))
             med = e["serie"].get("atend_med", zeros())
             if med[IU] == 0 and med12(med) >= 30:
-                alerta("alta", "sem atendimento médico", caminho, f"Nenhum atendimento de médico em {ULT} (habitual, mediana dos 12 meses anteriores: {med12(med):.0f}/mês).", 0)
+                alerta("alta", "sem atendimento médico", caminho, f"Nenhum atendimento de médico em {rot_mes(ULT)} (habitual, mediana dos 12 meses anteriores: {med12(med):.0f}/mês).", 0)
             lot_acs = [p for p in profs if p["lotado"] and (p["cat"] or "").startswith("Agente")]
             sem_vis = [p["nome"] for p in lot_acs if not p["serie"].get("visitas", zeros())[IU]]
             if sem_vis:
-                _pub = f"{len(sem_vis)} de {len(lot_acs)} ACS lotados sem visita registrada em {ULT}"
+                _pub = f"{len(sem_vis)} de {len(lot_acs)} ACS lotados sem visita registrada em {rot_mes(ULT)}"
                 alerta("media", "ACS sem visita", caminho, _pub, len(sem_vis), nominal=_pub + ": " + ", ".join(sem_vis[:4]) + ("…" if len(sem_vis) > 4 else ""))
             n3 = sum(s[max(IU - 2, 0):IU + 1])
             for fam, rot in (("p_cito", "coleta de citopatológico"), ("p_ts_sif", "teste rápido de sífilis")):
                 if n3 >= 300 and not sum(e["serie"].get(fam, zeros())[max(IU - 2, 0):IU + 1]):
-                    alerta("media", "sem registro de procedimento", caminho, f"Nenhum registro de {rot} em {MESES[max(IU-2,0)]} a {ULT} (a equipe teve {n3} atendimentos no período).", 0)
+                    alerta("media", "sem registro de procedimento", caminho, f"Nenhum registro de {rot} em {rot_mes(MESES[max(IU-2,0)])} a {rot_mes(ULT)} (a equipe teve {n3} atendimentos no período).", 0)
         e["kpi"] = {"atend_ult": s[IU], "var_ano": var_ano(s)}
-        if e["ine"] and CAD_INE.get(e["ine"]): e["cad"] = CAD_INE[e["ine"]]
+        if e["ine"] and CAD_INE.get(e["ine"]) and not mig:
+            _onde = CAD_INE_CNES.get(e["ine"], set())
+            if cnes in _onde or not _onde or all((c, e["ine"]) in migrou for c in _onde): e["cad"] = CAD_INE[e["ine"]]
         equipes.append(e)
     ordem = {"eSF": 0, "eSB": 1, "eMulti": 2, "eCR": 3}
     equipes.sort(key=lambda e: (e["ine"] == "", ordem.get(e["tipo"], 9), e["nome"]))
     ser = agrega([e["serie"] for e in equipes])
     if (var_ano(ser.get("atend", zeros())) or 0) <= -ALERTA_QUEDA and ser.get("atend", zeros())[IU - 12 if IU >= 12 else 0] >= BASE_MIN_UBS:
-        a = ser["atend"]; alerta("media", "queda de atendimentos", f"{u['gsap']} › {u['nome']}", f"UBS: atendimentos {var_ano(a):+.0%} contra {MESES[IU-12]} ({a[IU-12]} → {a[IU]}).", var_ano(a))
+        a = ser["atend"]; alerta("media", "queda de atendimentos", f"{u['gsap']} › {u['nome']}", f"UBS: atendimentos {var_ano(a):+.0%} contra {rot_mes(MESES[IU-12])} ({a[IU-12]} → {a[IU]}).", var_ano(a))
     sem = sum(e["serie"].get("atend", zeros())[IU] for e in equipes if not e["ine"])
     tot = (ser.get("atend") or zeros())[IU]
     if tot >= 200 and sem / tot >= 0.30:
-        alerta("media", "produção sem equipe", f"{u['gsap']} › {u['nome']}", f"{sem/tot:.0%} dos atendimentos de {ULT} ({sem} de {tot}) sem equipe vinculada.", sem / tot)
+        alerta("media", "produção sem equipe", f"{u['gsap']} › {u['nome']}", f"{sem/tot:.0%} dos atendimentos de {rot_mes(ULT)} ({sem} de {tot}) sem equipe vinculada.", sem / tot)
     gsaps[u["gsap"]]["ubs"].append({"cnes": cnes, "nome": u["nome"], "sigla": u["sigla"], "ra": u["ra"], "equipes": equipes, "serie": ser, "cad": CAD_CNES.get(cnes) or None,
                                     "n_esf": sum(1 for e in equipes if e["tipo"] == "eSF")})
 
@@ -349,23 +369,26 @@ def _senha():
     s = os.environ.get("APS_SENHA")
     if not s:
         f = AQUI / "senha.local"
-        if f.exists(): s = f.read_text(encoding="utf-8")
+        if f.exists(): s = f.read_text(encoding="utf-8-sig")
     s = (s or "").strip()
     if s and len(s) < SENHA_MIN: raise SystemExit(f"A senha dos gestores precisa ter pelo menos {SENHA_MIN} caracteres: o arquivo cifrado é público e senha curta pode ser descoberta por tentativa.")
     return s
 SENHA = _senha()
+if EM_CI and not SENHA: raise SystemExit("APS_SENHA ausente ou vazia no GitHub: abortado para não publicar o painel sem a área dos gestores.")
 
 # ---------- inconsistências de registro e de lotação (só na área dos gestores: vai inteiro para o bloco cifrado) ----------
 incons = []
-_MA = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"]
-def rot_mes(m): return f"{_MA[int(m[5:7]) - 1]}/{m[2:4]}" if m else "–"
 M3 = rot_mes(MESES[max(IU - 2, 0)]); ULT_R = rot_mes(ULT)
 def s3(v): return sum(v[max(IU - 2, 0):IU + 1])
-def p3(p): return sum(s3(v) for v in p["serie"].values())
+BASE_REG = ("atend", "visitas", "vacinas", "coletivas", "odonto") + tuple(FAMILIAS)   # séries disjuntas: cada registro conta uma vez
+def p3(p): return sum(s3(v) for k, v in p["serie"].items() if k in BASE_REG)
+_ID_UBS = {}
+def lot_na_ubs(p): return _ID_UBS.get(p["id"])
 def a3(p): return s3(p["serie"].get("atend", zeros()))
 def inc(tipo, g, u, e, det, n=0, nome="", cat=""):
     incons.append({"tipo": tipo, "gsap": g["nome"], "ubs": u["nome"], "equipe": e["nome"] if e else "", "nome": nome, "cat": cat or "", "det": det, "n": n})
 _pess = defaultdict(list)
+_ID_UBS.update({_SEQ[k]: c for k, c in lot_ubs.items() if k in _SEQ})
 for g in saida_g:
     for u in g["ubs"]:
         for e in u["equipes"]:
@@ -374,12 +397,14 @@ for g in saida_g:
     for u in g["ubs"]:
         sem_ubs = sum(e["serie"].get("atend", zeros())[IU] for e in u["equipes"] if not e["ine"])
         for e in u["equipes"]:
-            tot3 = sum(s3(v) for v in e["serie"].values())
+            tot3 = sum(s3(v) for k, v in e["serie"].items() if k in BASE_REG)
             if not e["ine"]:      # produção registrada sem INE: quem registrou
                 for p in e["prof"]:
                     if not p3(p): continue
                     lot = [(x[2], x[1]) for x in _pess[p["id"]] if x[3]["lotado"]]
-                    onde = f"lotado na {lot[0][0]['nome']} ({lot[0][1]['nome']})" if lot else f"não consta na lotação de {RH_ROT}"
+                    _lu = lot_na_ubs(p)
+                    onde = (f"lotado na {lot[0][0]['nome']} ({lot[0][1]['nome']})" if lot else
+                            f"lotado na UBS, sem equipe, no RH de {RH_ROT} ({titulo(ubs_ref.get(_lu, {}).get('nome_rh') or _lu)})" if _lu else f"não consta na lotação de {RH_ROT}")
                     inc("sem_ine", g, u, e, f"{a3(p)} atendimentos e {p3(p) - a3(p)} outros registros sem equipe de {M3} a {ULT_R}; {onde}.", p3(p), p["nome"], p["cat"])
                 continue
             s = e["serie"].get("atend", zeros())
@@ -401,7 +426,7 @@ for g in saida_g:
                     elif tfora > aqui and tfora >= 20:
                         (xg, xu, xe, _), n = max(fora, key=lambda t: t[1])
                         inc("lot_outra", g, u, e, f"Lotado nesta equipe, com {aqui} registros aqui e {tfora} em outro lugar de {M3} a {ULT_R}; o maior volume está em {xe['nome']} ({xu['nome']}).", tfora, p["nome"], p["cat"])
-                elif p3(p) >= 10 and not any(x[3]["lotado"] for x in vinc):
+                elif p3(p) >= 10 and not any(x[3]["lotado"] for x in vinc) and not lot_na_ubs(p):
                     inc("prod_fora_rh", g, u, e, f"{p3(p)} registros nesta equipe de {M3} a {ULT_R} e não consta na lotação de {RH_ROT}.", p3(p), p["nome"], p["cat"])
 for a in alertas:
     if a["tipo"] == "sem registro de procedimento":
@@ -417,7 +442,7 @@ for g in saida_g:
             e["n_prof"] = sum(1 for p in profs if p["ativo"])       # contagem, pública
             if profs: nominal_prof[f"{u['cnes']}|{e['ine'] or 'SEM'}"] = profs
             nomes_todos.update(p["nome"] for p in profs)
-GERADO = dt.datetime.now().isoformat(timespec="minutes")
+GERADO = dt.datetime.now(BRT).replace(tzinfo=None).isoformat(timespec="minutes")   # sempre hora de Brasília
 nominal = {"gerado": GERADO, "com_matricula": bool(PRIV), "prof": nominal_prof, "alertas": alertas_nominais, "incons": incons}
 if EM_CI and (PRIV or any("mat" in p for l in nominal_prof.values() for p in l)):
     raise SystemExit("Matrícula encontrada numa geração feita no GitHub: abortado. A matrícula só pode existir na geração local.")

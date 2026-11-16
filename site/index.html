@@ -276,6 +276,8 @@ dialog#ficha::backdrop{background:rgba(0,0,0,.5)}
 #ficha .graf{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px;margin:10px 0}
 #ficha .graf>div{border:1px solid var(--line);border-radius:10px;padding:6px 8px}
 #ficha h4{margin:0;font-size:.82rem;color:var(--muted);font-weight:600}
+#ficha h3{margin:12px 0 4px;font-size:.92rem}#ficha .acoes-ficha{margin:0 0 6px;display:flex;gap:8px;flex-wrap:wrap}
+#rel-print .graf{display:grid;grid-template-columns:1fr 1fr;gap:6pt}#rel-print .graf h4{font-size:9pt;margin:0}#rel-print .meta{color:#5b6575}
 
 /* rodapé recolhido */
 footer{margin-top:28px;color:var(--muted);font-size:.8rem;border-top:1px solid var(--line);padding:12px 0 40px}
@@ -472,7 +474,7 @@ table.eq tr.det>td{background:var(--bg);text-align:left;padding:10px 12px}
     </ul>
   </details><p id="rodape"></p></div></footer>
 
-<script src="painel.js"></script>
+<script src="painel.js" onerror="document.body.insertAdjacentHTML('afterbegin','<p style=&quot;padding:24px;font:16px sans-serif&quot;>Não foi possível carregar os dados do painel. Verifique a conexão e <a href=&quot;&quot; onclick=&quot;location.reload();return false&quot;>tente de novo</a>.</p>')"></script>
 <script>
 "use strict";
 const P = window.PAINEL;
@@ -738,7 +740,7 @@ function preencher(d) {
       const x = document.createElement("details"); x.className = "caixa e"; x.id = `g${gi}u${ui}e${ei}`; x.dataset.t = "e"; x.dataset.gi = gi; x.dataset.ui = ui; x.dataset.ei = ei;
       const cam = `${g.nome} › ${u.nome} › ${e.nome}`; if (!passa(cam)) return;
       const ativos = NOM.aberto ? e.prof.filter(p => p.ativo).length : (e.n_prof || 0);
-      x.innerHTML = sumario(e.nome, `${esc(e.tipo)} · ${ativos} profissionais${e.migrou ? ` · <b>passou a registrar na ${esc(e.migrou.para)}</b>` : ""}`, e.serie[estado.ind], etiquetas(cam, "e")) + '<div class="corpo"></div>';
+      x.innerHTML = sumario(e.nome, `${esc(e.tipo)} · ${ativos} ${ativos === 1 ? "profissional" : "profissionais"}${e.migrou ? ` · <b>passou a registrar na ${esc(e.migrou.para)}</b>` : ""}`, e.serie[estado.ind], etiquetas(cam, "e")) + '<div class="corpo"></div>';
       x.addEventListener("toggle", () => preencher(x)); corpo.appendChild(x);
     });
   } else {
@@ -797,7 +799,7 @@ function tabelaEquipe(e) {
   Object.entries(porGrupo).forEach(([g, lista]) => {
     const mot = g.startsWith("Motivos"), tot = mot ? lista.reduce((t, k) => t + e.serie[k][IU], 0) : 0, nome = g.replace(/ \(.*\)$/, "").toLowerCase();
     const ord = mot ? [...lista].sort((a, b) => e.serie[b][IU] - e.serie[a][IU]) : lista, pz = pizzaSecao(g, lista, e);
-    corpo += `<tr class="grp"><td class="l" colspan="7"><button type="button" class="btn-sec" aria-expanded="false" data-g="${gi}" data-r="${esc(nome)}" data-n="${lista.length}">▸ Mostrar ${esc(nome)} (${lista.length})</button>${mot ? ` <span class="nota">· ${fmt(tot)} CID registrados em ${mesRot(MESES[IU])}</span>` : ""}</td></tr>`;
+    corpo += `<tr class="grp"><td class="l" colspan="7"><button type="button" class="btn-sec" aria-expanded="false" data-g="${gi}" data-r="${esc(nome)}" data-n="${lista.length}">▸ Mostrar ${esc(nome)} (${lista.length})</button>${mot ? ` <span class="nota">· ${fmt(tot)} registros (com e sem CID) em ${mesRot(MESES[IU])}</span>` : ""}</td></tr>`;
     if (pz) corpo += `<tr data-g="${gi}" hidden><td colspan="7">${pz}</td></tr>`;
     corpo += ord.map(k => linhaInd(k, e.serie[k], tot, gi)).join("");
     gi++;
@@ -851,7 +853,7 @@ function ctxCmp(k, tipo, modo) {   // todas as equipes do tipo, com o valor do i
     todas.push({ g, u, e, v: val(e.serie[k]), cam: `${g.nome} › ${u.nome} › ${e.nome}` });
   })));
   const o = todas.map(x => x.v).sort((a, b) => a - b), q10 = quantil(o, .1), q25 = quantil(o, .25), q50 = quantil(o, .5), q75 = quantil(o, .75), xmax = Math.max(...o, 1) * 1.05;
-  return { todas, q10, q25, q50, q75, xmax, cor: v => v < q10 ? "var(--s5)" : v < q25 ? "var(--s4)" : v > q75 ? "var(--s2)" : "var(--s1)" };
+  return { todas, q10, q25, q50, q75, xmax, cor: v => (v < q10 || (v === 0 && q10 === 0)) ? "var(--s5)" : v < q25 ? "var(--s4)" : v > q75 ? "var(--s2)" : "var(--s1)" };
 }
 function svgCmp(C, linhas, rotulo) {   // uma linha por UBS, um ponto por equipe, sobre a faixa central e a mediana da Região
   const { q25, q50, q75, xmax, cor } = C;
@@ -945,7 +947,7 @@ function renderAcesso() {
     return (f.ir || f.cam) ? `<button class="x-barra ${cls}" ${f.cam ? `data-c="${esc(f.cam)}"` : ""} data-i="${f.idx}">${corpo}</button>` : `<div class="x-barra ${cls}">${corpo}</div>`;
   };
   F.forEach((f, j) => f.idx = j);
-  $("#x-corpo").innerHTML = `<div class="x-barra x-cab"><span>${mesRot(MESES[i])}</span><span>Tipo de atendimento</span><span>Quem atendeu</span><span>Total · % no dia</span></div>` + linha({ nome: no.nome + " (total)", ser: no.ser, n: "" }, "total") + F.map(f => linha(f, "")).join("") || "<p class='nota'>Sem dados neste mês.</p>";
+  $("#x-corpo").innerHTML = `<div class="x-barra x-cab"><span>${mesRot(MESES[i])}</span><span>Tipo de atendimento</span><span>Quem atendeu</span><span>Total · % no dia</span></div>` + linha({ nome: no.nome + " (total)", ser: no.ser, n: "" }, "total") + (F.length ? F.map(f => linha(f, "")).join("") : "<p class='nota'>Sem dados neste mês.</p>");
   $("#x-corpo").querySelectorAll("button.x-barra[data-i]").forEach(b => b.addEventListener("click", () => { const f = F[+b.dataset.i]; if (f.ir) f.ir(); else if (f.cam) irPara(f.cam); }));
 }
 
@@ -1195,7 +1197,7 @@ let vistaPendente = "";
 function lerURL() {
   const q = new URLSearchParams(location.hash.replace(/^#/, ""));
   if (q.get("p") && [...$("#sel-per").options].some(o => o.value === q.get("p"))) { $("#sel-per").value = q.get("p"); estado.per = +q.get("p"); }
-  if (q.get("i") && P.indicadores[q.get("i")]) defInd(q.get("i")); else if (q.get("p")) mudar();
+  if (q.get("i") && Object.hasOwn(P.indicadores, q.get("i"))) defInd(q.get("i")); else if (q.get("p")) mudar();
   if (q.get("f")) { $("#f-alerta").value = q.get("f"); if ($("#f-alerta").value === q.get("f")) { estado.fil = q.get("f"); resumoFiltro(); renderArvore(); } }
   const g = P.gsaps.find(x => x.nome === q.get("g"));
   if (g) {
@@ -1204,7 +1206,7 @@ function lerURL() {
     else { const d = document.getElementById("g" + P.gsaps.indexOf(g)); if (d) { d.open = true; preencher(d); } }
   }
   const v = q.get("v");
-  if (v === "i") vistaPendente = "i"; else if (v && VISTAS[v] && v !== "h") mostrarVista(v);
+  if (v === "i") vistaPendente = "i"; else if (v && Object.hasOwn(VISTAS, v) && v !== "h") mostrarVista(v);
 }
 
 /* ---------- navegação ---------- */
@@ -1259,7 +1261,7 @@ montarPessoas();
 const semAcento = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 function procurar(q0) {
   const q = q0.trim(); if (!q) return [];
-  if (/^[\d.\-\s]+$/.test(q)) {
+  if (/^[\d.\-\s]+$/.test(q) && NOM.aberto && indice.some(x => x.mat)) {
     const d = q.replace(/\D/g, ""); if (d.length < 3) return [];
     return indice.filter(x => x.mat && x.mat.includes(d)).sort((x, y) => (x.mat.startsWith(d) ? 0 : 1) - (y.mat.startsWith(d) ? 0 : 1)).slice(0, 40);
   }
@@ -1286,7 +1288,7 @@ document.addEventListener("click", e => {
   const pr = e.target.closest("button.prio, circle.pt, #i-corpo button.lk"); if (pr && pr.dataset.c) irPara(pr.dataset.c);
   if (e.target.closest("button.btn-prov")) baixarCSV(`providencias_aps_norte_${MESES[IU]}.csv`, linhasProvidencias());
   const ic = e.target.closest("#i-cartoes button"); if (ic) { is.tipo = is.tipo === ic.dataset.t ? "" : ic.dataset.t; renderIncons(); }
-  const sec = e.target.closest("button.btn-sec");
+  const sec = e.target.closest("button.btn-sec[data-g]");
   if (sec) {
     const t = sec.closest("table"), on = sec.getAttribute("aria-expanded") !== "true";
     sec.setAttribute("aria-expanded", on); t.querySelectorAll(`tr[data-g="${sec.dataset.g}"]`).forEach(r => { r.hidden = !on; });
@@ -1296,31 +1298,72 @@ document.addEventListener("click", e => {
 
 /* ficha do servidor */
 const SOMAVEIS = [["atend", "Atendimentos individuais"], ["visitas", "Visitas domiciliares"], ["vacinas", "Doses de vacina"], ["coletivas", "Atividades coletivas"]];
-function abrirFicha(id) {
-  const x = pessoas.get(id); if (!x) return;
-  $("#ficha-t").textContent = x.nome;
-  $("#ficha-sub").textContent = [x.cat, x.chs ? x.chs + " h" : "", x.mat ? "matrícula " + x.mat : ""].filter(Boolean).join(" · ");
-  const sers = SOMAVEIS.concat(FAMS.map(k => [k, IND[k].nome])).map(([k, rot]) => [rot, P.meses.map((_, i) => x.v.reduce((a, y) => a + ((y.p.serie[k] || [])[i] || 0), 0))]).filter(([, tot]) => tot.slice(0, IU + 1).some(v => v));
-  const ini = Math.min(IU, ...sers.map(([, tot]) => tot.findIndex(v => v)).filter(i => i >= 0));   // primeiro mês com qualquer registro da pessoa: antes disso não é zero, é ausência
-  const graf = sers.map(([rot, tot]) => {
+const IND_FICHA = () => SOMAVEIS.concat([["atend_med", "Atendimentos como médico"], ["atend_enf", "Atendimentos como enfermeiro"], ["visitas_ok", "Visitas realizadas (desfecho “realizada”)"], ["participantes", "Participantes das atividades coletivas"]], FAMS.map(k => [k, IND[k].nome]));
+const somaPessoa = (x, k) => P.meses.map((_, i) => x.v.reduce((a, y) => a + ((y.p.serie[k] || [])[i] || 0), 0));
+const s12p = (s, fim) => { let a = 0; for (let j = Math.max(fim - 11, 0); j <= fim; j++) a += s[j] || 0; return a; };
+let PARES = null;   // cargo → indicador → totais de 12 meses de quem registrou (cache; refeito quando a lista nominal muda)
+function paresDoCargo(cargo, k) {
+  if (!PARES || PARES.n !== pessoas.size) PARES = { n: pessoas.size, m: new Map() };
+  const ch = cargo + "|" + k; if (PARES.m.has(ch)) return PARES.m.get(ch);
+  const L = []; pessoas.forEach(x => { if ((x.cargo || x.cat) !== cargo || !x.v.some(y => y.p.ativo)) return; const t = s12p(somaPessoa(x, k), IU); if (t > 0) L.push(t); });
+  L.sort((a, b) => a - b); PARES.m.set(ch, L); return L;
+}
+function fichaHTML(x, lote) {
+  const sers = IND_FICHA().map(([k, rot]) => [k, rot, somaPessoa(x, k)]).filter(([, , tot]) => tot.slice(0, IU + 1).some(v => v));
+  const ini = Math.min(IU, ...sers.map(([, , tot]) => tot.findIndex(v => v)).filter(i => i >= 0));   // primeiro mês com qualquer registro da pessoa: antes disso não é zero, é ausência
+  const incompleto = ini > IU - 11, cargo = x.cargo || x.cat || "";
+  const q = (L, p) => L.length ? L[Math.min(L.length - 1, Math.max(0, Math.round(p * (L.length - 1))))] : 0;
+  const lin12 = sers.map(([k, rot, tot]) => {
+    const a = s12p(tot, IU), b = IU >= 23 && ini <= IU - 23 ? s12p(tot, IU - 12) : null, L = paresDoCargo(cargo, k), ok = L.length >= 5 && !incompleto;
+    const p25 = q(L, .25), p50 = q(L, .5), p75 = q(L, .75), pos = !ok ? "–" : a < p25 ? "abaixo da faixa central" : a > p75 ? "acima da faixa central" : "dentro da faixa central";
+    return `<tr><td class="l">${esc(rot)}</td><td><b>${fmt(a)}</b></td><td>${fmt(a / 12)}</td><td>${b == null ? "–" : fmt(b)}</td><td>${b ? pctv(a / b - 1) : "–"}</td><td>${ok ? fmt(p50) : "–"}</td><td>${ok ? fmt(p25) + " a " + fmt(p75) : "–"}</td><td class="l">${pos}</td></tr>`;
+  }).join("");
+  const graf = sers.filter(([k]) => !lote || ["atend", "visitas", "vacinas", "coletivas"].includes(k) || FAMS.includes(k)).slice(0, lote ? 4 : 99).map(([, rot, tot]) => {
     const comp = IU >= 12 && IU - 12 > ini && variacao(tot) != null;   // só compara com o ano anterior se a pessoa já registrava antes daquele mês (o mês de chegada costuma ser parcial)
-    return `<div><h4>${rot} · ${fmt(tot[IU])} em ${mesRot(MESES[IU])} ${comp ? htmlVar(tot) + ` <span class="nota">versus ${mesRot(MESES[IU - 12])}</span>` : ""}</h4>${barrasPessoa(tot, ini)}</div>`;
+    return `<div><h4>${esc(rot)} · ${fmt(tot[IU])} em ${mesRot(MESES[IU])} ${comp ? htmlVar(tot) + ` <span class="nota">versus ${mesRot(MESES[IU - 12])}</span>` : ""}</h4>${barrasPessoa(tot, ini)}</div>`;
   }).join("");
   const lin = x.v.map(y => {
-    const ult = y.p.serie.atend || y.p.serie.visitas || y.p.serie.vacinas || [];
     const sit = y.p.lotado ? "lotado em " + RH : (y.p.ativo ? "produz, fora do RH de " + RH : "vínculo atual não confirmado (último registro " + (y.p.ultimo ? mesRot(y.p.ultimo) : "–") + ")");
-    return `<tr><td class="l"><button class="link" data-c="${esc(y.caminho)}">${esc(y.e.nome)}</button><span class="meta">${esc(y.u.nome)} · ${esc(y.g.nome)}</span></td><td class="l">${sit}</td>` +
-      SOMAVEIS.map(([k]) => `<td class="v">${y.p.serie[k] ? fmt(y.p.serie[k][IU]) : "–"}</td>`).join("") + "</tr>";
+    return `<tr><td class="l">${lote ? esc(y.e.nome) : `<button class="link" data-c="${esc(y.caminho)}">${esc(y.e.nome)}</button>`}<span class="meta">${lote ? " · " : ""}${esc(y.u.nome)} · ${esc(y.g.nome)}</span></td><td class="l">${sit}</td>` +
+      SOMAVEIS.map(([k]) => `<td class="v">${y.p.serie[k] ? fmt(s12p(y.p.serie[k], IU)) : "–"}</td>`).join("") + "</tr>";
   }).join("");
   const alerta = P.alertas.filter(a => x.v.some(y => a.caminho === y.caminho && a.texto.includes(x.nome))).map(a => `<li><b>${esc(a.tipo)}:</b> ${esc(a.texto)}</li>`).join("");
-  $("#ficha-corpo").innerHTML = (alerta ? `<ul class="nota" style="color:var(--saldo)">${alerta}</ul>` : "") +
-    (graf ? `<p class="nota">Uma barra por mês, somando todas as equipes em que a pessoa registrou. Os gráficos começam em <b>${mesRot(MESES[Math.max(ini, faixa()[0])])}</b>${ini > faixa()[0] ? ", primeiro mês com registro dela nesta base" : ""}; a barra mais escura é ${mesRot(MESES[IU])}. Números pequenos (como um ou dois procedimentos no mês) oscilam por acaso: leia o conjunto, não o mês.</p>` : "") +
+  const cab = lote ? `<h2>${esc(x.nome)}</h2><p class="nota">${esc([x.cat, x.chs ? x.chs + " h" : "", x.mat ? "matrícula " + x.mat : ""].filter(Boolean).join(" · "))}</p>` : "";
+  return cab + (alerta ? `<ul class="nota" style="color:var(--saldo)">${alerta}</ul>` : "") +
+    (sers.length ? `<h3>Últimos 12 meses (${janelaRot()})</h3><div class="rolagem"><table><thead><tr><th class="l">Produção</th><th>12 meses</th><th>Média por mês</th><th>12 meses anteriores</th><th>Variação</th><th>Mediana do cargo</th><th>Faixa central do cargo</th><th class="l">Posição</th></tr></thead><tbody>${lin12}</tbody></table></div>` +
+      `<p class="nota">Comparação com quem tem o mesmo cargo (${esc(cargo || "não informado")}) na Região Norte e registrou aquela produção nos 12 meses; faixa central = metade do meio dessas pessoas. Não considera carga horária (20 h × 40 h), férias, licenças nem a função que a pessoa exerce na equipe.${incompleto ? ` <b>Registra nesta base desde ${mesRot(MESES[ini])}: 12 meses incompletos, sem comparação.</b>` : ""} Grupos com menos de 5 pessoas ficam sem comparação.</p>` : "") +
+    (graf ? `<h3>Mês a mês</h3><p class="nota">Uma barra por mês, somando todas as equipes em que a pessoa registrou, desde <b>${mesRot(MESES[Math.max(ini, faixa()[0])])}</b>${ini > faixa()[0] ? ", primeiro mês com registro nesta base" : ""}; a barra mais escura é ${mesRot(MESES[IU])}. Números pequenos oscilam por acaso: leia o conjunto, não o mês.</p>` : "") +
     `<div class="graf">${graf || "<p class='nota'>Sem produção individual registrada neste período.</p>"}</div>` +
-    `<div class="rolagem"><table><thead><tr><th class="l">Equipe</th><th class="l">Situação</th>${SOMAVEIS.map(([k, r]) => `<th>${r.split(" ")[0]}<br><span class="nota">${mesRot(MESES[IU])}</span></th>`).join("")}</tr></thead><tbody>${lin}</tbody></table></div>` +
-    `<p class="nota">Produção conforme registro no PEC. Zero pode ser registro ausente ou atrasado, férias ou afastamento.</p>`;
+    `<h3>Equipes em que registrou</h3><div class="rolagem"><table><thead><tr><th class="l">Equipe</th><th class="l">Situação</th>${SOMAVEIS.map(([, r]) => `<th>${r.split(" ")[0]}<br><span class="nota">12 meses</span></th>`).join("")}</tr></thead><tbody>${lin}</tbody></table></div>` +
+    `<p class="nota">Produção conforme registro no PEC (InfoSaúde-DF). Zero pode ser registro ausente ou atrasado, férias ou afastamento. Uso interno da gestão.</p>`;
+}
+let FICHA_ATUAL = null;
+function abrirFicha(id) {
+  const x = pessoas.get(id); if (!x) return; FICHA_ATUAL = x;
+  $("#ficha-t").textContent = x.nome;
+  $("#ficha-sub").textContent = [x.cat, x.chs ? x.chs + " h" : "", x.mat ? "matrícula " + x.mat : ""].filter(Boolean).join(" · ");
+  $("#ficha-corpo").innerHTML = `<p class="acoes-ficha"><button type="button" class="btn-sec" id="ficha-pdf">Baixar PDF</button> <button type="button" class="btn-sec" id="ficha-word">Baixar Word</button></p>` + fichaHTML(x, false);
   $("#ficha-corpo").querySelectorAll("button.link").forEach(b => b.addEventListener("click", () => { $("#ficha").close(); irPara(b.dataset.c); }));
   if (!$("#ficha").open) $("#ficha").showModal();
 }
+function cabFicha() { return `<h1>Ficha do servidor – APS Região Norte</h1><p class="nota">Último mês completo: ${mesRot(MESES[IU])} · emitido em ${new Date().toLocaleDateString("pt-BR")} · ${esc(P.fonte)}. <b>Contém dados nominais de servidores: uso interno da gestão.</b></p>`; }
+const nomeArq = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Za-z0-9]+/g, "_").replace(/^_|_$/g, "").toLowerCase();
+function imprimirHTML(html, titulo) {
+  $("#rel-print").innerHTML = html; document.body.classList.add("imprimindo-rel");
+  const fim = () => { document.body.classList.remove("imprimindo-rel"); $("#rel-print").innerHTML = ""; window.removeEventListener("afterprint", fim); };
+  window.addEventListener("afterprint", fim); const tit = document.title; document.title = titulo;
+  setTimeout(() => { window.print(); document.title = tit; }, 50);
+}
+async function baixarWord(html, titulo, arq) {
+  const blob = await relatorioWord(html, titulo), a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = arq; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+}
+$("#ficha-corpo").addEventListener("click", async e => {
+  const x = FICHA_ATUAL; if (!x) return;
+  const html = cabFicha() + fichaHTML(x, true), tit = `Ficha APS Norte - ${x.nome} - ${MESES[IU]}`;
+  if (e.target.id === "ficha-pdf") { $("#ficha").close(); imprimirHTML(html, tit); }
+  if (e.target.id === "ficha-word") { const b = e.target; b.disabled = true; b.textContent = "Montando…"; try { await baixarWord(html, tit, `ficha_${nomeArq(x.nome)}_${MESES[IU]}.doc`); } finally { b.disabled = false; b.textContent = "Baixar Word"; } }
+});
 $("#ficha-x").addEventListener("click", () => $("#ficha").close());
 $("#ficha").addEventListener("click", e => { if (e.target === $("#ficha")) $("#ficha").close(); });
 
@@ -1369,7 +1412,8 @@ const REL_SEC = [["resumo", "Resumo dos indicadores principais", 1], ["grafico",
   ["unidades", "Tabela das unidades abaixo, no indicador escolhido", 1], ["bp", "Produção por boa prática (gestação, diabetes, hipertensão, saúde da mulher, criança, pessoa idosa)", 1], ["comparar", "Equipes contra a Região (gráfico de pontos)", 0],
   ["perfil", "Perfil dos atendimentos: resumo de 12 meses por unidade", 1], ["acesso", "Perfil dos atendimentos no mês: tipo de atendimento e quem atendeu", 0],
   ["pessoas", "Pessoas atendidas e uso muito frequente (12 meses)", 0], ["razao", "Consultas de médico por mil cadastrados (12 meses)", 0], ["prof", "Lista de profissionais por equipe, com a produção do mês (dados nominais)", 0],
-  ["incons", "Inconsistências de código e de vínculo (dados nominais)", 0], ["prov", "Quadro de providências para preencher na reunião", 0]];
+  ["incons", "Inconsistências de código e de vínculo (dados nominais)", 0], ["prov", "Quadro de providências para preencher na reunião", 0],
+  ["fichas", "Fichas individuais dos servidores: uma página por servidor, 12 meses (dados nominais; escolha uma GSAP ou UBS)", 0]];
 function noRel(esc0) {   // "r", "g:gi" ou "u:gi:ui"
   const [t, gi, ui] = esc0.split(":"), cadU = l => l.reduce((s, u) => s + (u.cad || 0), 0), usu = US || { gsap: {}, ubs: {}, equipe: {} };
   const fg = g => ({ nome: g.nome, ser: g.serie, cad: cadU(g.ubs), usu: usu.gsap[g.nome] }), fu = u => ({ nome: u.nome, ser: u.serie, cad: u.cad, usu: usu.ubs[u.cnes] });
@@ -1444,9 +1488,15 @@ function relatorioHTML(esc0, secoes) {
     const l = [...sinais()].filter(([c]) => !no.cam || c === no.cam || c.startsWith(no.cam + " › ")).flatMap(([c, xs]) => xs.map(x => [c, x]));
     h.push(`<h2>Quadro de providências</h2><table><thead><tr><th class="l">Unidade ou equipe</th><th class="l">Problema observado</th><th class="l">Confirmado?</th><th class="l">Responsável</th><th class="l">Providência pactuada</th><th class="l">Prazo</th><th class="l">Revisão</th></tr></thead><tbody>${l.map(([c, x]) => `<tr><td class="l">${esc(no.cam && c.startsWith(no.cam + " › ") ? c.slice(no.cam.length + 3) : c)}</td><td class="l">${esc(x.rot)}</td><td></td><td></td><td></td><td></td><td></td></tr>`).join("")}${"<tr><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>".repeat(3)}</tbody></table><p class="nota">Uma linha por alerta de ${mesRot(MESES[i])}; as três últimas ficam em branco para outros pontos. A planilha completa de acompanhamento sai pelo botão “Baixar planilha de providências”.</p>`);
   }
+  if (tem("fichas") && NOM.aberto && no.cam) {
+    const L = [...pessoas.values()].map(x => ({ x, y: x.v.find(y => y.p.ativo && (y.caminho === no.cam || y.caminho.startsWith(no.cam + " › "))) })).filter(o => o.y)
+      .sort((a, b) => a.y.caminho.localeCompare(b.y.caminho, "pt-BR", { numeric: true }) || a.x.nome.localeCompare(b.x.nome, "pt-BR"));
+    h.push(`<h2>Fichas individuais dos servidores (${L.length})</h2><p class="nota">Uma página por servidor em atividade (registrou nos últimos 3 meses), em ordem de UBS, equipe e nome. Últimos 12 meses: ${janelaRot()}.</p>`);
+    L.forEach(o => h.push(`<div class="quebra" style="page-break-before:always;break-before:page"></div><p class="nota">${esc(o.y.u.nome)} › ${esc(o.y.e.nome)}</p>` + fichaHTML(o.x, true)));
+  }
   return h.join("\n");
 }
-const REL_LUZ = { bg: "#fff", card: "#fff", txt: "#1d2430", muted: "#5b6575", line: "#d5dae2", accent: "#1f5fa8", s1: "#1f5fa8", s2: "#5a8fcf", s3: "#13915a", s4: "#b9770e", s5: "#d33a2c", s6: "#5b6575", s7: "#9bb7d8", s8: "#7fb89c", s9: "#1d2430", s0: "#c3cad4", faixa: "#e3ebf5" };
+const REL_LUZ = { bg: "#fff", card: "#fff", txt: "#1d2430", muted: "#5b6575", line: "#d5dae2", accent: "#1f5fa8", s1: "#1f5fa8", s2: "#5a8fcf", s3: "#13915a", s4: "#b9770e", s5: "#d33a2c", s6: "#5b6575", s7: "#9bb7d8", s8: "#7fb89c", s9: "#1d2430", s0: "#c3cad4", faixa: "#e3ebf5", saldo: "#d33a2c" };
 function svgParaPng(svg) {   // o Word não lê SVG em HTML: cada gráfico vira imagem
   return new Promise((ok, erro) => {
     const vb = (svg.getAttribute("viewBox") || "").split(/\s+/).map(Number), w = vb[2] || +svg.getAttribute("width") || 300, hh = vb[3] || +svg.getAttribute("height") || 100;
@@ -1467,7 +1517,7 @@ async function relatorioWord(html, titulo) {   // página web de arquivo único 
     el.setAttribute("src", `img${imgs.length + 1}.png`); el.setAttribute("width", Math.round(larg)); el.setAttribute("height", Math.round(p.h * larg / p.w)); imgs.push(p.b64); s.replaceWith(el);
   }
   doc.querySelectorAll("table").forEach(x => { x.setAttribute("border", "1"); x.setAttribute("cellspacing", "0"); x.setAttribute("cellpadding", "3"); });
-  const pag = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>${esc(titulo)}</title><!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]--><style>@page{size:21cm 29.7cm;margin:2cm 1.8cm}body{font-family:Calibri,Arial,sans-serif;font-size:10.5pt;color:#1d2430}h1{font-size:16pt;margin:0}h2{font-size:12.5pt;margin:14pt 0 4pt;color:#1f5fa8}h3{font-size:10.5pt;margin:9pt 0 3pt}table{border-collapse:collapse;width:100%;font-size:9pt}th,td{border:1px solid #c3cad4;padding:2pt 4pt;text-align:right;vertical-align:top}th{background:#eef1f5}td.l,th.l{text-align:left}tr.dest td{font-weight:bold;background:#e3ebf5}.nota{color:#5b6575;font-size:8.5pt}</style></head><body>${doc.getElementById("r").innerHTML}</body></html>`;
+  const pag = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>${esc(titulo)}</title><!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]--><style>@page{size:21cm 29.7cm;margin:2cm 1.8cm}body{font-family:Calibri,Arial,sans-serif;font-size:10.5pt;color:#1d2430}h1{font-size:16pt;margin:0}h2{font-size:12.5pt;margin:14pt 0 4pt;color:#1f5fa8}h3{font-size:10.5pt;margin:9pt 0 3pt}table{border-collapse:collapse;width:100%;font-size:9pt}th,td{border:1px solid #c3cad4;padding:2pt 4pt;text-align:right;vertical-align:top}th{background:#eef1f5}td.l,th.l{text-align:left}tr.dest td{font-weight:bold;background:#e3ebf5}.nota{color:#5b6575;font-size:8.5pt}</style></head><body>${doc.getElementById("r").innerHTML.replace(/var\(--([a-z0-9]+)\)/g, (_, v) => REL_LUZ[v] || "#5b6575")}</body></html>`;
   const b64 = s => { const by = new TextEncoder().encode(s); let bin = ""; for (let j = 0; j < by.length; j += 0x8000) bin += String.fromCharCode.apply(null, by.subarray(j, j + 0x8000)); return btoa(bin); };
   const q76 = s => s.replace(/(.{76})/g, "$1\r\n"), B = "----=_relatorio_aps_norte", base = "file:///C:/relatorio/";
   let m = `MIME-Version: 1.0\r\nContent-Type: multipart/related; boundary="${B}"; type="text/html"\r\n\r\n--${B}\r\nContent-Type: text/html; charset="utf-8"\r\nContent-Transfer-Encoding: base64\r\nContent-Location: ${base}relatorio.htm\r\n\r\n${q76(b64(pag))}\r\n`;
@@ -1485,6 +1535,7 @@ function abrirRelatorio() {
 async function gerarRelatorio() {
   const secoes = [...document.querySelectorAll("input[name='rel-sec']:checked")].map(x => x.value), esc0 = $("#rel-escopo").value, fmtR = document.querySelector("input[name='rel-fmt']:checked").value;
   if (!secoes.length) { $("#rel-aviso").textContent = "Marque pelo menos um item."; return; }
+  if (secoes.includes("fichas") && esc0 === "r") { $("#rel-aviso").textContent = "As fichas individuais saem por GSAP ou por UBS: escolha uma delas em Unidade (a Região inteira daria mais de mil páginas)."; return; }
   const html = relatorioHTML(esc0, secoes), nome = noRel(esc0).nome;
   if (fmtR === "pdf") {
     $("#rel-print").innerHTML = html; $("#dlg-rel").close(); document.body.classList.add("imprimindo-rel");
@@ -1576,7 +1627,7 @@ function iniciar() {
   }
   const sumir = () => { d.style.display = "none"; };
   document.addEventListener("pointerover", mostrar); document.addEventListener("pointermove", mostrar);
-  document.addEventListener("scroll", sumir, true); document.addEventListener("pointerleave", sumir); window.addEventListener("blur", sumir);
+  document.addEventListener("scroll", sumir, true); document.addEventListener("pointerleave", ev => { if (ev.pointerType !== "touch") sumir(); }); window.addEventListener("blur", sumir);
 })();
 
 /* ---------- área dos gestores ----------
@@ -1591,7 +1642,7 @@ function carregarNominal() {
   if (window.NOMINAL) return Promise.resolve(window.NOMINAL);
   return new Promise((ok, erro) => {
     const s = document.createElement("script"); s.src = "nominal.js?v=" + encodeURIComponent(P.gerado);
-    s.onload = () => (window.NOMINAL ? ok(window.NOMINAL) : erro(new Error("arquivo"))); s.onerror = () => erro(new Error("arquivo"));
+    s.onload = () => (window.NOMINAL ? ok(window.NOMINAL) : erro(new Error("arquivo"))); s.onerror = () => { s.remove(); erro(new Error("arquivo")); };
     document.head.appendChild(s);
   });
 }
@@ -1627,7 +1678,9 @@ async function entrar(senha, lembrar) {
 }
 async function entrarLembrado() {
   const g = lsLer(); if (!g || !P.restrito) return;
-  try { aplicarNominal(await decifrar(deB64(g), await carregarNominal())); } catch (e) { lsGravar(null); }   // senha trocada: esquece a chave antiga
+  let N; try { N = await carregarNominal(); } catch (e) { return; }                       // sem rede: mantém a chave lembrada
+  let D; try { D = await decifrar(deB64(g), N); } catch (e) { lsGravar(null); return; }   // senha trocada: esquece a chave antiga
+  aplicarNominal(D);
 }
 function abrirSenha() {
   if (!P.restrito) return;
