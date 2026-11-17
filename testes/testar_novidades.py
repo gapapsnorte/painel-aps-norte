@@ -32,6 +32,7 @@ with sync_playwright() as p:
     pg.fill("#busca", prof["nome"].split()[0][:5].lower()); pg.wait_for_selector("#achados button[data-i]"); print("busca por nome parcial:", pg.locator("#achados button[data-i]").count(), "resultados")
     pg.keyboard.press("Escape")
     # 3. mapa de calor
+    pg.click('#nav-cam [data-n="r"]')   # navegação única: a busca acima escolheu uma equipe; o mapa inteiro volta sem unidade escolhida
     pg.click("#aba-m"); pg.wait_for_selector("#mapa-corpo td.c")
     print("mapa: linhas", pg.locator("#mapa-corpo tr:not(.grupo) td.rot").count(), "| células", pg.locator("#mapa-corpo td.c").count())
     pg.select_option("#mapa-ord", "queda"); pg.wait_for_timeout(200); primeira = pg.locator("#mapa-corpo td.rot").first.inner_text(); print("pior equipe (último mês vs habitual):", primeira)

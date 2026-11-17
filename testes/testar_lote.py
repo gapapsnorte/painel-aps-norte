@@ -98,6 +98,7 @@ with sync_playwright() as p:
     # ---- área dos gestores: Inconsistências
     entrar(pg); pg.wait_for_timeout(400)
     conf("com senha aparece a aba Inconsistências", pg.locator("#aba-i").is_visible())
+    pg.click('#nav-cam [data-n="r"]')   # navegação única: sem unidade escolhida, a lista vem inteira
     pg.click("#aba-i"); pg.wait_for_selector("#i-corpo table"); inc = N["incons"]
     conf("cartões por tipo = JSON", all(br(sum(1 for x in inc if x["tipo"] == k)) == pg.inner_text(f"#i-cartoes button[data-t='{k}'] .n") for k in ("sem_ine", "lot_outra", "lot_sem_prod", "prod_fora_rh", "ine_fora_rh", "eq_sem_prod", "mudou_ubs", "lugar_errado")), {k: sum(1 for x in inc if x["tipo"] == k) for k in sorted({x["tipo"] for x in inc})})
     pg.click("#i-cartoes button[data-t='sem_ine']"); pg.wait_for_timeout(200); n_sem = sum(1 for x in inc if x["tipo"] == "sem_ine")

@@ -35,10 +35,13 @@ jobs:
           rm -rf _rh
       - name: Coletar do InfoSaúde (API pública do Power BI)
         working-directory: coleta
-        run: python coleta.py 2024-01
+        run: python coleta.py 2022-01
       - name: Coletar população, cadastros e consultas por região (indicador por mil hab.)
         working-directory: coleta
         run: python razao.py
+      - name: Coletar totais mensais por região de saúde (comparação Norte × DF × regiões)
+        working-directory: coleta
+        run: python regioes.py
       - name: Coletar pessoas atendidas e hiperfrequentadores (contagens por faixa, sem identificar ninguém)
         working-directory: coleta
         run: python usuarios.py

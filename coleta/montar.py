@@ -323,6 +323,22 @@ for g, d in sorted(gsaps.items(), key=lambda t: (t[0].startswith("Fora"), t[0]))
 regiao = agrega([g["serie"] for g in saida_g])
 alertas.sort(key=lambda a: (a["nivel"] != "alta", a["tipo"], a["caminho"]))
 
+# ---------- Norte × DF × regiões: totais mensais por região de saúde (regioes.py) e população por ano ----------
+def bloco_regioes():
+    if not (BR / "regioes.json").exists() or not (BR / "populacao.json").exists(): return None
+    POP = defaultdict(lambda: defaultdict(int))
+    for x in L("populacao"):
+        if x["reg"] and x["reg"].startswith("Região "): POP[x["reg"]][int(x["ano"])] += x["pop"] or 0
+    S = defaultdict(lambda: defaultdict(lambda: [0] * NM)); tem = defaultdict(set)
+    for x in L("regioes"):
+        if x["reg"] in POP and x["compt"] in IX and x["ind"] in IND:
+            S[x["reg"]][x["ind"]][IX[x["compt"]]] += x["n"] or 0; tem[x["ind"]].add(x["reg"])
+    regs = sorted(POP, key=lambda r: (r != "Região Norte", r))
+    return {"regs": regs, "pop": {r: {str(a): v for a, v in sorted(POP[r].items())} for r in regs},
+            "inds": sorted(tem), "serie": {r: {k: v for k, v in S[r].items()} for r in regs},
+            "nota": "DF = soma das 7 regiões de saúde (exclui serviços centralizados, contratados e privados). População: InfoSaúde por RA; ano sem população usa o último disponível."}
+REGIOES = bloco_regioes()
+
 # ---------- consultas por mil habitantes nas regiões de saúde (InfoSaúde ÷ população do InfoSaúde por RA) ----------
 def bloco_razao():
     if not (BR / "razao_regioes.json").exists() or not (BR / "populacao.json").exists(): return None
@@ -465,7 +481,7 @@ painel = {
     "mes_parcial": MES_PARCIAL if MESES[-1] == MES_PARCIAL else None,
     "fonte": f"InfoSaúde-DF · Sala de Situação · Atenção Primária (SES-DF); lotação: RH APS Norte {RH_ROT}", "rh_rot": RH_ROT,
     "indicadores": {k: {"nome": v[0].strip(), "sub": v[0].startswith(" "), "unidade": v[1], "nivel": v[2], "grp": GRP[k]} for k, v in IND.items()},
-    "regiao": regiao, "razao": RAZAO, "usuarios": USUARIOS, "gsaps": saida_g, "alertas": alertas, "restrito": bool(SENHA),
+    "regiao": regiao, "razao": RAZAO, "regioes": REGIOES, "usuarios": USUARIOS, "gsaps": saida_g, "alertas": alertas, "restrito": bool(SENHA),
     "fora_da_aps": {k: v for k, v in sorted(fora_aps.items(), key=lambda t: -sum(t[1]))[:12]},
 }
 publico = json.dumps(painel, ensure_ascii=False, separators=(",", ":"))

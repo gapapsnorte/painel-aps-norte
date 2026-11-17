@@ -49,10 +49,10 @@ with sync_playwright() as p:
     pg.click(".kpi[data-k='prenatal']"); pg.wait_for_timeout(250)
     conf("cartão do topo de outro grupo troca o grupo", pg.get_attribute("#grp-ind button[data-g='gest']", "aria-pressed") == "true" and pg.input_value("#sel-ind") == "prenatal")
     pg.click(".kpi[data-k='atend']"); pg.wait_for_timeout(250)
-    pg.locator("#arvore > details.g > summary").first.click(); pg.wait_for_timeout(300)
+    if pg.locator("#g0").get_attribute("open") is None: pg.locator("#arvore > details.g > summary").first.click(); pg.wait_for_timeout(300)   # navegação única: a unidade escolhida antes continua aberta
     g0 = P["gsaps"][0]; esf_g0 = sum(1 for u in g0["ubs"] for e in u["equipes"] if e["ine"] and e["tipo"] == "eSF" and not e.get("migrou") and e["serie"].get("atend") and any(e["serie"]["atend"][max(iu - 11, 0):iu + 1]))
     conf("card da GSAP: um ponto por eSF contra a Região", pg.locator("#g0 > .corpo > .cmp-card circle.pt").count() == esf_g0, f"{esf_g0} equipes")
-    pg.locator("#g0u0 > summary").click(); pg.wait_for_timeout(300)
+    if pg.locator("#g0u0").get_attribute("open") is None: pg.locator("#g0u0 > summary").click(); pg.wait_for_timeout(300)
     u0 = g0["ubs"][0]; esf_u0 = sum(1 for e in u0["equipes"] if e["ine"] and e["tipo"] == "eSF" and not e.get("migrou") and e["serie"].get("atend") and any(e["serie"]["atend"][max(iu - 11, 0):iu + 1]))
     conf("card da UBS: um ponto por eSF da UBS", pg.locator("#g0u0 > .corpo > .cmp-card circle.pt").count() == esf_u0, f"{esf_u0} equipes")
     pg.locator("#g0u0 > .corpo > .cmp-card circle.pt").first.hover(); pg.wait_for_timeout(150)
@@ -97,6 +97,7 @@ with sync_playwright() as p:
     pg.select_option("#cmp-gsap", ""); pg.select_option("#cmp-modo", "3m"); pg.wait_for_timeout(150); print("  média 3 meses ok:", pg.locator("#vista-c circle.pt").count())
     pg.locator("#vista-c circle.pt").first.click(); pg.wait_for_timeout(300); print("  clique no ponto abre a equipe:", pg.locator("#vista-h").is_visible())
     # ---- Acesso
+    pg.click('#nav-cam [data-n="r"]')   # navegação única: as abas de perfil entram descidas até a unidade escolhida; aqui o teste parte da Região
     pg.click("#aba-p"); pg.click("#aba-x"); pg.wait_for_selector("button.x-barra, .x-barra"); r = P["regiao"]
     print("ACESSO: seletor de indicador desabilitado:", pg.locator("#sel-ind").is_disabled(), "| linhas:", pg.locator(".x-barra").count())
     esperado = round(r["a_dia"][iu] / r["atend"][iu] * 100); print("  total da Região % no dia na tela:", pg.locator(".x-barra.total").inner_text().replace("\n", " ")[:120], "| esperado", esperado, "%")

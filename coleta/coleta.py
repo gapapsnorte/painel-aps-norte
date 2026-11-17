@@ -6,7 +6,7 @@ from pbi_lib import Painel, col, conta, soma, lit_txt, lit_int, em
 AQUI = pathlib.Path(__file__).parent
 OUT = AQUI.parent / "dados" / "brutos"; OUT.mkdir(parents=True, exist_ok=True)
 URL = {i["titulo"]: i["url"] for i in json.load(open(AQUI / "paineis_aps.json", encoding="utf-8"))}
-INICIO = sys.argv[1] if len(sys.argv) > 1 else "2024-01"
+INICIO = sys.argv[1] if len(sys.argv) > 1 else "2022-01"
 hoje = dt.date.today()
 MESES = []
 a, m = map(int, INICIO.split("-"))

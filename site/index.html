@@ -31,7 +31,7 @@
   --h0:#7a1f1a; --h1:#b8453b; --h2:#a8742f; --h3:#4a3d28; --h4:#2c3440; --h5:#3b5a85; --h6:#6ea8ff; --faixa:#232c3a;}
 
 *{box-sizing:border-box}
-html{font-size:14px;scroll-padding-top:120px}
+html{font-size:14px;scroll-padding-top:160px}
 body{margin:0;background:var(--bg);color:var(--txt);font:13px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 .pagina{max-width:1180px;margin:0 auto;padding:0 14px}
 a{color:var(--accent)}
@@ -48,7 +48,7 @@ header p{margin:4px 0 0;color:var(--muted);font-size:.72rem}
 
 /* barra de filtros */
 .ctrl{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;margin-bottom:8px}
-.ctrl.fixa{position:sticky;top:0;z-index:20;background:var(--bg);padding:6px 14px 4px;box-shadow:0 6px 8px -8px rgba(0,0,0,.25)}
+.ctrl.fixa{position:sticky;top:var(--nav-h,0px);z-index:20;background:var(--bg);padding:6px 14px 4px;box-shadow:0 6px 8px -8px rgba(0,0,0,.25)}
 label{font-size:.82rem;color:var(--muted);display:flex;align-items:center;gap:6px}
 select,input[type=search]{font:inherit;font-size:.9rem;padding:5px 7px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--txt)}
 select{max-width:100%;cursor:pointer}
@@ -98,6 +98,15 @@ button.link{font:inherit;background:none;border:0;color:var(--accent);text-decor
 .var.neg{color:var(--saldo)}.var.pos{color:var(--out)}.var.nd{color:var(--muted);font-weight:400}
 .painel-graf{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin-bottom:10px}
 .painel-graf h2{font-size:.92rem;margin:0 0 4px;font-weight:600}
+.cmp-grade{display:grid;grid-template-columns:1fr 190px;gap:12px;align-items:start}
+.cmp-main{min-width:0}
+.kpis-reg{display:flex;gap:10px;flex-wrap:wrap;margin:4px 0}
+.kpi-reg{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 10px;min-width:180px}
+.kpi-reg .n{font-size:1.35rem;font-weight:700}.kpi-reg .r{font-size:.78rem;color:var(--muted)}
+.cmp-lado{border:1px solid var(--line);border-radius:8px;padding:6px 10px;margin:0;display:flex;flex-direction:column;gap:4px;font-size:.86rem}
+.cmp-lado legend{font-weight:600;font-size:.82rem;padding:0 4px}
+.cmp-lado label{display:flex;gap:6px;align-items:center;cursor:pointer}
+@media (max-width:760px){.cmp-grade{grid-template-columns:1fr}.cmp-lado{flex-direction:row;flex-wrap:wrap}.kpi-reg{min-width:0;flex:1}}
 
 /* hierarquia: um cartão por GSAP / UBS / equipe */
 details.caixa{border:1px solid var(--line);border-radius:10px;background:var(--card);margin:8px 0}
@@ -332,10 +341,69 @@ table.eq tr.det>td{background:var(--bg);text-align:left;padding:10px 12px}
 #i-cartoes{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin:10px 0}
 #i-cartoes .kpi{text-align:left}
 #i-corpo td.l small{display:block;color:var(--muted)}
+/* navegação única por unidade (GSAP > UBS > equipe): barra fixa com caminho e busca, e árvore lateral */
+#mundo{display:flex;align-items:flex-start}
+#coluna{flex:1 1 auto;min-width:0}
+#arv-lat{flex:none;width:290px;position:sticky;top:0;height:100vh;overflow:auto;background:var(--card);border-right:1px solid var(--line);padding:8px 8px 24px;font-size:.84rem}
+#arv-fundo{display:none}
+.lat-cab{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:6px}
+.lat-cab b{font-size:.95rem}
+.lat-cab button{font:inherit;font-size:.78rem;padding:3px 8px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--txt);cursor:pointer}
+.lat-cab button:hover{border-color:var(--accent)}
+#arv-lat ul{list-style:none;margin:0;padding:0}
+#arv-lat ul ul{margin-left:12px;border-left:1px solid var(--line);padding-left:4px}
+.lat-lin{display:flex;align-items:center;gap:2px}
+.lat-t{flex:none;width:24px;height:26px;border:0;background:none;color:var(--muted);cursor:pointer;font:inherit;padding:0}
+.lat-t.vazio{visibility:hidden}
+.lat-s,.lat-reg{flex:1 1 auto;min-width:0;text-align:left;font:inherit;border:0;background:none;color:var(--txt);padding:4px 6px;border-radius:6px;cursor:pointer;overflow-wrap:anywhere}
+.lat-reg{display:block;width:100%;font-weight:600;margin-bottom:2px}
+.lat-s:hover,.lat-reg:hover{background:var(--bg)}
+.lat-s[aria-current="true"],.lat-reg[aria-current="true"]{background:var(--accent);color:var(--card);font-weight:600}
+.lat-s small{color:var(--muted);margin-left:4px}
+.lat-s[aria-current="true"] small{color:inherit}
+.lat-n{flex:none;font-size:.72rem;border-radius:999px;padding:1px 7px;background:var(--alerta-bg);color:var(--alerta-txt);white-space:nowrap;cursor:help}
+.lat-n.alta{background:var(--aviso-bg);color:var(--aviso-txt)}
+#arv-lat button:focus-visible,#navuni button:focus-visible,#nav-menu button:focus-visible,#arvore .so-btn:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+#navuni{position:sticky;top:0;z-index:25;background:var(--bg);border-bottom:1px solid var(--line)}
+#navuni .nl{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:6px 14px}
+#nav-arv{order:1;font:inherit;font-size:.9rem;padding:5px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--txt);cursor:pointer;white-space:nowrap}
+#nav-arv:hover,#nav-arv[aria-expanded="true"]{border-color:var(--accent)}
+#nav-cam{order:2;flex:1 1 320px;display:flex;flex-wrap:wrap;align-items:center;gap:4px;min-width:0}
+#navuni .busca{order:3;flex:0 1 300px;min-width:0}
+.nv,.nv-m{font:inherit;font-size:.88rem;border:1px solid transparent;background:none;color:var(--txt);padding:4px 7px;border-radius:8px;cursor:pointer}
+.nv{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:min(270px,72vw)}
+.nv:hover,.nv-m:hover{border-color:var(--accent)}
+.nv[aria-current="location"]{font-weight:700;color:var(--accent)}
+.nv-it{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:8px;background:var(--card);max-width:100%}
+.nv-esc{border:1px dashed var(--accent);color:var(--accent);background:var(--card)}
+.nv-sep{color:var(--muted)}
+#nav-menu{position:fixed;z-index:40;background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.2);max-height:min(60vh,420px);overflow:auto;min-width:200px;max-width:calc(100vw - 16px);padding:4px}
+#nav-menu[hidden]{display:none}
+#nav-menu button{display:block;width:100%;text-align:left;font:inherit;font-size:.88rem;border:0;background:none;color:var(--txt);padding:6px 10px;border-radius:6px;cursor:pointer}
+#nav-menu button:hover,#nav-menu button:focus-visible{background:var(--bg)}
+#nav-menu button[aria-current="true"]{font-weight:700;color:var(--accent)}
+.fora{display:none !important}
+details.caixa.sel-dest{outline:2px solid var(--accent)}
+tr.sel-linha>td{background:var(--faixa)}
+.x-barra.sel-linha{outline:2px solid var(--accent)}
+.aviso-sel{background:var(--alerta-bg);color:var(--alerta-txt);padding:6px 10px;border-radius:8px}
+@media (min-width:1100px){body.sem-lateral #arv-lat{display:none}}
+@media (max-width:1099.98px){
+  #arv-lat{position:fixed;left:0;top:0;bottom:0;height:auto;width:min(88vw,340px);z-index:60;transform:translateX(-105%);visibility:hidden;transition:transform .18s,visibility .18s;box-shadow:4px 0 24px rgba(0,0,0,.25)}
+  #arv-lat.aberta{transform:none;visibility:visible}
+  #arv-fundo.on{display:block;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:55}
+  #navuni .busca{order:2;flex:1 1 180px}
+  #nav-cam{order:3;flex:1 1 100%}
+}
+@media print{#navuni,#arv-lat,#arv-fundo,#nav-menu{display:none !important}}
 </style>
 </head>
 <body>
 <a class="pular" href="#conteudo">Ir para o conteúdo</a>
+<div id="mundo">
+<aside id="arv-lat" aria-label="Lista de unidades: GSAP, UBS e equipes"></aside>
+<div id="arv-fundo"></div>
+<div id="coluna">
 <header><div class="pagina">
   <h1>Painel da Atenção Primária – Região Norte</h1>
   <p id="sub"></p>
@@ -348,13 +416,18 @@ table.eq tr.det>td{background:var(--bg);text-align:left;padding:10px 12px}
   </nav>
 </div>
 
+<div id="navuni"><div class="pagina nl">
+  <button type="button" id="nav-arv" aria-controls="arv-lat" aria-expanded="false"><span aria-hidden="true">☰</span> Unidades</button>
+  <nav id="nav-cam" aria-label="Unidade selecionada: região, GSAP, UBS e equipe"></nav>
+  <div class="busca"><input type="search" id="busca" placeholder="Buscar equipe, INE, UBS ou CNES" aria-label="Buscar equipe, INE, UBS ou CNES"><div id="achados" role="listbox"></div></div>
+</div></div>
+
 <div class="ctrl fixa pagina">
   <div class="grupos" id="grp-ind" role="group" aria-label="Grupo de indicadores"></div>
   <label>Indicador <select id="sel-ind"></select></label>
   <details class="multi" id="multi" hidden><summary id="multi-rot">Comparar com outros motivos</summary><div class="lista"><p class="nota">Marque até 5 motivos para ver junto com o escolhido ao lado, na mesma GSAP, UBS ou equipe.</p><div id="multi-itens"></div><button type="button" class="neutro" id="multi-limpar">Limpar</button></div></details>
-  <label>Período <select id="sel-per"><option value="12">12 meses</option><option value="24" selected>24 meses</option><option value="99">Tudo</option></select></label>
+  <label>Período <select id="sel-per"><option value="12">12 meses</option><option value="24" selected>24 meses</option><option value="36">36 meses</option><option value="99">Tudo</option></select></label>
   <label class="chk so-aberto"><input type="checkbox" id="chk-inativos"> mostrar quem não tem vínculo atual confirmado</label>
-  <div class="busca"><input type="search" id="busca" placeholder="Buscar equipe ou UBS" aria-label="Buscar"><div id="achados" role="listbox"></div></div>
   <button type="button" id="btn-csv">Baixar lista (CSV)</button>
   <button type="button" id="btn-rel" class="so-aberto" title="Monta um relatório em PDF ou Word com as partes que você escolher">Gerar relatório</button>
   <button type="button" id="btn-entrar" title="Lista de profissionais, ficha do servidor e busca por nome: acesso dos gestores">Entrar</button>
@@ -375,8 +448,10 @@ table.eq tr.det>td{background:var(--bg);text-align:left;padding:10px 12px}
   <div class="ctl" id="sub-perfil" hidden><div class="grupos" role="group" aria-label="Partes do perfil dos atendimentos"><button type="button" id="sub-p" aria-pressed="true">Resumo por unidade (12 meses)</button><button type="button" id="aba-x" aria-pressed="false">Tipo de atendimento, mês a mês</button><button type="button" id="aba-u" aria-pressed="false">Pessoas atendidas</button><button type="button" id="aba-r" aria-pressed="false">Consultas por mil hab.</button></div></div>
   <div id="vista-h">
     <div class="kpis" id="kpis"></div>
+    <section id="cmp-regioes"></section>
     <div class="painel-graf"><h2 id="tit-graf"></h2><div id="graf-regiao"></div></div>
-    <div class="ctl" id="f-barra"><label>Mostrar <select id="f-alerta"></select></label><button type="button" class="neutro abrir-cmp" data-g="">Comparar todas as equipes da Região</button><button type="button" class="neutro btn-prov" title="Uma linha por alerta (e por inconsistência, na área dos gestores), com colunas em branco para responsável, providência, prazo e devolutiva. O arquivo fica só no seu computador.">Baixar planilha de providências</button><span class="nota" id="f-resumo"></span></div>
+    <div class="ctl" id="f-barra"><label>Mostrar <select id="f-alerta"></select></label><button type="button" class="neutro abrir-cmp" data-g="">Comparar todas as equipes da Região</button><button type="button" class="neutro btn-prov" title="Uma linha por alerta (e por inconsistência, na área dos gestores), com colunas em branco para responsável, providência, prazo e devolutiva. O arquivo fica só no seu computador.">Baixar planilha de providências</button><button type="button" class="neutro so-btn" id="btn-so-sel" aria-pressed="false" hidden>Mostrar só esta unidade</button><span class="nota" id="f-resumo"></span></div>
+    <p class="nota aviso-sel" id="sel-aviso" role="status" hidden></p>
     <div id="arvore"></div>
   </div>
   <div id="vista-c" class="cmp" hidden>
@@ -426,6 +501,7 @@ table.eq tr.det>td{background:var(--bg);text-align:left;padding:10px 12px}
     <p class="nota" id="i-nota"></p>
     <div id="i-cartoes"></div>
     <div class="ctl"><label>Tipo <select id="i-tipo"></select></label><label>GSAP <select id="i-gsap"><option value="">Todas</option></select></label><label>Buscar <input type="search" id="i-q" placeholder="nome, categoria, UBS ou equipe"></label><button type="button" id="i-csv">Baixar esta lista (CSV)</button><button type="button" class="btn-prov">Baixar planilha de providências</button></div>
+    <p class="nota" id="i-sel" role="status"></p>
     <p class="nota" id="i-exp"></p>
     <div class="rolagem" id="i-corpo"></div>
   </div>
@@ -435,6 +511,7 @@ table.eq tr.det>td{background:var(--bg);text-align:left;padding:10px 12px}
       <label>Equipes <select id="mapa-tipo"><option value="eSF">eSF</option><option value="eSB">eSB (bucal)</option><option value="eMulti">eMulti</option><option value="*">Todas</option></select></label>
       <label>Ordenar por <select id="mapa-ord"><option value="estrutura">GSAP e UBS</option><option value="queda">Último mês mais abaixo da média</option><option value="valor">Último mês (menor primeiro)</option></select></label>
     </div>
+    <p class="nota" id="mapa-sel" role="status" hidden></p>
     <div class="rolagem mapa-rol" id="mapa-corpo"></div>
   </div>
 </main>
@@ -453,7 +530,6 @@ table.eq tr.det>td{background:var(--bg);text-align:left;padding:10px 12px}
     <div class="botoes"><button type="button" id="rel-cancelar">Cancelar</button><button type="submit" id="rel-ok">Gerar</button></div>
   </form>
 </dialog>
-<div id="rel-print"></div>
 <footer><div class="pagina"><details><summary>Fontes e mais</summary>
     <ul>
       <li><b>Fonte:</b> painéis públicos da Sala de Situação do InfoSaúde-DF (SES-DF), lidos diretamente do modelo de dados de cada painel; a lotação (quem pertence a qual equipe) vem da planilha de RH da APS Norte de <span class="rh-rot"></span>.</li>
@@ -475,6 +551,9 @@ table.eq tr.det>td{background:var(--bg);text-align:left;padding:10px 12px}
       <li>Cobertura da APS, Previne Brasil/ISF e Bolsa Família estão parados no InfoSaúde (abr/2025, 2024 e 2025-2) e por isso não entram.</li>
     </ul>
   </details><p id="rodape"></p></div></footer>
+</div></div>
+<div id="rel-print"></div>
+<div id="nav-menu" role="menu" hidden></div>
 
 <script src="painel.js" onerror="document.body.insertAdjacentHTML('afterbegin','<p style=&quot;padding:24px;font:16px sans-serif&quot;>Não foi possível carregar os dados do painel. Verifique a conexão e <a href=&quot;&quot; onclick=&quot;location.reload();return false&quot;>tente de novo</a>.</p>')"></script>
 <script>
@@ -486,7 +565,7 @@ const $ = (s, r = document) => r.querySelector(s);
 const MES_ABR = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
 const IU = P.meses.indexOf(P.ultimo_mes_completo);
 const MESES = P.meses.slice(0, IU + 1);
-const estado = { ind: "atend", per: 24, fil: "", grp: "prod", cmpInd: [] };
+const estado = { ind: "atend", per: 24, fil: "", grp: "prod", cmpInd: [], sel: { g: null, u: null, e: null }, soSel: false };   // sel = unidade escolhida (índices em P.gsaps), valendo para todas as abas
 /* seletor de indicador em dois passos: primeiro o grupo (botões), depois o indicador dentro dele */
 const BP = "Produção registrada ligada a esta boa prática do cofinanciamento; não é o indicador oficial, que conta pessoas acompanhadas";
 const GRUPOS = [["prod", "Acesso e produção", "Atendimentos, visitas, vacinas, atividades coletivas, tipo de atendimento e procedimentos gerais"], ["inf", "Desenvolvimento infantil", BP], ["gest", "Gestação e puerpério", BP],
@@ -608,7 +687,7 @@ function barrasPessoa(s, ini, w = 460, h = 120) {   // produção individual: um
   return `<svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="Produção por mês, de ${mesRot(MESES[a])} a ${mesRot(MESES[IU])}">${g}</svg>`;
 }
 function mediana(v) { const o = [...v].sort((x, y) => x - y), n = o.length; return n ? (o[Math.floor((n - 1) / 2)] + o[Math.ceil((n - 1) / 2)]) / 2 : 0; }
-function linhas(defs, w = 820, h = 200) {
+function linhas(defs, w = 820, h = 200, f = fmt) {
   const [a, b] = faixa(), n = b - a, pe = 34, pb = 20, pt = 14, iw = w - pe - 8, ih = h - pb - pt;
   const todos = defs.flatMap(d => d.s.slice(a, b).filter(x => x != null)), mx = Math.max(...todos, 1);
   const X = i => pe + (n === 1 ? iw / 2 : i * iw / (n - 1)), Y = y => pt + ih - y / mx * ih;
@@ -619,17 +698,17 @@ function linhas(defs, w = 820, h = 200) {
     if (seg.length) segs.push(seg);
     segs.forEach(sg => {
       g += `<polyline fill="none" stroke="${d.cor}" stroke-width="${d.larg || 2}" ${d.dash ? 'stroke-dasharray="5 4"' : ""} points="${sg.map(p => p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" ")}"/>`;
-      sg.forEach(p => g += `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${d.larg ? 3.2 : 4}" fill="${d.cor}" opacity="${d.dash ? .01 : 1}"><title>${esc(d.rot)} · ${mesRot(MESES[a + p[3]])}: ${fmt(p[2])}</title></circle>`);
+      sg.forEach(p => g += `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${d.larg ? 3.2 : 4}" fill="${d.cor}" opacity="${d.dash ? .01 : 1}"><title>${esc(d.rot)} · ${mesRot(MESES[a + p[3]])}: ${f(p[2])}</title></circle>`);
     });
     leg += `<span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px"><svg width="24" height="8"><line x1="0" x2="24" y1="4" y2="4" stroke="${d.cor}" stroke-width="2.6" ${d.dash ? 'stroke-dasharray="5 3"' : ""}/></svg>${esc(d.rot)}</span>`;
   });
   let xs = ""; for (let i = 0; i < n; i += (n > 18 ? 3 : 2)) xs += `<text x="${X(i).toFixed(1)}" y="${h - 5}" text-anchor="middle">${mesRot(MESES[a + i])}</text>`;
   const cw = n === 1 ? iw : iw / (n - 1); let cols = "";   // faixa do mês inteiro: mostra todas as curvas daquele mês
   for (let i = 0; i < n; i++) {
-    const ls = defs.map(d => d.s[a + i] == null ? "" : `\n${esc(d.rot)}: ${fmt(d.s[a + i])}`).join("");
+    const ls = defs.map(d => d.s[a + i] == null ? "" : `\n${esc(d.rot)}: ${f(d.s[a + i])}`).join("");
     if (ls) cols += `<rect class="col" x="${(X(i) - cw / 2).toFixed(1)}" y="${pt}" width="${cw.toFixed(1)}" height="${ih}"><title>${mesRot(MESES[a + i])}${ls}</title></rect>`;
   }
-  return `<div class="nota" style="margin-bottom:2px">${leg}</div><svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="Série mensal"><text x="0" y="${pt + 4}">${fmt(mx)}</text><line x1="${pe}" x2="${w - 8}" y1="${pt + ih}" y2="${pt + ih}" stroke="var(--line)"/>${g}${xs}${cols}</svg>`;
+  return `<div class="nota" style="margin-bottom:2px">${leg}</div><svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="Série mensal"><text x="0" y="${pt + 4}">${f(mx)}</text><line x1="${pe}" x2="${w - 8}" y1="${pt + ih}" y2="${pt + ih}" stroke="var(--line)"/>${g}${xs}${cols}</svg>`;
 }
 const cacheMed = {};
 function medianaTipo(k, tipo) {
@@ -723,6 +802,7 @@ function renderArvore() {
     if (estado.fil) d.open = true;   // com filtro, já abre até o nível das equipes
   });
   if (!el.children.length) el.innerHTML = "<p class='nota'>Nenhuma equipe ou UBS com este alerta no último mês completo.</p>";
+  if (estado.sel.g != null) abrirAteSel(false); else marcarSo();
 }
 function preencher(d) {
   const ch = estado.ind + estado.per + estado.fil + chavesMulti().join(",");
@@ -753,6 +833,7 @@ function preencher(d) {
     const ui = +d.dataset.ui, ei = +d.dataset.ei, e = P.gsaps[gi].ubs[ui].equipes[ei];
     corpo.innerHTML = avisoCtx(P.gsaps[gi], P.gsaps[gi].ubs[ui], e) + multiGraf(e.serie, e.nome) + tabelaEquipe(e) + tabelaProf(e);
   }
+  marcarSo(); destacarH();
 }
 function avisoCtx(g, u, e) {   // o que conferir antes de concluir que a equipe parou: produção sem equipe na mesma UBS, mudança de UBS, total da unidade
   const s = e.serie.atend; if (!e.ine || !s) return "";
@@ -848,6 +929,44 @@ function renderTopo() {
   $("#tit-graf").textContent = `${nomeInd(estado.ind)} – Região Norte`;
   $("#graf-regiao").innerHTML = barras(P.regiao[estado.ind], 1100, 190) + multiGraf(P.regiao, "Região Norte");
   document.querySelectorAll(".kpi").forEach(b => b.addEventListener("click", () => defInd(b.dataset.k)));
+  renderCmpRegioes();
+}
+/* ---------- Norte × DF × regiões (por mil habitantes) ---------- */
+const RG = P.regioes || null;
+const regsLig = new Set();   // outras regiões ligadas pelo botão lateral
+const fmtMil = x => x == null ? "–" : x.toLocaleString("pt-BR", { maximumFractionDigits: x < 10 ? 2 : 1, minimumFractionDigits: x < 10 ? 2 : 1 });
+const COR_REG = ["var(--s3)", "var(--s5)", "var(--s6)", "var(--s8)", "var(--s2)", "var(--s9)"];
+function popReg(regs, mes) {
+  const a = +mes.slice(0, 4);
+  return regs.reduce((t, r) => { const pp = RG.pop[r] || {}, anos = Object.keys(pp).map(Number).sort((x, y) => x - y); const ano = anos.filter(x => x <= a).pop() ?? anos[0]; return t + (pp[ano] || 0); }, 0);
+}
+function serieReg(regs, k) {   // atendimentos (ou outro indicador) por mil habitantes, mês a mês
+  return MESES.map((m, i) => { let v = 0, tem = false; regs.forEach(r => { const s = RG.serie[r] && RG.serie[r][k]; if (s && s[i] != null) { v += s[i]; tem = tem || s[i] > 0; } }); const pop = popReg(regs, m); return tem && pop ? v * 1000 / pop : null; });
+}
+function doze(s, fim) { if (fim < 11) return null; let t = 0; for (let i = fim - 11; i <= fim; i++) { if (s[i] == null) return null; t += s[i]; } return t; }
+const nomeReg = r => r.replace("Região ", "");
+function renderCmpRegioes() {
+  const el = $("#cmp-regioes"); if (!el) return;
+  if (!RG) { el.innerHTML = ""; return; }
+  const k = estado.ind;
+  if (!RG.inds.includes(k)) { el.innerHTML = `<div class="painel-graf"><h2>Região Norte × DF</h2><p class="nota">Sem comparação entre regiões para “${esc(nomeInd(k))}”: este indicador só existe no recorte da Região Norte.</p></div>`; return; }
+  const outras = RG.regs.filter(r => r !== "Região Norte");
+  const entes = [{ rot: "Região Norte", regs: ["Região Norte"], cor: "var(--accent)", larg: 2.4 }, { rot: "Distrito Federal", regs: RG.regs, cor: "var(--s4)", larg: 2.4 }]
+    .concat(outras.filter(r => regsLig.has(r)).map(r => ({ rot: nomeReg(r), regs: [r], cor: COR_REG[outras.indexOf(r) % COR_REG.length] })));
+  entes.forEach(e => { e.s = serieReg(e.regs, k); e.a12 = doze(e.s, IU); e.b12 = doze(e.s, IU - 12); });
+  const v12 = e => e.a12 != null && e.b12 ? e.a12 / e.b12 - 1 : null;
+  const tv = v => v == null ? '<span class="var nd">–</span>' : `<span class="var ${v <= -0.1 ? "neg" : v >= 0.1 ? "pos" : "nd"}">${v >= 0 ? "+" : "−"}${Math.abs(Math.round(v * 100))}%</span>`;
+  const jan = IU >= 11 ? `${mesRot(MESES[IU - 11])} a ${mesRot(MESES[IU])}` : "";
+  const cart = entes.slice(0, 2).map(e => `<div class="kpi-reg"><div class="r">${esc(e.rot)}</div><div class="n">${fmtMil(e.a12)}</div>${tv(v12(e))} <span class="r">sobre os 12 meses anteriores</span></div>`).join("");
+  const n = entes[0], d = entes[1], raz = n.a12 && d.a12 ? n.a12 / d.a12 : null;
+  const frase = raz == null ? "" : `<p class="nota">Nos 12 meses de ${jan}, a Norte registrou <b>${fmtMil(raz)}×</b> a taxa do DF (${fmtMil(n.a12)} × ${fmtMil(d.a12)} por mil hab.).</p>`;
+  const ext = entes.slice(2).length ? `<table class="eq" style="margin-top:6px"><thead><tr><th class="l">Região</th><th>12 meses, por mil hab.</th><th>Variação</th></tr></thead><tbody>${entes.map(e => `<tr><td class="l">${esc(e.rot)}</td><td>${fmtMil(e.a12)}</td><td>${tv(v12(e))}</td></tr>`).join("")}</tbody></table>` : "";
+  const lado = `<fieldset class="cmp-lado"><legend>Comparar também com</legend>${outras.map(r => `<label><input type="checkbox" value="${esc(r)}"${regsLig.has(r) ? " checked" : ""}> ${esc(nomeReg(r))}</label>`).join("")}<button type="button" class="neutro" id="cmp-todas">${outras.every(r => regsLig.has(r)) ? "Desligar todas" : "Ligar todas"}</button></fieldset>`;
+  el.innerHTML = `<div class="painel-graf cmp-reg"><h2>${esc(nomeInd(k))} por mil habitantes – Região Norte × Distrito Federal</h2>
+    <div class="cmp-grade"><div class="cmp-main"><div class="kpis-reg">${cart}</div>${frase}${linhas(entes.map(e => ({ s: e.s, cor: e.cor, rot: e.rot, larg: e.larg })), 1100, 210, fmtMil)}${ext}</div>${lado}</div>
+    <p class="nota">Taxa mensal = registros do mês ÷ população da região no ano × 1.000. ${esc(RG.nota)} A Norte e o DF vêm da mesma fonte e com a mesma regra de contagem das outras abas.</p></div>`;
+  el.querySelectorAll(".cmp-lado input").forEach(c => c.addEventListener("change", () => { c.checked ? regsLig.add(c.value) : regsLig.delete(c.value); renderCmpRegioes(); }));
+  $("#cmp-todas").addEventListener("click", () => { const tudo = outras.every(r => regsLig.has(r)); outras.forEach(r => tudo ? regsLig.delete(r) : regsLig.add(r)); renderCmpRegioes(); });
 }
 /* ---------- Comparar equipes ---------- */
 function quantil(o, q) { if (!o.length) return 0; const p = (o.length - 1) * q, i = Math.floor(p); return o[i] + (o[Math.min(i + 1, o.length - 1)] - o[i]) * (p - i); }
@@ -955,6 +1074,7 @@ function renderAcesso() {
   F.forEach((f, j) => f.idx = j);
   $("#x-corpo").innerHTML = `<div class="x-barra x-cab"><span>${mesRot(MESES[i])}</span><span>Tipo de atendimento</span><span>Quem atendeu</span><span>Total · % no dia</span></div>` + linha({ nome: no.nome + " (total)", ser: no.ser, n: "" }, "total") + (F.length ? F.map(f => linha(f, "")).join("") : "<p class='nota'>Sem dados neste mês.</p>");
   $("#x-corpo").querySelectorAll("button.x-barra[data-i]").forEach(b => b.addEventListener("click", () => { const f = F[+b.dataset.i]; if (f.ir) f.ir(); else if (f.cam) irPara(f.cam); }));
+  selDe(xs); destacarEquipe("#x-corpo");
 }
 
 /* ---------- consultas por mil habitantes (RIPSA COB.1.01) ---------- */
@@ -1018,10 +1138,11 @@ function renderRazaoUbs() {
   F.forEach((f, j) => f.idx = j);
   const lin = (f, cls) => {
     const nm = (f.ir || f.cam) ? `<button class="lk" data-i="${f.idx}">${esc(f.nome)}</button>` : esc(f.nome);
-    return `<tr class="${cls}"><td class="l">${nm}${f.n ? `<small class="nota" style="display:block">${esc(f.n)}</small>` : ""}</td><td>${fmt(f.cad)}</td><td>${fmt(soma12(f.ser, IU))}</td><td><b>${r1(f.a)}</b> <span class="bar-r"><i style="width:${Math.min(100, (f.a || 0) / maxv * 100).toFixed(0)}%"></i></span></td><td>${r1(f.b)}</td><td${clsv(f.v)}>${pctv(f.v)}</td></tr>`;
+    return `<tr class="${cls}"${f.cam ? ` data-cam="${esc(f.cam)}"` : ""}><td class="l">${nm}${f.n ? `<small class="nota" style="display:block">${esc(f.n)}</small>` : ""}</td><td>${fmt(f.cad)}</td><td>${fmt(soma12(f.ser, IU))}</td><td><b>${r1(f.a)}</b> <span class="bar-r"><i style="width:${Math.min(100, (f.a || 0) / maxv * 100).toFixed(0)}%"></i></span></td><td>${r1(f.b)}</td><td${clsv(f.v)}>${pctv(f.v)}</td></tr>`;
   };
   $("#r-corpo").innerHTML = `<table class="eq"><thead><tr><th class="l">${rs.esc === "r" ? "GSAP" : rs.esc === "g" ? "UBS" : "Equipe"}</th><th>Cadastrados</th><th>Consultas (12 meses)</th><th>Por mil cadastrados</th><th>12 meses anteriores</th><th>Variação</th></tr></thead><tbody>${lin({ ...calc(no), n: "" }, "dest")}${F.map(f => lin(f, "")).join("")}</tbody></table>`;
   $("#r-corpo").querySelectorAll("button.lk[data-i]").forEach(b => b.addEventListener("click", () => { const f = F[+b.dataset.i]; if (f.ir) f.ir(); else if (f.cam) irPara(f.cam); }));
+  selDe(rs); destacarEquipe("#r-corpo");
 }
 
 /* ---------- pessoas atendidas e uso muito frequente ---------- */
@@ -1081,12 +1202,13 @@ function renderUsuarios() {
   const maxhf = Math.max(0.0001, ...F.map(f => f.m.hf), m ? m.hf : 0);
   const lin = (f, cls) => {
     const x = f.m, nm = (f.ir || f.cam) ? `<button class="lk" data-i="${f.idx}">${esc(f.nome)}</button>` : esc(f.nome);
-    return `<tr class="${cls}"><td class="l">${nm}${f.n ? `<small class="nota" style="display:block">${esc(f.n)}</small>` : ""}</td><td>${fmt(x.pess)}</td><td>${fmt(x.atend)}</td><td>${x.apc.toFixed(1).replace(".", ",")}</td><td>${p1(x.d.fp[0], x.pess)}</td>` +
+    return `<tr class="${cls}"${f.cam ? ` data-cam="${esc(f.cam)}"` : ""}><td class="l">${nm}${f.n ? `<small class="nota" style="display:block">${esc(f.n)}</small>` : ""}</td><td>${fmt(x.pess)}</td><td>${fmt(x.atend)}</td><td>${x.apc.toFixed(1).replace(".", ",")}</td><td>${p1(x.d.fp[0], x.pess)}</td>` +
       `<td><b>${p1(x.hfn, x.pess)}</b> <span class="bar-r"><i style="width:${Math.min(100, x.hf / maxhf * 100).toFixed(0)}%"></i></span><small class="nota" style="display:block">${fmt(x.hfn)} pessoas</small></td><td>${p1(x.d.fa[4] + x.d.fa[5], x.atend)}</td><td>${fmt(x.max)}</td><td>${x.cob == null ? "–" : Math.round(x.cob)}</td></tr>`;
   };
   $("#u-tit-tab").textContent = `${no.rot === "GSAP" ? "Gerências" : no.rot === "UBS" ? "Unidades" : "Equipes"} de ${no.nome}`;
   $("#u-corpo").innerHTML = `<table class="eq"><thead><tr><th class="l">${no.rot}</th><th>Pessoas atendidas</th><th>Atendimentos</th><th>Por pessoa</th><th>Uma só vez</th><th>Com 12 ou mais</th><th>Agenda ocupada por elas</th><th>Máximo</th><th>Por 100 cadastrados</th></tr></thead><tbody>${m ? lin({ nome: no.nome, m }, "dest") : ""}${F.map(f => lin(f, "")).join("")}</tbody></table>`;
   $("#u-corpo").querySelectorAll("button.lk[data-i]").forEach(b => b.addEventListener("click", () => { const f = F[+b.dataset.i]; if (f.ir) f.ir(); else if (f.cam) irPara(f.cam); }));
+  selDe(us); destacarEquipe("#u-corpo");
   $("#u-rod").innerHTML = `Quem foi atendido por duas equipes conta em cada uma delas, mas uma vez só na UBS, na GSAP e na Região; por isso a soma das linhas passa do total. Atendimentos sem equipe vinculada entram na UBS, não nas equipes. “Atendidas por 100 cadastrados” usa o cadastro de ${RZ ? mesRot(RZ.cad_comp) : "data não informada"}, parado desde então, e pode passar de 100 onde a equipe atende gente de fora do cadastro.` + difU();
 }
 
@@ -1137,11 +1259,12 @@ function renderPerfil() {
   const bar = (v, m) => `<span class="bar-r"><i style="width:${Math.min(100, (v || 0) / m * 100).toFixed(0)}%"></i></span>`, pc = (v, d = 0) => (v == null ? "–" : (v * 100).toFixed(d).replace(".", ",") + "%");
   const lin = f => {
     const x = f.x, ab = ps.ab.has(f.nome), nm = !f.topo && (f.ir || f.cam) ? `<button class="lk" data-i="${f.idx}">${esc(f.nome)}</button>` : esc(f.nome);
-    return `<tr class="${f.topo ? "dest" : ""}"><td class="l">${nm}${f.n ? `<small class="nota" style="display:block">${esc(f.n)}</small>` : ""}</td><td>${fmt(x.tot)}</td><td>${pc(x.dia)} ${bar(x.dia, 1)}</td><td>${pc(x.med)} ${bar(x.med, 1)}</td><td>${x.apc == null ? "–" : x.apc.toFixed(1).replace(".", ",")} ${bar(x.apc, mapc)}</td><td>${pc(x.hf, 1)} ${bar(x.hf, mhf)}</td><td>${r1(x.mil)} ${bar(x.mil, mmil)}</td><td><button type="button" class="neutro p-det" data-d="${f.idx}" aria-expanded="${ab}">${ab ? "fechar" : "detalhe"}</button></td></tr>` + (ab ? `<tr class="det"><td colspan="8">${detPerfil(f)}</td></tr>` : "");
+    return `<tr class="${f.topo ? "dest" : ""}"${f.cam ? ` data-cam="${esc(f.cam)}"` : ""}><td class="l">${nm}${f.n ? `<small class="nota" style="display:block">${esc(f.n)}</small>` : ""}</td><td>${fmt(x.tot)}</td><td>${pc(x.dia)} ${bar(x.dia, 1)}</td><td>${pc(x.med)} ${bar(x.med, 1)}</td><td>${x.apc == null ? "–" : x.apc.toFixed(1).replace(".", ",")} ${bar(x.apc, mapc)}</td><td>${pc(x.hf, 1)} ${bar(x.hf, mhf)}</td><td>${r1(x.mil)} ${bar(x.mil, mmil)}</td><td><button type="button" class="neutro p-det" data-d="${f.idx}" aria-expanded="${ab}">${ab ? "fechar" : "detalhe"}</button></td></tr>` + (ab ? `<tr class="det"><td colspan="8">${detPerfil(f)}</td></tr>` : "");
   };
   $("#p-corpo").innerHTML = `<table class="eq" id="p-tab"><thead><tr><th class="l">${no.rot}</th><th>Atendimentos<br>(12 meses)</th><th>% consulta<br>no dia</th><th>% atendido<br>por médico</th><th>Atendimentos<br>por pessoa</th><th>% de pessoas com<br>12 ou mais</th><th>Consultas de médico<br>por mil cadastrados</th><th></th></tr></thead><tbody>${L.map(lin).join("")}</tbody></table>`;
   $("#p-corpo").querySelectorAll("button.lk[data-i]").forEach(b => b.addEventListener("click", () => { const f = L[+b.dataset.i]; if (f.ir) f.ir(); else if (f.cam) irPara(f.cam); }));
   $("#p-corpo").querySelectorAll("button.p-det").forEach(b => b.addEventListener("click", () => { const n = L[+b.dataset.d].nome; if (ps.ab.has(n)) ps.ab.delete(n); else ps.ab.add(n); renderPerfil(); }));
+  selDe(ps); destacarEquipe("#p-corpo");
   $("#p-rod").innerHTML = `Todas as medidas são de 12 meses, para não misturar um mês com um ano. “Por mil cadastrados” usa o cadastro de ${RZ ? mesRot(RZ.cad_comp) : "data não informada"}, parado desde então: comparação exploratória. Pessoa atendida por duas equipes conta em cada uma, mas uma vez só na UBS, na GSAP e na Região. Atendimentos sem equipe vinculada entram na UBS, não nas equipes.`;
 }
 
@@ -1159,14 +1282,16 @@ const rotInc = k => (TIPOS_INC.find(x => x[0] === k) || [k, k])[1];
 const is = { tipo: "", gsap: "", q: "" };
 function filtInc() {
   const t = semAcento(is.q.trim());
-  return (NOM.incons || []).filter(x => (!is.tipo || x.tipo === is.tipo) && (!is.gsap || x.gsap === is.gsap) && (!t || semAcento(`${x.nome} ${x.cat} ${x.ubs} ${x.equipe}`).includes(t)));
+  const sl = estado.sel, G = sl.g != null ? P.gsaps[sl.g] : null, U = G && sl.u != null ? G.ubs[sl.u] : null, E = U && sl.e != null ? U.equipes[sl.e] : null;
+  return (NOM.incons || []).filter(x => (!G || (x.gsap === G.nome && (!U || x.ubs === U.nome) && (!E || x.equipe === E.nome))) && (!is.tipo || x.tipo === is.tipo) && (!is.gsap || x.gsap === is.gsap) && (!t || semAcento(`${x.nome} ${x.cat} ${x.ubs} ${x.equipe}`).includes(t)));
 }
 function renderIncons() {
-  if (!NOM.aberto) { $("#i-nota").textContent = "As inconsistências trazem nomes de profissionais e são de acesso dos gestores."; $("#i-cartoes").innerHTML = $("#i-corpo").innerHTML = $("#i-exp").innerHTML = ""; return; }
+  if (!NOM.aberto) { $("#i-nota").textContent = "As inconsistências trazem nomes de profissionais e são de acesso dos gestores."; $("#i-cartoes").innerHTML = $("#i-corpo").innerHTML = $("#i-exp").innerHTML = $("#i-sel").innerHTML = ""; return; }
   const D = NOM.incons || [], cont = k => D.filter(x => x.tipo === k).length;
   $("#i-nota").innerHTML = `Problemas de <b>código e de vínculo</b> que distorcem os números das outras abas: registro sem equipe (sem INE), lotação que não bate com a produção, equipe que não bate com a UBS e registro provavelmente feito em lugar errado. Referência: ${mesRot(MESES[Math.max(IU - 2, 0)])} a ${mesRot(MESES[IU])}; lotação da planilha de RH de ${RH}. São pontos para <b>conferir e corrigir o cadastro</b>, não juízo sobre o trabalho de ninguém. Clique num cartão para filtrar.`;
   $("#i-cartoes").innerHTML = TIPOS_INC.map(([k, r, d]) => `<button type="button" class="kpi" data-t="${k}" aria-pressed="${is.tipo === k}" title="${esc(d)}"><div class="r">${esc(r)}</div><div class="n">${fmt(cont(k))}</div></button>`).join("");
   $("#i-tipo").innerHTML = `<option value="">Todos (${D.length})</option>` + TIPOS_INC.map(([k, r]) => `<option value="${k}">${esc(r)} (${cont(k)})</option>`).join(""); $("#i-tipo").value = is.tipo;
+  $("#i-sel").textContent = estado.sel.g != null ? `Filtrado pela unidade escolhida na barra do topo: ${rotSel()}. Para ver todas, escolha “Região Norte” no caminho.` : "";
   $("#i-exp").textContent = is.tipo ? TIPOS_INC.find(x => x[0] === is.tipo)[2] : "";
   const L = filtInc(), MAX = 500;
   $("#i-corpo").innerHTML = L.length ? `<table class="eq"><thead><tr><th class="l">Tipo</th><th class="l">UBS e equipe</th><th class="l">Profissional</th><th class="l">O que foi encontrado</th></tr></thead><tbody>${L.slice(0, MAX).map(x => {
@@ -1194,8 +1319,9 @@ function gravarURL() {
   if (estado.ind !== "atend") q.set("i", estado.ind);
   if (estado.per !== 24) q.set("p", estado.per);
   if (estado.fil) q.set("f", estado.fil);
-  const ab = [...document.querySelectorAll("#arvore details.caixa[open]")].sort((a, b) => b.id.length - a.id.length)[0];
-  if (ab) { const g = P.gsaps[+ab.dataset.gi]; q.set("g", g.nome); if (ab.dataset.t !== "g") { const u = g.ubs[+ab.dataset.ui]; q.set("u", u.cnes); if (ab.dataset.t === "e") q.set("e", u.equipes[+ab.dataset.ei].ine || "SEM"); } }
+  const sl = estado.sel;
+  if (sl.g != null) { const g = P.gsaps[sl.g]; q.set("g", g.nome); if (sl.u != null) { const u = g.ubs[sl.u]; q.set("u", u.cnes); if (sl.e != null) q.set("e", u.equipes[sl.e].ine || "SEM"); } }
+  if (estado.soSel && sl.g != null) q.set("so", "1");
   const s = q.toString();
   try { history.replaceState(null, "", s ? "#" + s : location.pathname + location.search); } catch (e) {}
 }
@@ -1205,14 +1331,241 @@ function lerURL() {
   if (q.get("p") && [...$("#sel-per").options].some(o => o.value === q.get("p"))) { $("#sel-per").value = q.get("p"); estado.per = +q.get("p"); }
   if (q.get("i") && Object.hasOwn(P.indicadores, q.get("i"))) defInd(q.get("i")); else if (q.get("p")) mudar();
   if (q.get("f")) { $("#f-alerta").value = q.get("f"); if ($("#f-alerta").value === q.get("f")) { estado.fil = q.get("f"); resumoFiltro(); renderArvore(); } }
-  const g = P.gsaps.find(x => x.nome === q.get("g"));
-  if (g) {
-    const u = g.ubs.find(x => x.cnes === q.get("u")), e = u && q.get("e") ? u.equipes.find(x => (x.ine || "SEM") === q.get("e")) : null;
-    if (u) irPara(e ? `${g.nome} › ${u.nome} › ${e.nome}` : `${g.nome} › ${u.nome}`);
-    else { const d = document.getElementById("g" + P.gsaps.indexOf(g)); if (d) { d.open = true; preencher(d); } }
+  const gi = P.gsaps.findIndex(x => x.nome === q.get("g"));
+  if (gi >= 0) {
+    const ui = P.gsaps[gi].ubs.findIndex(x => x.cnes === q.get("u")), ei = ui >= 0 && q.get("e") ? P.gsaps[gi].ubs[ui].equipes.findIndex(x => (x.ine || "SEM") === q.get("e")) : -1;
+    estado.sel = { g: gi, u: ui >= 0 ? ui : null, e: ui >= 0 && ei >= 0 ? ei : null };
+    estado.soSel = q.get("so") === "1";
   }
   const v = q.get("v");
   if (v === "i") vistaPendente = "i"; else if (v && Object.hasOwn(VISTAS, v) && v !== "h") mostrarVista(v);
+  atualizarNavegacao(); if (estado.sel.g != null && (!v || v === "h" || v === "i")) abrirAteSel(true);
+}
+
+/* ---------- unidade escolhida (GSAP › UBS › equipe): vale para todas as abas ----------
+   estado.sel = { g, u, e } com índices em P.gsaps (null = nível não escolhido). Muda pela barra do topo (caminho, menus e busca),
+   pela árvore lateral, ao abrir uma caixa da Visão geral e ao descer um nível dentro das abas de perfil. Indicador, período e filtros não mudam. */
+const IDX = new Map();   // "GSAP › UBS[ › equipe]" -> { g, u, e }
+P.gsaps.forEach((g, gi) => g.ubs.forEach((u, ui) => {
+  IDX.set(`${g.nome} › ${u.nome}`, { g: gi, u: ui, e: null });
+  u.equipes.forEach((e, ei) => IDX.set(`${g.nome} › ${u.nome} › ${e.nome}`, { g: gi, u: ui, e: ei }));
+}));
+let cliqueArv = null, ROLAR_EQ = false, CNT = null, menuDe = null, menuItens = [];
+const gSel = () => (estado.sel.g != null ? P.gsaps[estado.sel.g] : null);
+const uSel = () => (estado.sel.u != null ? gSel().ubs[estado.sel.u] : null);
+const eSel = () => (estado.sel.e != null ? uSel().equipes[estado.sel.e] : null);
+const rotSel = () => { const g = gSel(), u = uSel(), e = eSel(); return g ? [g.nome, u && u.nome, e && e.nome].filter(Boolean).join(" › ") : "Região Norte"; };
+const DESK = window.matchMedia("(min-width:1100px)");
+const ST_ABA = () => ({ x: xs, u: us, r: rs, p: ps });
+
+function selecionar(n, op = {}) {
+  const g = n.g ?? null, u = g == null ? null : (n.u ?? null), e = u == null ? null : (n.e ?? null), a = estado.sel;
+  if (g !== a.g || u !== a.u || e !== a.e) ps.ab.clear();
+  estado.sel = { g, u, e };
+  if (g == null) estado.soSel = false;
+  ROLAR_EQ = op.rolar !== false && !op.semVista;
+  refletir(op);
+}
+function refletir(op = {}) {
+  atualizarNavegacao(); gravarURL();
+  if (op.semVista) { if (vistaAtual === "h") destacarH(); return; }
+  aplicarNaVista();
+}
+function atualizarNavegacao() { renderNavCam(); marcarLateral(); atualizarBotaoSo(); }
+function aplicarNaVista() {
+  const v = vistaAtual, st = ST_ABA()[v];
+  if (st) descerPara(st);
+  if (v === "h") abrirAteSel(true); else if (v === "m") renderMapa(); else if (v === "x") renderAcesso(); else if (v === "u") renderUsuarios();
+  else if (v === "r") renderRazaoUbs(); else if (v === "p") renderPerfil(); else if (v === "i") renderIncons();
+  ROLAR_EQ = false;
+}
+/* as abas de perfil descem por clique (Região › GSAP › UBS): isso e a unidade escolhida andam juntas */
+function descerPara(st) { const s = estado.sel; st.esc = s.u != null ? "u" : s.g != null ? "g" : "r"; st.gi = s.g ?? 0; st.ui = s.u ?? 0; }
+function selDe(st) {
+  const g = st.esc === "r" ? null : st.gi, u = st.esc === "u" ? st.ui : null, s = estado.sel;
+  if (s.g === g && s.u === u) return;   // mesma UBS: a equipe escolhida continua
+  estado.sel = { g, u, e: null }; if (g == null) estado.soSel = false;
+  refletir({ semVista: true });
+}
+function destacarEquipe(cont) {   // linha da equipe escolhida dentro da UBS descida
+  const raiz = $(cont); if (!raiz) return;
+  raiz.querySelectorAll(".sel-linha").forEach(x => x.classList.remove("sel-linha"));
+  if (estado.sel.e == null) return;
+  const cam = rotSel(), el = [...raiz.querySelectorAll("[data-cam],[data-c]")].find(x => (x.dataset.cam || x.dataset.c) === cam);
+  if (el) { el.classList.add("sel-linha"); if (ROLAR_EQ) { ROLAR_EQ = false; el.scrollIntoView({ block: "center" }); } }
+}
+/* Visão geral: abre as caixas até a unidade, rola e destaca */
+function abrirAteSel(rolar) {
+  const s = estado.sel, av = $("#sel-aviso"); av.hidden = true;
+  if (s.g == null) { destacarH(); marcarSo(); return; }
+  const cam = rotSel();
+  if (estado.fil && !passa(cam)) { av.hidden = false; av.textContent = `${cam} não aparece com o filtro de alertas escolhido em Mostrar. Escolha “Todas as equipes” para vê-la aqui.`; destacarH(); return; }
+  const ids = [`g${s.g}`]; if (s.u != null) ids.push(`g${s.g}u${s.u}`); if (s.e != null) ids.push(`g${s.g}u${s.u}e${s.e}`);
+  let el; ids.forEach(id => { const d = document.getElementById(id); if (d) { el = d; if (!d.open) d.open = true; preencher(d); } });
+  marcarSo(); destacarH();
+  if (el && rolar) rolarAte(el);
+}
+function rolarAte(el) {   // rola até o elemento deixando-o abaixo das barras fixas (caminho e filtros)
+  const f = $(".ctrl.fixa"), fixa = f && getComputedStyle(f).position === "sticky" ? f.offsetHeight : 0;
+  window.scrollTo({ top: Math.max(0, el.getBoundingClientRect().top + window.scrollY - $("#navuni").offsetHeight - fixa - 8) });
+}
+function destacarH() {
+  document.querySelectorAll("#arvore .sel-dest").forEach(x => x.classList.remove("sel-dest"));
+  const s = estado.sel; if (s.g == null) return;
+  const el = document.getElementById(s.e != null ? `g${s.g}u${s.u}e${s.e}` : s.u != null ? `g${s.g}u${s.u}` : `g${s.g}`); if (el) el.classList.add("sel-dest");
+}
+function marcarSo() {   // "mostrar só esta unidade": esconde as caixas irmãs (as do caminho e as de dentro ficam)
+  const s = estado.sel, so = estado.soSel && s.g != null, alvo = [s.g, s.u, s.e];
+  document.querySelectorAll("#arvore details.caixa").forEach(d => {
+    let fora = false;
+    if (so) { const n = [d.dataset.gi, d.dataset.ui, d.dataset.ei].filter(x => x !== undefined).map(Number); fora = n.some((v, k) => alvo[k] != null && alvo[k] !== v); }
+    d.classList.toggle("fora", fora);
+  });
+}
+function atualizarBotaoSo() {
+  const b = $("#btn-so-sel"); b.hidden = estado.sel.g == null;
+  b.setAttribute("aria-pressed", String(estado.soSel)); b.textContent = estado.soSel ? "Mostrar todas as unidades" : "Mostrar só esta unidade";
+}
+function selDeCaixa(d) {   // abrir ou fechar uma caixa à mão na Visão geral
+  const t = d.dataset.t, gi = +d.dataset.gi, ui = d.dataset.ui === undefined ? null : +d.dataset.ui, ei = d.dataset.ei === undefined ? null : +d.dataset.ei;
+  selecionar(d.open ? { g: gi, u: ui, e: ei } : t === "g" ? {} : t === "u" ? { g: gi } : { g: gi, u: ui }, { semVista: true });
+}
+
+/* ---------- barra do topo: caminho com menus de irmãos ---------- */
+function renderNavCam() {
+  const g = gSel(), u = uSel(), e = eSel(), prof = g ? (u ? (e ? 3 : 2) : 1) : 0, rot = { g: "GSAP", u: "UBS", e: "equipe" };
+  const item = (n, nome, nivel) => `<span class="nv-it"><button type="button" class="nv" data-n="${n}" title="${esc(nome)}"${prof === nivel ? ' aria-current="location"' : ""}>${esc(nome)}</button><button type="button" class="nv-m" data-m="${n}" aria-haspopup="menu" aria-expanded="false" aria-label="Trocar ${rot[n]}: ${esc(nome)}">▾</button></span>`;
+  const esco = n => `<button type="button" class="nv nv-esc" data-m="${n}" aria-haspopup="menu" aria-expanded="false">Escolher ${rot[n]} ▾</button>`, sep = '<span class="nv-sep" aria-hidden="true">›</span>';
+  let h = `<button type="button" class="nv" data-n="r"${prof === 0 ? ' aria-current="location"' : ""}>Região Norte</button>`;
+  h += sep + (g ? item("g", g.nome, 1) : esco("g"));
+  if (g) h += sep + (u ? item("u", u.nome, 2) : esco("u"));
+  if (u && u.equipes.length) h += sep + (e ? item("e", e.nome, 3) : esco("e"));
+  $("#nav-cam").innerHTML = h;
+}
+function fecharMenu(volta) {
+  const m = $("#nav-menu"); if (m.hidden) return;
+  m.hidden = true; if (menuDe) { menuDe.setAttribute("aria-expanded", "false"); if (volta) menuDe.focus(); } menuDe = null;
+}
+function abrirMenu(btn) {
+  if (menuDe === btn) { fecharMenu(false); return; }
+  fecharMenu(false);
+  const n = btn.dataset.m, s = estado.sel, g = gSel(), u = uSel(), m = $("#nav-menu");
+  const al = (cam, eq) => { const c = CNT && CNT.get(cam); return c ? ` <span class="lat-n${c.alta ? " alta" : ""}">${eq ? "⚠" : "⚠ " + c.n}</span>` : ""; };
+  if (n === "g") menuItens = P.gsaps.map((x, i) => ({ h: esc(x.nome) + al(x.nome), atual: s.g === i, sel: { g: i } }));
+  else if (n === "u") menuItens = g.ubs.map((x, i) => ({ h: esc(x.nome) + al(`${g.nome} › ${x.nome}`), atual: s.u === i, sel: { g: s.g, u: i } }));
+  else menuItens = u.equipes.map((x, i) => ({ h: esc(x.nome) + al(`${g.nome} › ${u.nome} › ${x.nome}`, true), atual: s.e === i, sel: { g: s.g, u: s.u, e: i } }));
+  m.setAttribute("aria-label", n === "g" ? "GSAPs" : n === "u" ? "UBS desta GSAP" : "Equipes desta UBS");
+  m.innerHTML = menuItens.map((it, i) => `<button type="button" role="menuitem" data-i="${i}"${it.atual ? ' aria-current="true"' : ""}>${it.h}</button>`).join("");
+  m.hidden = false; btn.setAttribute("aria-expanded", "true"); menuDe = btn;
+  const r = btn.getBoundingClientRect(), top = r.bottom + 4;
+  m.style.maxHeight = Math.max(160, Math.min(window.innerHeight * 0.6, window.innerHeight - top - 12)) + "px";
+  m.style.top = top + "px"; m.style.left = Math.max(8, Math.min(r.left, window.innerWidth - m.offsetWidth - 8)) + "px";
+  const f = m.querySelector("[aria-current]") || m.querySelector("button"); if (f) { f.focus(); f.scrollIntoView({ block: "nearest" }); }
+}
+
+/* ---------- árvore lateral: GSAP ▸ UBS ▸ equipes, com a contagem de equipes com alerta ---------- */
+const LAT = { aberto: new Set() };
+function contAlertas() {
+  const m = new Map(), add = (k, alta) => { const x = m.get(k) || { n: 0, alta: 0 }; x.n++; if (alta) x.alta++; m.set(k, x); };
+  sinais().forEach((l, cam) => { const p = cam.split(" › "); if (p.length !== 3) return; const alta = l.some(x => x.nivel === "alta"); add(cam, alta); add(p[0] + " › " + p[1], alta); add(p[0], alta); });
+  return m;
+}
+function construirLateral() {
+  CNT = contAlertas();
+  const bd = (cam, eq) => {
+    const c = CNT.get(cam); if (!c) return "";
+    const rot = eq ? (c.alta ? "Equipe com alerta de prioridade alta" : "Equipe com alerta") : `${c.n} equipe${c.n > 1 ? "s" : ""} com alerta${c.alta ? ` (${c.alta} de prioridade alta)` : ""}`;
+    return `<span class="lat-n${c.alta ? " alta" : ""}" role="img" aria-label="${rot}" title="${rot}">${eq ? "⚠" : "⚠ " + c.n}</span>`;
+  };
+  const tog = (k, nome) => `<button type="button" class="lat-t" data-t="${k}" aria-expanded="false" aria-label="Mostrar ou esconder ${esc(nome)}">▸</button>`;
+  let h = '<div class="lat-cab"><b>Unidades</b><span><button type="button" id="lat-rec">Recolher</button> <button type="button" id="lat-fechar">Esconder</button></span></div><button type="button" class="lat-reg" data-s="">Região Norte (todas)</button><ul>';
+  P.gsaps.forEach((g, gi) => {
+    h += `<li data-k="g${gi}"><div class="lat-lin">${tog("g" + gi, g.nome)}<button type="button" class="lat-s" data-s="${gi}">${esc(g.nome)}</button>${bd(g.nome)}</div><ul hidden>`;
+    g.ubs.forEach((u, ui) => {
+      h += `<li data-k="g${gi}u${ui}"><div class="lat-lin">${tog(`g${gi}u${ui}`, u.nome)}<button type="button" class="lat-s" data-s="${gi}:${ui}">${esc(u.nome)}</button>${bd(`${g.nome} › ${u.nome}`)}</div><ul hidden>`;
+      u.equipes.forEach((e, ei) => {
+        h += `<li><div class="lat-lin"><span class="lat-t vazio" aria-hidden="true"></span><button type="button" class="lat-s" data-s="${gi}:${ui}:${ei}">${esc(e.nome)}${e.tipo && !e.nome.startsWith(e.tipo) ? `<small>${esc(e.tipo)}</small>` : ""}</button>${bd(`${g.nome} › ${u.nome} › ${e.nome}`, true)}</div></li>`;
+      });
+      h += "</ul></li>";
+    });
+    h += "</ul></li>";
+  });
+  $("#arv-lat").innerHTML = h + "</ul>";
+}
+function aplicarAbertos() {
+  $("#arv-lat").querySelectorAll("li[data-k]").forEach(li => {
+    const on = LAT.aberto.has(li.dataset.k), ul = li.querySelector(":scope > ul"), t = li.querySelector(":scope > .lat-lin > .lat-t");
+    if (ul) ul.hidden = !on; if (t) { t.setAttribute("aria-expanded", String(on)); t.textContent = on ? "▾" : "▸"; }
+  });
+}
+function marcarLateral() {   // destaca a unidade escolhida e abre a árvore até ela
+  const a = $("#arv-lat"); if (!a.firstChild) return;
+  a.querySelectorAll("[aria-current]").forEach(x => x.removeAttribute("aria-current"));
+  const s = estado.sel; let btn;
+  if (s.g == null) btn = a.querySelector(".lat-reg");
+  else { btn = a.querySelector(`.lat-s[data-s="${[s.g, s.u, s.e].filter(x => x != null).join(":")}"]`); LAT.aberto.add(`g${s.g}`); if (s.u != null) LAT.aberto.add(`g${s.g}u${s.u}`); }
+  if (btn) btn.setAttribute("aria-current", "true");
+  aplicarAbertos();
+  if (btn && s.g != null && a.clientHeight) { const r = btn.getBoundingClientRect(), ar = a.getBoundingClientRect(); if (r.top < ar.top + 40 || r.bottom > ar.bottom - 10) a.scrollTop += r.top - ar.top - ar.height / 3; }
+}
+const lateralAberta = () => (DESK.matches ? !document.body.classList.contains("sem-lateral") : $("#arv-lat").classList.contains("aberta"));
+function ajustarBotaoLateral() {
+  const ab = lateralAberta();
+  $("#nav-arv").setAttribute("aria-expanded", String(ab)); $("#arv-fundo").classList.toggle("on", !DESK.matches && ab);
+  const f = $("#lat-fechar"); if (f) { f.textContent = DESK.matches ? "Esconder" : "Fechar"; f.setAttribute("aria-label", DESK.matches ? "Esconder a lista de unidades" : "Fechar a lista de unidades"); }
+}
+function alternarLateral(abrir) {
+  if (abrir === undefined) abrir = !lateralAberta();
+  if (DESK.matches) { document.body.classList.toggle("sem-lateral", !abrir); try { localStorage.setItem("aps_norte_lateral", abrir ? "1" : "0"); } catch (e) {} }
+  else $("#arv-lat").classList.toggle("aberta", abrir);
+  ajustarBotaoLateral();
+  if (abrir && !DESK.matches) { const f = $("#arv-lat .lat-s[aria-current='true']") || $("#arv-lat .lat-reg"); if (f) f.focus({ preventScroll: true }); }
+}
+function fecharGaveta(volta) { if (!DESK.matches && $("#arv-lat").classList.contains("aberta")) { alternarLateral(false); if (volta) $("#nav-arv").focus(); } }
+
+function iniciarNavegacao() {
+  construirLateral();
+  let ls = null; try { ls = localStorage.getItem("aps_norte_lateral"); } catch (e) {}
+  document.body.classList.toggle("sem-lateral", ls === "0");
+  renderNavCam(); ajustarBotaoLateral(); atualizarBotaoSo();
+  const noDe = s => { const p = s.split(":").map(Number); return { g: p[0], u: p[1] ?? null, e: p[2] ?? null }; };
+  $("#nav-arv").addEventListener("click", () => alternarLateral());
+  $("#arv-fundo").addEventListener("click", () => fecharGaveta(true));
+  $("#arv-lat").addEventListener("click", ev => {
+    const t = ev.target.closest("button"); if (!t) return;
+    if (t.classList.contains("lat-t")) { const k = t.dataset.t; if (LAT.aberto.has(k)) LAT.aberto.delete(k); else LAT.aberto.add(k); aplicarAbertos(); return; }
+    if (t.id === "lat-rec") { LAT.aberto.clear(); const s = estado.sel; if (s.g != null) { LAT.aberto.add(`g${s.g}`); if (s.u != null) LAT.aberto.add(`g${s.g}u${s.u}`); } aplicarAbertos(); return; }
+    if (t.id === "lat-fechar") { if (DESK.matches) { alternarLateral(false); $("#nav-arv").focus(); } else fecharGaveta(true); return; }
+    if (t.dataset.s !== undefined) { selecionar(t.dataset.s === "" ? {} : noDe(t.dataset.s)); fecharGaveta(true); }
+  });
+  $("#nav-cam").addEventListener("click", ev => {
+    const m = ev.target.closest("[data-m]"); if (m) { abrirMenu(m); return; }
+    const b = ev.target.closest("button[data-n]"); if (!b) return;
+    const s = estado.sel, n = b.dataset.n;
+    fecharMenu(false); selecionar(n === "r" ? {} : n === "g" ? { g: s.g } : n === "u" ? { g: s.g, u: s.u } : { g: s.g, u: s.u, e: s.e });
+  });
+  $("#nav-menu").addEventListener("click", ev => {
+    const b = ev.target.closest("button[data-i]"); if (!b || !menuDe) return;
+    const n = menuDe.dataset.m, it = menuItens[+b.dataset.i]; fecharMenu(false); selecionar(it.sel);
+    const l = $(`#nav-cam [data-n="${n}"]`); if (l) l.focus();
+  });
+  $("#nav-menu").addEventListener("keydown", ev => {
+    const bs = [...$("#nav-menu").querySelectorAll("button")], i = bs.indexOf(document.activeElement); if (!bs.length) return;
+    const ir = k => { ev.preventDefault(); bs[(k + bs.length) % bs.length].focus(); };
+    if (ev.key === "ArrowDown") ir(i + 1); else if (ev.key === "ArrowUp") ir(i - 1); else if (ev.key === "Home") ir(0); else if (ev.key === "End") ir(bs.length - 1);
+    else if (ev.key === "Tab") fecharMenu(false);
+  });
+  document.addEventListener("click", ev => { if (menuDe && !ev.target.closest("#nav-menu") && !ev.target.closest("#nav-cam [data-m]")) fecharMenu(false); });
+  document.addEventListener("keydown", ev => {
+    if (ev.key !== "Escape") return;
+    if (!$("#nav-menu").hidden) { fecharMenu(true); return; }
+    if (!DESK.matches && $("#arv-lat").classList.contains("aberta")) { fecharGaveta(true); return; }
+    if ($("#achados").style.display === "block") $("#achados").style.display = "none";
+  });
+  $("#btn-so-sel").addEventListener("click", () => { estado.soSel = !estado.soSel; atualizarBotaoSo(); marcarSo(); gravarURL(); });
+  DESK.addEventListener("change", () => { $("#arv-lat").classList.remove("aberta"); ajustarBotaoLateral(); });
+  const alturaBarra = () => document.documentElement.style.setProperty("--nav-h", $("#navuni").offsetHeight + "px");
+  if (window.ResizeObserver) new ResizeObserver(alturaBarra).observe($("#navuni")); else alturaBarra();
 }
 
 /* ---------- navegação ---------- */
@@ -1221,15 +1574,15 @@ P.gsaps.forEach((g, gi) => g.ubs.forEach((u, ui) => {
   caminhos.set(`${g.nome} › ${u.nome}`, [`g${gi}`, `g${gi}u${ui}`]);
   u.equipes.forEach((e, ei) => caminhos.set(`${g.nome} › ${u.nome} › ${e.nome}`, [`g${gi}`, `g${gi}u${ui}`, `g${gi}u${ui}e${ei}`]));
 }));
-function irPara(caminho) {
-  const ids = caminhos.get(caminho); if (!ids) return;
-  mostrarVista("h");
+function irPara(caminho) {   // abre a equipe (ou UBS) na Visão geral: usado pelos cliques em nomes de equipe das outras abas
+  const ix = IDX.get(caminho); if (!ix) return;
+  estado.sel = { ...ix };   // antes de desenhar a Visão geral, para abrir só o caminho da equipe escolhida
   if (estado.fil && !passa(caminho)) { estado.fil = ""; $("#f-alerta").value = ""; resumoFiltro(); renderArvore(); }
-  let el; ids.forEach(id => { el = document.getElementById(id); if (el) { el.open = true; preencher(el); } });
-  if (el) { el.scrollIntoView({ block: "start" }); el.style.outline = "2px solid var(--accent)"; setTimeout(() => el.style.outline = "", 2500); }
+  mostrarVista("h");
+  selecionar(ix);
 }
 let vistaAtual = "h";
-const VISTAS = { h: () => {}, c: () => renderComparar(), m: () => renderMapa(), p: () => renderPerfil(), x: () => renderAcesso(), r: () => renderRazao(), u: () => renderUsuarios(), i: () => renderIncons() };
+const VISTAS = { h: () => { if (estado.sel.g != null) abrirAteSel(true); }, c: () => renderComparar(), m: () => renderMapa(), p: () => renderPerfil(), x: () => renderAcesso(), r: () => renderRazao(), u: () => renderUsuarios(), i: () => renderIncons() };
 const PERFIL = ["p", "x", "u", "r"];
 function mostrarVista(v) {
   if (v === "i" && !NOM.aberto) v = "h";
@@ -1240,6 +1593,7 @@ function mostrarVista(v) {
   [["sub-p", "p"], ["aba-x", "x"], ["aba-u", "u"], ["aba-r", "r"]].forEach(([id, x]) => { const b = document.getElementById(id); b.setAttribute("aria-pressed", x === v); b.setAttribute("aria-selected", x === v); });
   const sem = PERFIL.includes(v) || v === "i";
   $("#sel-ind").disabled = sem; $("#sel-ind").title = sem ? "Esta aba não usa o seletor de indicador" : ""; document.querySelectorAll("#grp-ind button").forEach(b => b.disabled = sem);
+  const st = { x: xs, u: us, r: rs, p: ps }[v]; if (st) descerPara(st);   // as abas de perfil entram já descidas até a unidade escolhida
   VISTAS[v](); gravarURL();
 }
 /* pessoas (um servidor pode aparecer em mais de uma equipe) */
@@ -1255,34 +1609,40 @@ function montarPessoas() {
   }))));
   /* busca */
   P.gsaps.forEach(g => g.ubs.forEach(u => {
-    indice.push({ t: u.nome, s: `${g.nome}`, c: `${g.nome} › ${u.nome}`, k: "UBS" });
-    u.equipes.forEach(e => indice.push({ t: e.nome, s: `${u.nome} · ${g.nome}`, c: `${g.nome} › ${u.nome} › ${e.nome}`, k: "Equipe" }));
+    indice.push({ t: u.nome, s: `${g.nome}`, c: `${g.nome} › ${u.nome}`, k: "UBS", cnes: u.cnes || "" });
+    u.equipes.forEach(e => indice.push({ t: e.nome, s: `${u.nome} · ${g.nome}`, c: `${g.nome} › ${u.nome} › ${e.nome}`, k: "Equipe", ine: e.ine || "" }));
   }));
   pessoas.forEach(x => {
     const ult = x.v.find(y => y.p.ativo) || x.v[0];
-    indice.push({ t: x.nome, s: `${x.cat || ""} · ${ult.e.nome} · ${ult.u.nome}${x.v.length > 1 ? " (+" + (x.v.length - 1) + " equipe" + (x.v.length > 2 ? "s" : "") + ")" : ""}`, id: x.id, mat: x.mat, k: "Profissional", ativo: x.v.some(y => y.p.ativo) });
+    indice.push({ t: x.nome, c: ult.caminho, s: `${x.cat || ""} · ${ult.e.nome} · ${ult.u.nome}${x.v.length > 1 ? " (+" + (x.v.length - 1) + " equipe" + (x.v.length > 2 ? "s" : "") + ")" : ""}`, id: x.id, mat: x.mat, k: "Profissional", ativo: x.v.some(y => y.p.ativo) });
   });
 }
 montarPessoas();
 const semAcento = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 function procurar(q0) {
   const q = q0.trim(); if (!q) return [];
-  if (/^[\d.\-\s]+$/.test(q) && NOM.aberto && indice.some(x => x.mat)) {
+  if (/^[\d.\-\s]+$/.test(q)) {   // só números: INE da equipe, CNES da UBS e, na área dos gestores, matrícula
     const d = q.replace(/\D/g, ""); if (d.length < 3) return [];
-    return indice.filter(x => x.mat && x.mat.includes(d)).sort((x, y) => (x.mat.startsWith(d) ? 0 : 1) - (y.mat.startsWith(d) ? 0 : 1)).slice(0, 40);
+    const campo = x => (x.k === "Profissional" ? (NOM.aberto ? x.mat : "") : x.k === "Equipe" ? x.ine : x.cnes) || "";
+    const peso = x => { const c = campo(x); return c === d || c.replace(/^0+/, "") === d.replace(/^0+/, "") ? 0 : c.startsWith(d) ? 1 : 2; };
+    return indice.filter(x => campo(x).includes(d)).sort((x, y) => peso(x) - peso(y) || (y.k === "Profissional") - (x.k === "Profissional")).slice(0, 40);
   }
   const t = semAcento(q); if (t.length < 2) return [];
   const ach = indice.filter(x => semAcento(x.t).includes(t) || (x.k === "Profissional" && x.mat && x.mat === t));
   return ach.sort((x, y) => (semAcento(x.t).startsWith(t) ? 0 : 1) - (semAcento(y.t).startsWith(t) ? 0 : 1) || (y.ativo === true) - (x.ativo === true)).slice(0, 40);
 }
-function escolher(x) { $("#achados").style.display = "none"; if (x.k === "Profissional") abrirFicha(x.id); else irPara(x.c); }
+function escolher(x) {   // a unidade vira a escolha de todas as abas; do servidor, escolhe a equipe dele e abre a ficha
+  $("#achados").style.display = "none";
+  const ix = x.c && IDX.get(x.c); if (ix) selecionar(ix);
+  if (x.k === "Profissional") abrirFicha(x.id);
+}
 let tBusca;
 $("#busca").addEventListener("input", () => {
   clearTimeout(tBusca); tBusca = setTimeout(() => {
     const box = $("#achados"), q = $("#busca").value.trim();
     if (q.length < 2) { box.style.display = "none"; return; }
     const ach = procurar(q);
-    box.innerHTML = ach.length ? ach.map((x, i) => `<button data-i="${i}"><b>${esc(x.t)}</b> <span class="tag">${x.k}</span>${x.mat ? ` <span class="tag">mat. ${esc(x.mat)}</span>` : ""}${x.k === "Profissional" && !x.ativo ? ' <span class="tag">vínculo não confirmado</span>' : ""}<small>${esc(x.s)}</small></button>`).join("") : "<button disabled>Nada encontrado</button>";
+    box.innerHTML = ach.length ? ach.map((x, i) => `<button data-i="${i}"><b>${esc(x.t)}</b> <span class="tag">${x.k}</span>${x.mat ? ` <span class="tag">mat. ${esc(x.mat)}</span>` : ""}${x.ine ? ` <span class="tag">INE ${esc(x.ine)}</span>` : ""}${x.cnes ? ` <span class="tag">CNES ${esc(x.cnes)}</span>` : ""}${x.k === "Profissional" && !x.ativo ? ' <span class="tag">vínculo não confirmado</span>' : ""}<small>${esc(x.s)}</small></button>`).join("") : "<button disabled>Nada encontrado</button>";
     box.style.display = "block";
     box.querySelectorAll("button[data-i]").forEach(b => b.addEventListener("click", () => escolher(ach[+b.dataset.i])));
   }, 150);
@@ -1381,11 +1741,15 @@ function corMapa(v, ref) {
 }
 function renderMapa() {
   const tipo = $("#mapa-tipo").value, ord = $("#mapa-ord").value, k = estado.ind, [a, b] = faixa(), L = [];
-  P.gsaps.forEach(g => g.ubs.forEach(u => u.equipes.forEach(e => {
+  const sl = estado.sel;
+  P.gsaps.forEach((g, gi) => g.ubs.forEach((u, ui) => u.equipes.forEach((e, ei) => {
+    if (sl.g != null && (gi !== sl.g || (sl.u != null && ui !== sl.u) || (sl.e != null && ei !== sl.e))) return;   // unidade escolhida: só as linhas dela
     if (!e.ine || e.migrou || (tipo !== "*" && e.tipo !== tipo) || !e.serie[k]) return;
     const v = e.serie[k].slice(a, b), ref = media12(e.serie[k]); if (!ref) return;
     L.push({ g: g.nome, u: u.nome, e, v, ref, rel: v[v.length - 1] / ref, caminho: `${g.nome} › ${u.nome} › ${e.nome}` });
   })));
+  const ns = $("#mapa-sel");
+  if (sl.g != null) { ns.hidden = false; ns.innerHTML = `Mostrando só <b>${esc(rotSel())}</b>. <button type="button" class="neutro" id="mapa-tudo">Mostrar todas as equipes</button>`; $("#mapa-tudo").addEventListener("click", () => selecionar({})); } else ns.hidden = true;
   if (ord === "queda") L.sort((x, y) => x.rel - y.rel); else if (ord === "valor") L.sort((x, y) => x.v[x.v.length - 1] - y.v[y.v.length - 1]);
   const leg = `<div class="leg-mapa"><b>${esc(nomeInd(k))}</b><span>referência = média da equipe de ${mesRot(MESES[Math.max(IU - 12, 0)])} a ${mesRot(MESES[Math.max(IU - 1, 0)])}</span>${FAIXAS.map(f => `<span><i style="background:${f[1]}"></i>${f[2]}</span>`).join("")}</div>`;
   let h = `<table><thead><tr><th></th>${MESES.slice(a, b).map(m => `<th class="mes">${mesRot(m)}</th>`).join("")}<th class="mes">média</th></tr></thead><tbody>`, grupo = "";
@@ -1394,7 +1758,7 @@ function renderMapa() {
     h += `<tr><td class="rot" data-c="${esc(x.caminho)}" title="${esc(x.caminho)}">${ord === "estrutura" ? "" : esc(x.u) + " · "}${esc(x.e.nome)}</td>` +
       x.v.map((y, i) => `<td class="c" data-v="${y}" style="background:${corMapa(y, x.ref)}" title="${esc(x.e.nome)} · ${mesRot(MESES[a + i])}: ${fmt(y)} (${Math.round(y / x.ref * 100)}% da média ${fmt(x.ref)})"></td>`).join("") + `<td class="c" data-v="${x.ref}" style="background:var(--card);color:var(--muted)">${fmt(x.ref)}</td></tr>`;
   });
-  $("#mapa-corpo").innerHTML = L.length ? leg + h + "</tbody></table>" : "<p class='nota'>Nenhuma equipe com dados deste indicador neste tipo.</p>";
+  $("#mapa-corpo").innerHTML = L.length ? leg + h + "</tbody></table>" : `<p class='nota'>${sl.g != null ? "Nenhuma equipe de " + esc(rotSel()) + " tem dados deste indicador no tipo escolhido em Equipes (troque para “Todas” ou limpe a unidade)." : "Nenhuma equipe com dados deste indicador neste tipo."}</p>`;
   const lg = $("#mapa-corpo .leg-mapa"); if (lg) $("#mapa-corpo").style.setProperty("--leg-h", lg.offsetHeight + "px");
   document.querySelectorAll("#mapa-corpo td.rot").forEach(td => td.addEventListener("click", () => irPara(td.dataset.c)));
 }
@@ -1533,8 +1897,8 @@ async function relatorioWord(html, titulo) {   // página web de arquivo único 
 function abrirRelatorio() {
   if (!NOM.aberto) return;
   $("#rel-escopo").innerHTML = `<option value="r">Região Norte (todas as GSAPs)</option>` + P.gsaps.map((g, gi) => `<optgroup label="${esc(g.nome)}"><option value="g:${gi}">${esc(g.nome)} (inteira)</option>${g.ubs.map((u, ui) => `<option value="u:${gi}:${ui}">${esc(u.nome)}</option>`).join("")}</optgroup>`).join("");
-  const ab = document.querySelector("details.caixa.u[open]") || document.querySelector("details.caixa.g[open]");   // sugere a unidade que está aberta na tela
-  if (ab) $("#rel-escopo").value = ab.dataset.t === "u" ? `u:${ab.dataset.gi}:${ab.dataset.ui}` : `g:${ab.dataset.gi}`;
+  const sl = estado.sel;   // pré-preenche com a unidade escolhida na barra do topo (de equipe, vale a UBS dela)
+  if (sl.g != null) $("#rel-escopo").value = sl.u != null ? `u:${sl.g}:${sl.u}` : `g:${sl.g}`;
   if (!$("#rel-secoes").children.length) $("#rel-secoes").innerHTML = REL_SEC.map(([k, r, d]) => `<label class="chk"><input type="checkbox" name="rel-sec" value="${k}"${d ? " checked" : ""}> ${esc(r)}</label>`).join("");
   $("#rel-aviso").textContent = ""; $("#dlg-rel").showModal();
 }
@@ -1572,6 +1936,7 @@ function iniciar() {
   if (CONSOL) { const c = $("#consol"); c.hidden = false; c.innerHTML = `<b>${mesRot(MESES[IU])} ainda em consolidação.</b> Nos primeiros ${DIAS_CONSOL} dias do mês o InfoSaúde ainda recebe registros atrasados do mês anterior. Zeros, quedas e alertas de ${mesRot(MESES[IU])} podem mudar nos próximos dias: confirme com a equipe antes de agir.`; }
   $("#sub").textContent = `Dados do InfoSaúde-DF · último mês completo: ${mesRot(MESES[IU])}${CONSOL ? " (em consolidação)" : ""} · gerado em ${P.gerado.replace("T", " ")}` + (P.mes_parcial ? ` · ${mesRot(P.mes_parcial)} (parcial) não exibido` : "");
   $("#ult").textContent = mesRot(MESES[IU]);
+  { const o = $("#sel-per option[value='99']"); if (o) o.textContent = `Tudo (desde ${mesRot(MESES[0])})`; }
   $("#grp-ind").innerHTML = GRUPOS.map(([g, r, d]) => `<button type="button" data-g="${g}" aria-pressed="false"${d ? ` title="${esc(d)}"` : ""}>${esc(r)}</button>`).join("");
   $("#grp-ind").addEventListener("click", e => { const b = e.target.closest("button[data-g]"); if (b && b.dataset.g !== estado.grp) { montarInd(b.dataset.g); mudar(); } });
   montarInd("prod", "atend");
@@ -1588,7 +1953,11 @@ function iniciar() {
   $("#i-q").addEventListener("input", e => { is.q = e.target.value; renderIncons(); });
   $("#i-csv").addEventListener("click", () => baixarCSV(`inconsistencias_aps_norte_${MESES[IU]}.csv`, [["Tipo", "GSAP", "UBS", "Equipe", "Profissional", "Categoria", "O que foi encontrado"], ...filtInc().map(x => [rotInc(x.tipo), x.gsap, x.ubs, x.equipe, x.nome, x.cat, x.det])]));
   document.querySelectorAll(".rh-rot").forEach(x => x.textContent = RH);
-  document.addEventListener("toggle", e => { if (e.target.matches && e.target.matches("#arvore details.caixa")) gravarURL(); }, true);
+  document.addEventListener("click", e => { const sm = e.target.closest && e.target.closest("#arvore summary"); cliqueArv = sm ? sm.parentElement : null; }, true);
+  document.addEventListener("toggle", e => {
+    if (!e.target.matches || !e.target.matches("#arvore details.caixa")) return;
+    if (cliqueArv === e.target) { cliqueArv = null; selDeCaixa(e.target); } else gravarURL();   // abrir ou fechar uma caixa à mão também escolhe a unidade
+  }, true);
   document.addEventListener("click", e => { const b = e.target.closest("button.abrir-cmp"); if (b) abrirCmp(b.dataset.g); });
   $("#cmp-voltar").addEventListener("click", () => mostrarVista("h"));
   P.gsaps.forEach(g => ["#cmp-gsap"].forEach(id => $(id).insertAdjacentHTML("beforeend", `<option>${esc(g.nome)}</option>`)));
@@ -1603,8 +1972,9 @@ function iniciar() {
   $("#rel-todas").addEventListener("click", () => document.querySelectorAll("input[name='rel-sec']").forEach(x => x.checked = true));
   $("#rel-nenhuma").addEventListener("click", () => document.querySelectorAll("input[name='rel-sec']").forEach(x => x.checked = false));
   $("#rodape").textContent = P.fonte + ". Painel de apoio à gestão da GAPAPS/DIRAPS Norte; dados de produção conforme registro no PEC.";
+  iniciarNavegacao();
   renderTopo(); renderFiltro(); renderArvore();
-  lerURL(); URL_OK = true;
+  lerURL(); URL_OK = true; gravarURL();
 }
 /* Dica com os números ao passar o mouse (ou tocar): aparece na hora, no lugar do balão lento do navegador.
    Vale para qualquer elemento com <title> (SVG) ou atributo title; o texto passa para data-dica na primeira vez. */
@@ -1670,7 +2040,7 @@ function aplicarNominal(D) {
   P.com_matricula = !!D.com_matricula; NOM.aberto = true; NOM.incons = D.incons || [];
   document.body.classList.add("aberto");
   $("#btn-entrar").textContent = "Sair"; $("#btn-entrar").title = "Fechar a área dos gestores neste navegador";
-  $("#busca").placeholder = P.com_matricula ? "Buscar nome, matrícula, equipe ou UBS" : "Buscar nome, equipe ou UBS";
+  $("#busca").placeholder = P.com_matricula ? "Buscar nome, matrícula, equipe, INE ou UBS" : "Buscar nome, equipe, INE ou UBS"; $("#busca").setAttribute("aria-label", $("#busca").placeholder);
   montarPessoas(); SIN = null; renderFiltro(); mudar();   // os alertas passam a trazer os nomes: refaz as etiquetas
   if (vistaPendente) { const v = vistaPendente; vistaPendente = ""; mostrarVista(v); }
 }

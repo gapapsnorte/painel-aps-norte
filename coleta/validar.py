@@ -22,6 +22,8 @@ else:
     n = rz["entes"][0]["m12"]; v = n["med"] / n["pop"] * 1000 if n["pop"] else 0
     if not 300 <= v <= 1500: falhas.append(f"consultas de médico por mil hab. na Região Norte fora do plausível: {v:.0f}")
     if not rz.get("cad_regiao"): falhas.append("cadastros por UBS vazios")
+rg = p.get("regioes")
+if not rg or "Região Norte" not in rg.get("serie", {}) or len(rg.get("regs", [])) < 7: falhas.append("bloco 'regioes' (Norte × DF) ausente ou incompleto: coleta/regioes.py não rodou")
 us = p.get("usuarios")
 if not us: falhas.append("bloco 'usuarios' (pessoas atendidas) ausente: coleta/usuarios.py não rodou")
 else:

@@ -13,7 +13,8 @@ def dica(pg):
 
 
 def passar(pg, loc, nome, pos=None):
-    loc.scroll_into_view_if_needed(); loc.hover(position=pos, force=True); pg.wait_for_timeout(120)
+    loc.scroll_into_view_if_needed(); pg.wait_for_timeout(250)   # a dica some ao rolar: espera a rolagem assentar
+    loc.hover(position=pos, force=True); pg.wait_for_timeout(120)
     t = dica(pg)
     ok = bool(t) and any(c.isdigit() for c in t)
     print(("ok   " if ok else "FALHA"), nome, "→", t.replace("\n", " | ")[:110])
