@@ -126,3 +126,10 @@ Feito a partir da avaliação externa do painel e das escolhas dela. Tudo local;
 - `coleta/regioes.py` grava `dados/brutos/regioes.json`: total mensal por região de saúde (7 regiões) para 47 indicadores (todos menos motivos de consulta), mesmas regras de contagem da coleta da Norte (conferido: Norte bate 100% com os brutos). Serviços centralizados, contratados e privados ficam de fora; DF = soma das 7 regiões.
 - `montar.py` → bloco `regioes` (séries + população por ano); `validar.py` barra se faltar. Workflow com passo novo.
 - Visão geral: bloco `#cmp-regioes` "por mil habitantes – Norte × DF" para o indicador escolhido, com cartões de 12 meses e variação, e o quadro lateral "Comparar também com" (liga as outras 6 regiões; não vai para o link). Teste: `testes/testar_regioes.py`.
+
+## Lote 2 (22/11/2026): queda em níveis, 1ª verificação, ficha por cargo
+- **Queda em níveis** (`sinais()` na página): último mês abaixo de 70% do habitual = etiqueta amarela; último e anterior seguidos abaixo de 70% = vermelha ("2 meses seguidos abaixo de 70% do habitual"). Habitual segue a mediana de 12 meses.
+- **Dica da etiqueta:** 3 últimos meses + "Primeira verificação" (textos revisados). São sinais para conferir, não conclusões.
+- **Providências (CSV/Excel):** colunas novas "Primeira verificação", "Hipótese", "Medida a observar" (Data de revisão já existia).
+- **Ficha por servidor:** médicos num grupo só (inclui residentes); coluna "Equivalente em 40 h" só informativa (CHS >= 20); tipo de atendimento por profissional no campo nominal `tp` (só bloco cifrado, travado no `validar.py`); blocos por cargo: técnico (sem escuta inicial, pois técnico não consta na base de Atendimentos Individuais; procedimentos e vacinas), ACS (visitas), saúde bucal (produção da eSB, dita como da equipe).
+- **Teste:** `testes/testar_lote2.py`. Cópia de antes: `_backup_2026-11-22_antes_lote2`.
