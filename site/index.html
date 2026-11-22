@@ -777,24 +777,51 @@ function alertasDe(caminho) { return P.alertas.filter(a => a.caminho === caminho
    Juntam os alertas calculados na geração (P.alertas) com o sinal "bem abaixo do habitual" (mediana de 12 meses da própria equipe ou UBS). */
 const TIPOS_SINAL = [["zerada", "Nenhum atendimento no mês"], ["habitual", "Bem abaixo do habitual"], ["medico", "Sem atendimento médico"], ["queda", "Queda contra o mesmo mês do ano anterior"],
   ["acs", "ACS sem visita registrada"], ["proc", "Sem registro de procedimento (citopatológico, teste de sífilis)"], ["semeq", "Produção sem equipe vinculada"], ["mudou", "Equipe mudou de UBS"]];
+/* "Primeira verificação": o que conferir primeiro em cada tipo de sinal (dica da etiqueta, relatório e planilha de providências) */
+const PRIM_VERIF = {
+  zerada: "Conferir se a equipe funcionou no mês, a escala e se os registros do PEC foram enviados.",
+  habitual: "Rever dias de oferta, férias e afastamentos, composição da agenda e fechamento dos registros.",
+  medico: "Conferir escala médica, afastamentos e se o médico registrou em outra equipe ou sem equipe.",
+  queda: "Conferir mudanças de composição da equipe, de agenda e de forma de registro entre os dois períodos.",
+  acs: "Conferir lotação e afastamentos, roteiro de visitas e se o registro saiu com o INE correto.",
+  proc: "Conferir se o procedimento é ofertado, se há insumo e se está sendo registrado no campo de procedimento.",
+  semeq: "Verificar a identificação da equipe (INE) nos registros desta UBS.",
+  mudou: "Validar a data da mudança e onde a produção passou a ser registrada; conferir a lotação no RH."
+};
+let NOS = null;
+function noDe(cam) {   // série da equipe ou UBS de um caminho (e, na UBS, a da produção sem equipe)
+  if (!NOS) { NOS = new Map(); P.gsaps.forEach(g => g.ubs.forEach(u => { NOS.set(`${g.nome} › ${u.nome}`, { s: u.serie, sem: (u.equipes.find(e => !e.ine) || {}).serie }); u.equipes.forEach(e => NOS.set(`${g.nome} › ${u.nome} › ${e.nome}`, { s: e.serie })); })); }
+  return NOS.get(cam);
+}
+function tresMeses(cam, x) {   // 3 últimos meses completos do indicador ligado ao sinal, ex.: "ago/26 310 · set/26 298 · out/26 159"
+  const no = noDe(cam); if (!no || !x.ind) return "";
+  const s = x.ind === "sem" ? (no.sem || {}).atend : (no.s || {})[x.ind]; if (!s) return "";
+  const ms = [IU - 2, IU - 1, IU].filter(i => i >= 0);
+  return `${x.ind === "sem" ? "Atendimentos sem equipe" : nomeInd(x.ind)}, últimos meses: ` + ms.map(i => `${mesRot(MESES[i])} ${fmt(s[i])}`).join(" · ");
+}
+function dicaSinal(cam, x) { return [x.det, tresMeses(cam, x), PRIM_VERIF[x.tipo] ? "Primeira verificação: " + PRIM_VERIF[x.tipo] : ""].filter(Boolean).join("\n"); }
 let SIN = null;
 function sinais() {
   if (SIN) return SIN; SIN = new Map();
-  const poe = (cam, tipo, nivel, rot, det) => { const l = SIN.get(cam) || []; if (!l.some(x => x.rot === rot)) l.push({ tipo, nivel, rot, det }); SIN.set(cam, l); };
+  const poe = (cam, tipo, nivel, rot, det, ind) => { const l = SIN.get(cam) || []; if (!l.some(x => x.rot === rot)) l.push({ tipo, nivel, rot, det, ind }); SIN.set(cam, l); };
   P.alertas.forEach(a => {
     const c = a.caminho, t = a.tipo;
-    if (t === "equipe zerada") poe(c, "zerada", "alta", "Nenhum atendimento no mês", a.texto);
-    else if (t === "sem atendimento médico") poe(c, "medico", "alta", "Sem atendimento médico", a.texto);
-    else if (t === "queda de atendimentos") poe(c, "queda", "media", `${Math.round(-(a.valor || 0) * 100)}% menos que em ${mesRot(MESES[IU - 12])}`, a.texto);
-    else if (t === "ACS sem visita") poe(c, "acs", "media", a.texto.split(" lotados")[0] + " sem visita", a.texto);
-    else if (t === "sem registro de procedimento") poe(c, "proc", "media", "Sem " + a.texto.replace(/^Nenhum registro de /, "").split(" em ")[0], a.texto);
-    else if (t === "produção sem equipe") poe(c, "semeq", "media", a.texto.split(" dos atendimentos")[0] + " sem equipe vinculada", a.texto);
-    else if (t === "equipe mudou de UBS") poe(c, "mudou", "media", "Mudou de UBS", a.texto);
+    if (t === "equipe zerada") poe(c, "zerada", "alta", "Nenhum atendimento no mês", a.texto, "atend");
+    else if (t === "sem atendimento médico") poe(c, "medico", "alta", "Sem atendimento médico", a.texto, "atend_med");
+    else if (t === "queda de atendimentos") poe(c, "queda", "media", `${Math.round(-(a.valor || 0) * 100)}% menos que em ${mesRot(MESES[IU - 12])}`, a.texto, "atend");
+    else if (t === "ACS sem visita") poe(c, "acs", "media", a.texto.split(" lotados")[0] + " sem visita", a.texto, "visitas");
+    else if (t === "sem registro de procedimento") poe(c, "proc", "media", "Sem " + a.texto.replace(/^Nenhum registro de /, "").split(" em ")[0], a.texto, /citopatol/.test(a.texto) ? "p_cito" : "p_ts_sif");
+    else if (t === "produção sem equipe") poe(c, "semeq", "media", a.texto.split(" dos atendimentos")[0] + " sem equipe vinculada", a.texto, "sem");
+    else if (t === "equipe mudou de UBS") poe(c, "mudou", "media", "Mudou de UBS", a.texto, "atend");
     else poe(c, "outro", a.nivel, a.tipo, a.texto);
   });
+  /* queda de atendimentos em níveis (eSF e UBS), sempre contra o "habitual" (mediana dos 12 meses anteriores ao último mês completo):
+     só o último mês abaixo de 70% = atenção (amarelo); último mês e o anterior, os dois abaixo de 70% = prioridade alta (vermelho), sem repetir o amarelo do mesmo mês */
   const hab = (cam, sr) => {
-    if (!sr) return; const m = habitual(sr), rel = m ? sr[IU] / m : null;
-    if (sr[IU] > 0 && rel != null && rel < 0.7 && m >= 150) poe(cam, "habitual", "alta", `${Math.round((1 - rel) * 100)}% abaixo do habitual`, `${fmt(sr[IU])} atendimentos em ${mesRot(MESES[IU])}; o habitual (mediana dos 12 meses anteriores) é ${fmt(m)}.`);
+    if (!sr) return; const m = habitual(sr); if (!m || m < 150 || !(sr[IU] > 0) || !(sr[IU] / m < 0.7)) return;
+    if (IU >= 1 && sr[IU - 1] / m < 0.7)
+      poe(cam, "habitual", "alta", "2 meses seguidos abaixo de 70% do habitual", `${fmt(sr[IU - 1])} atendimentos em ${mesRot(MESES[IU - 1])} e ${fmt(sr[IU])} em ${mesRot(MESES[IU])}, os dois abaixo de 70% do habitual (mediana dos 12 meses anteriores: ${fmt(m)}).`, "atend");
+    else poe(cam, "habitual", "media", `${Math.round((1 - sr[IU] / m) * 100)}% abaixo do habitual`, `${fmt(sr[IU])} atendimentos em ${mesRot(MESES[IU])}; o habitual (mediana dos 12 meses anteriores) é ${fmt(m)}.`, "atend");
   };
   P.gsaps.forEach(g => g.ubs.forEach(u => {
     hab(`${g.nome} › ${u.nome}`, u.serie.atend);
@@ -810,7 +837,7 @@ function passa(cam) {   // com filtro ligado: o próprio nó ou algum nó abaixo
   return false;
 }
 function etiquetas(cam, nivel) {
-  const proprias = (sinais().get(cam) || []).map(x => `<span class="chip ${x.nivel}" title="${esc((CONSOL ? NOTA_CONSOL() : "") + x.det)}">${esc(x.rot)}${CONSOL ? " (em consolidação)" : ""}</span>`).join("");
+  const proprias = (sinais().get(cam) || []).map(x => `<span class="chip ${x.nivel}" title="${esc((CONSOL ? NOTA_CONSOL() : "") + dicaSinal(cam, x))}">${esc(x.rot)}${CONSOL ? " (em consolidação)" : ""}</span>`).join("");
   let conta = "";
   if (nivel !== "e") {   // GSAP e UBS: quantas equipes abaixo têm algum sinal
     let n = 0, alta = 0;
@@ -1416,10 +1443,10 @@ function baixarPlanilha(nome, linhas, aba) {
 const sufUnidade = () => (estado.sel.g != null ? "_" + nomeArq(rotSel()) : "_regiao_norte");   // vai no nome dos arquivos da aba Inconsistências
 function linhasProvidencias(soUnidade) {   // uma linha por alerta e por inconsistência, com as colunas de acompanhamento em branco; soUnidade: só a unidade escolhida na barra
   const hoje = new Date().toLocaleDateString("pt-BR"), ref = mesRot(MESES[IU]), vazio = ["", "", "", "", "", "", "", "novo"];
-  const L = [["Emitido em", "Mês de referência", "Origem", "GSAP", "UBS", "Equipe", "Profissional", "Problema observado", "Evidência", "Situação da validação (suspeita ou confirmado)", "Categoria (registro, vínculo, capacidade, processo de trabalho, outra)", "Responsável", "Providência pactuada", "Prazo", "Data de revisão", "Devolutiva e evidência de resolução", "Situação (novo, em verificação, ação pactuada, em acompanhamento, resolvido)"]];
+  const L = [["Emitido em", "Mês de referência", "Origem", "GSAP", "UBS", "Equipe", "Profissional", "Problema observado", "Evidência", "Primeira verificação", "Hipótese", "Medida a observar", "Situação da validação (suspeita ou confirmado)", "Categoria (registro, vínculo, capacidade, processo de trabalho, outra)", "Responsável", "Providência pactuada", "Prazo", "Data de revisão", "Devolutiva e evidência de resolução", "Situação (novo, em verificação, ação pactuada, em acompanhamento, resolvido)"]];
   const alvo = rotSel(), daUnidade = cam => !soUnidade || estado.sel.g == null || cam === alvo || cam.startsWith(alvo + " › ");
-  sinais().forEach((l, cam) => { if (!daUnidade(cam)) return; const [g, u, e] = cam.split(" › "); l.forEach(x => L.push([hoje, ref, "Alerta", g, u || "", e || "", "", x.rot, x.det, ...vazio])); });
-  if (NOM.aberto) (soUnidade ? baseInc() : NOM.incons || []).forEach(x => { if (x.tipo === "lugar_errado" && x.det.startsWith("Nenhum registro de")) return; L.push([hoje, ref, "Inconsistência", x.gsap, x.ubs, x.equipe, x.nome, rotInc(x.tipo), x.det, ...vazio]); });
+  sinais().forEach((l, cam) => { if (!daUnidade(cam)) return; const [g, u, e] = cam.split(" › "); l.forEach(x => L.push([hoje, ref, "Alerta", g, u || "", e || "", "", x.rot, x.det, PRIM_VERIF[x.tipo] || "", "", "", ...vazio])); });
+  if (NOM.aberto) (soUnidade ? baseInc() : NOM.incons || []).forEach(x => { if (x.tipo === "lugar_errado" && x.det.startsWith("Nenhum registro de")) return; L.push([hoje, ref, "Inconsistência", x.gsap, x.ubs, x.equipe, x.nome, rotInc(x.tipo), x.det, "", "", "", ...vazio]); });
   return L;
 }
 
@@ -1791,21 +1818,63 @@ const IND_FICHA = () => SOMAVEIS.concat([["atend_med", "Atendimentos como médic
 const somaPessoa = (x, k) => P.meses.map((_, i) => x.v.reduce((a, y) => a + ((y.p.serie[k] || [])[i] || 0), 0));
 const s12p = (s, fim) => { let a = 0; for (let j = Math.max(fim - 11, 0); j <= fim; j++) a += s[j] || 0; return a; };
 let PARES = null;   // cargo → indicador → totais de 12 meses de quem registrou (cache; refeito quando a lista nominal muda)
-function paresDoCargo(cargo, k) {
+const ehMedico = x => /^m[eé]dic/i.test(x.cat || "");   // pela categoria: médicos de todos os cargos (RH, convênios, residentes, sem cargo) formam um grupo só
+const grupoPar = x => ehMedico(x) ? "Médicos" : (x.cargo || x.cat || "");
+function perfilDe(x) {   // define os blocos específicos da ficha
+  const c = (x.cat || "") + " " + (x.cargo || "");
+  if (ehMedico(x)) return "med";
+  if (/t[eé]cnic|auxiliar/i.test(c) && /enferm/i.test(c)) return "tec";
+  if (/^enfermeiro/i.test(x.cat || "")) return "enf";
+  if (/^(agente|acs)/i.test(x.cat || "")) return "acs";
+  if (/dentista|higiene dental|sa[uú]de bucal|\b(tsb|thd|asb)\b/i.test(c)) return "bucal";
+  return "";
+}
+const TIPOS_ATEND = ["Consulta no dia", "Consulta agendada", "Consulta agendada programada / cuidado continuado", "Atendimento de urgência", "Escuta inicial / orientação"];
+function paresDoCargo(grupo, k) {
   if (!PARES || PARES.n !== pessoas.size) PARES = { n: pessoas.size, m: new Map() };
-  const ch = cargo + "|" + k; if (PARES.m.has(ch)) return PARES.m.get(ch);
-  const L = []; pessoas.forEach(x => { if ((x.cargo || x.cat) !== cargo || !x.v.some(y => y.p.ativo)) return; const t = s12p(somaPessoa(x, k), IU); if (t > 0) L.push(t); });
+  const ch = grupo + "|" + k; if (PARES.m.has(ch)) return PARES.m.get(ch);
+  const L = []; pessoas.forEach(x => { if (grupoPar(x) !== grupo || !x.v.some(y => y.p.ativo)) return; const t = s12p(somaPessoa(x, k), IU); if (t > 0) L.push(t); });
   L.sort((a, b) => a - b); PARES.m.set(ch, L); return L;
+}
+function blocosPerfil(x, lote) {   // blocos por cargo: tipo de atendimento (médico, enfermeiro), procedimentos e vacinas (técnico), visitas (ACS), produção da eSB (saúde bucal)
+  const perfil = perfilDe(x), tab = (cab, linhas) => `<div class="rolagem"><table><thead><tr>${cab}</tr></thead><tbody>${linhas}</tbody></table></div>`;
+  const tot = k => s12p(somaPessoa(x, k), IU);
+  if (perfil === "med" || perfil === "enf") {
+    const tp = [0, 0, 0, 0, 0]; let tem = false; x.v.forEach(y => { if (y.p.tp) { tem = true; y.p.tp.forEach((n, j) => { tp[j] += n; }); } });
+    const t = tp.reduce((a, b) => a + b, 0); if (!tem || !t) return "";
+    return `<h3>Tipo de atendimento (12 meses)</h3>` + tab(`<th class="l">Tipo</th><th>Atendimentos</th><th>%</th>`, TIPOS_ATEND.map((r, j) => `<tr><td class="l">${esc(r)}</td><td>${fmt(tp[j])}</td><td>${(tp[j] / t * 100).toFixed(1).replace(".", ",")}%</td></tr>`).join("") + `<tr class="dest"><td class="l">Total</td><td>${fmt(t)}</td><td>100%</td></tr>`) +
+      `<p class="nota">Como o profissional classificou cada registro no PEC (InfoSaúde, Atendimentos Individuais), em ${janelaRot()}, somando todas as equipes em que registrou. O tipo depende do hábito de registro.</p>`;
+  }
+  if (perfil === "tec") {
+    const pr = FAMS.reduce((a, k) => a + tot(k), 0), vc = tot("vacinas");
+    return `<h3>Procedimentos e vacinas (12 meses)</h3>` + tab(`<th class="l">Produção</th><th>12 meses</th>`, `<tr><td class="l">Procedimentos</td><td>${fmt(pr)}</td></tr><tr><td class="l">Doses de vacina</td><td>${fmt(vc)}</td></tr>`) +
+      `<p class="nota">A escuta inicial não aparece para técnico de enfermagem nesta base (InfoSaúde, Atendimentos Individuais); o registro é feito pelo enfermeiro.</p>`;
+  }
+  if (perfil === "acs") {
+    const r = tot("visitas"), ok = tot("visitas_ok");
+    return `<h3>Visitas (12 meses)</h3>` + tab(`<th>Registradas</th><th>Realizadas</th><th>% de realizadas</th>`, `<tr><td>${fmt(r)}</td><td>${fmt(ok)}</td><td>${r ? (ok / r * 100).toFixed(1).replace(".", ",") + "%" : "–"}</td></tr>`) +
+      `<p class="nota">Realizada = visita com desfecho “visita realizada”; as demais são registradas como ausente, recusada etc.</p>`;
+  }
+  if (perfil === "bucal") {
+    const eq = [], vis = new Set(); x.v.forEach(y => { if (y.e.tipo === "eSB" && (y.p.lotado || y.p.ativo) && !vis.has(y.caminho) && y.e.serie.odonto) { vis.add(y.caminho); eq.push(y); } });
+    if (!eq.length) return `<h3>Consultas odontológicas da equipe de saúde bucal</h3><p class="nota">Produção da equipe de saúde bucal, não individual. Nenhuma eSB com consultas odontológicas registradas aparece nas equipes deste servidor.</p>`;
+    const lin = eq.map(y => { const s = y.e.serie.odonto, s1 = y.e.serie.odonto1 || []; return `<tr><td class="l">${esc(y.e.nome)}<span class="meta"> · ${esc(y.u.nome)}</span></td><td><b>${fmt(s12p(s, IU))}</b></td><td>${fmt(s12p(s, IU) / 12)}</td><td>${fmt(s12p(s1, IU))}</td></tr>`; }).join("");
+    const graf = eq.slice(0, lote ? 2 : 99).map(y => `<div><h4>${esc(y.e.nome)} · consultas odontológicas, ${fmt(y.e.serie.odonto[IU])} em ${mesRot(MESES[IU])}</h4>${barrasPessoa(y.e.serie.odonto, Math.max(0, IU - 11))}</div>`).join("");
+    return `<h3>Consultas odontológicas da equipe de saúde bucal (12 meses)</h3><p class="nota"><b>Produção da equipe de saúde bucal, não individual.</b> A base não traz a produção individual de odontologia; os números abaixo são da(s) eSB em que o servidor está lotado.</p>` +
+      tab(`<th class="l">Equipe</th><th>Consultas odontológicas (12 meses)</th><th>Média por mês</th><th>Primeira consulta odontológica (12 meses)</th>`, lin) + `<div class="graf">${graf}</div>`;
+  }
+  return "";
 }
 function fichaHTML(x, lote) {
   const sers = IND_FICHA().map(([k, rot]) => [k, rot, somaPessoa(x, k)]).filter(([, , tot]) => tot.slice(0, IU + 1).some(v => v));
   const ini = Math.min(IU, ...sers.map(([, , tot]) => tot.findIndex(v => v)).filter(i => i >= 0));   // primeiro mês com qualquer registro da pessoa: antes disso não é zero, é ausência
-  const incompleto = ini > IU - 11, cargo = x.cargo || x.cat || "";
+  const incompleto = ini > IU - 11, cargo = x.cargo || x.cat || "", grupo = grupoPar(x), medico = grupo === "Médicos", chs = +x.chs || 0;
+  if (perfilDe(x) === "tec") { const dest = k => k === "vacinas" || FAMS.includes(k); sers.sort((a, b) => dest(b[0]) - dest(a[0])); }   // técnico de enfermagem: procedimentos e vacinas primeiro
   const q = (L, p) => L.length ? L[Math.min(L.length - 1, Math.max(0, Math.round(p * (L.length - 1))))] : 0;
   const lin12 = sers.map(([k, rot, tot]) => {
-    const a = s12p(tot, IU), b = IU >= 23 && ini <= IU - 23 ? s12p(tot, IU - 12) : null, L = paresDoCargo(cargo, k), ok = L.length >= 5 && !incompleto;
+    const a = s12p(tot, IU), b = IU >= 23 && ini <= IU - 23 ? s12p(tot, IU - 12) : null, L = paresDoCargo(grupo, k), ok = L.length >= 5 && !incompleto, eq40 = chs >= 20 ? a * 40 / chs : null;
     const p25 = q(L, .25), p50 = q(L, .5), p75 = q(L, .75), pos = !ok ? "–" : a < p25 ? "abaixo da faixa central" : a > p75 ? "acima da faixa central" : "dentro da faixa central";
-    return `<tr><td class="l">${esc(rot)}</td><td><b>${fmt(a)}</b></td><td>${fmt(a / 12)}</td><td>${b == null ? "–" : fmt(b)}</td><td>${b ? pctv(a / b - 1) : "–"}</td><td>${ok ? fmt(p50) : "–"}</td><td>${ok ? fmt(p25) + " a " + fmt(p75) : "–"}</td><td class="l">${pos}</td></tr>`;
+    return `<tr><td class="l">${esc(rot)}</td><td><b>${fmt(a)}</b></td><td>${eq40 == null ? "–" : fmt(eq40)}</td><td>${fmt(a / 12)}</td><td>${b == null ? "–" : fmt(b)}</td><td>${b ? pctv(a / b - 1) : "–"}</td><td>${ok ? fmt(p50) : "–"}</td><td>${ok ? fmt(p25) + " a " + fmt(p75) : "–"}</td><td class="l">${pos}</td></tr>`;
   }).join("");
   const graf = sers.filter(([k]) => !lote || ["atend", "visitas", "vacinas", "coletivas"].includes(k) || FAMS.includes(k)).slice(0, lote ? 4 : 99).map(([, rot, tot]) => {
     const comp = IU >= 12 && IU - 12 > ini && variacao(tot) != null;   // só compara com o ano anterior se a pessoa já registrava antes daquele mês (o mês de chegada costuma ser parcial)
@@ -1819,8 +1888,8 @@ function fichaHTML(x, lote) {
   const alerta = P.alertas.filter(a => x.v.some(y => a.caminho === y.caminho && a.texto.includes(x.nome))).map(a => `<li><b>${esc(a.tipo)}:</b> ${esc(a.texto)}</li>`).join("");
   const cab = lote ? `<h2>${esc(x.nome)}</h2><p class="nota">${esc([x.cat, x.chs ? x.chs + " h" : "", x.mat ? "matrícula " + x.mat : ""].filter(Boolean).join(" · "))}</p>` : "";
   return cab + (alerta ? `<ul class="nota" style="color:var(--saldo)">${alerta}</ul>` : "") +
-    (sers.length ? `<h3>Últimos 12 meses (${janelaRot()})</h3><div class="rolagem"><table><thead><tr><th class="l">Produção</th><th>12 meses</th><th>Média por mês</th><th>12 meses anteriores</th><th>Variação</th><th>Mediana do cargo</th><th>Faixa central do cargo</th><th class="l">Posição</th></tr></thead><tbody>${lin12}</tbody></table></div>` +
-      `<p class="nota">Comparação com quem tem o mesmo cargo (${esc(cargo || "não informado")}) na Região Norte e registrou aquela produção nos 12 meses; faixa central = metade do meio dessas pessoas. Não considera carga horária (20 h × 40 h), férias, licenças nem a função que a pessoa exerce na equipe.${incompleto ? ` <b>Registra nesta base desde ${mesRot(MESES[ini])}: 12 meses incompletos, sem comparação.</b>` : ""} Grupos com menos de 5 pessoas ficam sem comparação.</p>` : "") +
+    (sers.length ? `<h3>Últimos 12 meses (${janelaRot()})</h3><div class="rolagem"><table><thead><tr><th class="l">Produção</th><th>12 meses</th><th>Equivalente em 40 h</th><th>Média por mês</th><th>12 meses anteriores</th><th>Variação</th><th>Mediana do cargo</th><th>Faixa central do cargo</th><th class="l">Posição</th></tr></thead><tbody>${lin12}</tbody></table></div>` +
+      `<p class="nota">Comparação com ${medico ? "todos os médicos da Região Norte (qualquer cargo)" : `quem tem o mesmo cargo (${esc(cargo || "não informado")}) na Região Norte`} que registraram aquela produção nos 12 meses; faixa central = metade do meio dessas pessoas. A comparação usa o valor bruto e não considera carga horária (20 h × 40 h), férias, licenças nem a função que a pessoa exerce na equipe. O equivalente em 40 h (12 meses × 40 ÷ carga horária semanal do RH, só para carga de 20 h ou mais) é só informativo.${incompleto ? ` <b>Registra nesta base desde ${mesRot(MESES[ini])}: 12 meses incompletos, sem comparação.</b>` : ""} Grupos com menos de 5 pessoas ficam sem comparação.</p>` : "") + blocosPerfil(x, lote) +
     (graf ? `<h3>Mês a mês</h3><p class="nota">Uma barra por mês, somando todas as equipes em que a pessoa registrou, desde <b>${mesRot(MESES[Math.max(ini, faixa()[0])])}</b>${ini > faixa()[0] ? ", primeiro mês com registro nesta base" : ""}; a barra mais escura é ${mesRot(MESES[IU])}. Números pequenos oscilam por acaso: leia o conjunto, não o mês.</p>` : "") +
     `<div class="graf">${graf || "<p class='nota'>Sem produção individual registrada neste período.</p>"}</div>` +
     `<h3>Equipes em que registrou</h3><div class="rolagem"><table><thead><tr><th class="l">Equipe</th><th class="l">Situação</th>${SOMAVEIS.map(([, r]) => `<th>${r.split(" ")[0]}<br><span class="nota">12 meses</span></th>`).join("")}</tr></thead><tbody>${lin}</tbody></table></div>` +
@@ -1936,7 +2005,7 @@ function relatorioHTML(esc0, secoes) {
   if (tem("alertas")) {
     const l = [...sinais()].filter(([c]) => !no.cam || c === no.cam || c.startsWith(no.cam + " › ")).flatMap(([c, xs]) => xs.map(x => [c, x]));
     l.sort((a, b) => (a[1].nivel !== "alta") - (b[1].nivel !== "alta") || a[0].localeCompare(b[0], "pt-BR"));
-    h.push(`<h2>Alertas de ${mesRot(MESES[i])}</h2>` + (l.length ? `<table><thead><tr><th class="l">Unidade ou equipe</th><th class="l">Prioridade</th><th class="l">Sinal</th><th class="l">Detalhe</th></tr></thead><tbody>${l.map(([c, x]) => `<tr><td class="l">${esc(no.cam && c.startsWith(no.cam + " › ") ? c.slice(no.cam.length + 3) : c)}</td><td class="l">${x.nivel === "alta" ? "alta" : "atenção"}</td><td class="l">${esc(x.rot)}</td><td class="l">${esc(x.det)}</td></tr>`).join("")}</tbody></table><p class="nota">São sinais para conferir com a equipe, não conclusões: zero pode ser registro ausente ou atrasado, férias ou afastamento. “Habitual” = mediana dos 12 meses anteriores ao mês avaliado.</p>` : `<p>Nenhum alerta nesta unidade.</p>`));
+    h.push(`<h2>Alertas de ${mesRot(MESES[i])}</h2>` + (l.length ? `<table><thead><tr><th class="l">Unidade ou equipe</th><th class="l">Prioridade</th><th class="l">Sinal</th><th class="l">Detalhe</th><th class="l">Primeira verificação</th></tr></thead><tbody>${l.map(([c, x]) => `<tr><td class="l">${esc(no.cam && c.startsWith(no.cam + " › ") ? c.slice(no.cam.length + 3) : c)}</td><td class="l">${x.nivel === "alta" ? "alta" : "atenção"}</td><td class="l">${esc(x.rot)}</td><td class="l">${esc(x.det)}</td><td class="l">${esc(PRIM_VERIF[x.tipo] || "")}</td></tr>`).join("")}</tbody></table><p class="nota">São sinais para conferir com a equipe, não conclusões: zero pode ser registro ausente ou atrasado, férias ou afastamento. “Habitual” = mediana dos 12 meses anteriores ao mês avaliado. Queda só no último mês = atenção; dois meses seguidos abaixo de 70% do habitual = prioridade alta.</p>` : `<p>Nenhum alerta nesta unidade.</p>`));
   }
   if (tem("unidades")) h.push(`<h2>${esc(nomeInd(k))}, por ${no.rot === "Equipe" ? "equipe" : no.rot}</h2><table>${cabS(no.rot)}<tbody>${linS(no.nome, no.ser[k], "dest")}${no.filhos.filter(f => f.ser[k]).map(f => linS(f.nome, f.ser[k])).join("")}</tbody></table>`);
   if (tem("bp")) {

@@ -54,6 +54,7 @@ TIPOS_ACESSO = {"Consulta no dia": "a_dia", "Consulta agendada": "a_agend", "Con
 for _k, _n in (("a_dia", "Consulta no dia (demanda espontânea)"), ("a_agend", "Consulta agendada"), ("a_prog", "Consulta agendada programada (cuidado continuado)"),
                ("a_urg", "Atendimento de urgência"), ("a_escuta", "Escuta inicial e orientação"), ("atend_out", "Atendimentos de outros profissionais")):
     IND[_k] = (_n, "atendimentos", "eq"); GRP[_k] = "Perfil de acesso (só por equipe)"
+TIPO_POS = {t: j for j, t in enumerate(TIPOS_ACESSO)}   # dia, agendada, programada, urgência, escuta inicial
 COND_MAP = {"prenatal": "Pré-natal", "has": "Hipertensão arterial", "dm": "Diabetes", "mental": "Saúde mental",
             "colo": "Rast. câncer do colo do útero", "mama": "Rast. câncer de mama", "ist": "D.Transmissíveis - DST"}
 
@@ -173,6 +174,8 @@ def f_atend(eq, _, l, i, cnes):
     for ind in ["atend"] + (["atend_med"] if l["cat"] == "MÉDICO" else []) + (["atend_enf"] if l["cat"] == "ENFERMEIRO" else []):
         soma_serie(p, ind, i, n); eq["serie"][ind][i] += n
     if TIPOS_ACESSO.get(l["tipo"]): eq["serie"][TIPOS_ACESSO[l["tipo"]]][i] += n          # perfil de acesso: só no nível da equipe
+    if l["cat"] in ("MÉDICO", "ENFERMEIRO") and TIPO_POS.get(l["tipo"]) is not None and IU - 11 <= i <= IU:   # por profissional (só bloco nominal): total de 12 meses por tipo, na ordem de TIPOS_ACESSO
+        p.setdefault("tp", [0] * 5)[TIPO_POS[l["tipo"]]] += n
     if l["cat"] not in ("MÉDICO", "ENFERMEIRO"): eq["serie"]["atend_out"][i] += n
 def nome_unid(cnes, l): return l.get("ubs") or cnes
 def f_vis(eq, _, l, i, cnes):

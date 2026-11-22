@@ -41,7 +41,7 @@ for _arq in ("painel.js", "index.html"):
     _t = (_raiz / "site" / _arq).read_text("utf-8"); _tn = _n(_t)
     _v = sum(1 for x in _nomes if x in _tn)
     if _v: falhas.append(f"{_v} nome(s) de servidor em texto aberto em site/{_arq}")
-    if re.search(r'"(prof|mat|cns|cargo|chs)":', _t): falhas.append(f"campo nominal em site/{_arq}")
+    if re.search(r'"(prof|mat|cns|cargo|chs|tp)":', _t): falhas.append(f"campo nominal em site/{_arq}")
 import os
 if os.environ.get("GITHUB_ACTIONS") and not p.get("restrito"): falhas.append("painel sem a área dos gestores numa geração feita no GitHub (APS_SENHA ausente?)")
 _extra = sorted(x.name for x in (_raiz / "site").iterdir() if x.name not in ("index.html", "painel.js", "nominal.js"))
