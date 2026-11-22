@@ -160,7 +160,7 @@ with sync_playwright() as p:
         ix = pg3.evaluate(f"IDX.get({inc['gsap']!r} + ' › ' + {inc['ubs']!r})")
         lateral(pg3, ix["g"], ix["u"])
         pg3.click("#aba-i"); pg3.wait_for_selector("#i-corpo table")
-        cams = pg3.evaluate("[...document.querySelectorAll('#i-corpo button.lk')].map(b => b.dataset.c)")
+        cams = pg3.evaluate("[...document.querySelectorAll('#i-corpo button.lk[data-c]')].map(b => b.dataset.c)")
         conf("Inconsistências: só as da unidade escolhida", len(cams) > 0 and all(c.startswith(inc["gsap"] + " › " + inc["ubs"]) for c in cams) and "Filtrado pela unidade" in pg3.inner_text("#i-sel"), f"{len(cams)} linhas")
         pg3.click("#btn-rel"); pg3.wait_for_selector("#dlg-rel[open]")
         conf("relatório vem com a unidade escolhida", pg3.input_value("#rel-escopo") == f"u:{ix['g']}:{ix['u']}", pg3.input_value("#rel-escopo"))

@@ -45,7 +45,7 @@ with sync_playwright() as p:
     pg.select_option("#u-ord", "hf"); pg.wait_for_timeout(100)
     pg.locator("#u-crumb button", has_text="Região Norte").click(); pg.wait_for_timeout(200)
     confere("voltou à Região", pg.inner_text("#u-tit"), "Região Norte")
-    confere("seletor de indicador desabilitado", str(pg.locator("#sel-ind").is_disabled()), "True")
+    confere("seletor de indicador oculto nesta aba", str(not pg.locator("#sel-ind").is_visible()), "True")
     confere("rodapé com lotação de outubro", pg.inner_text("#rodape"), "out/2026")
     pg.set_viewport_size({"width": 390, "height": 800}); pg.wait_for_timeout(200)
     rol = pg.evaluate("document.documentElement.scrollWidth - document.documentElement.clientWidth"); print("celular: rolagem lateral da página (px):", rol)

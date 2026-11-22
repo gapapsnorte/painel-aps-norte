@@ -3,7 +3,7 @@ habitual único, aviso na equipe, link que preserva a tela, planilha de providê
 Uso: python testar_lote.py"""
 import json, pathlib
 from playwright.sync_api import sync_playwright
-from _entrar import entrar
+from _entrar import entrar; from _entrar import planilha, planilha_txt
 RAIZ = pathlib.Path(__file__).resolve().parent.parent
 url = (RAIZ / "site" / "index.html").as_uri()
 P = json.load(open(RAIZ / "dados" / "painel.json", encoding="utf-8")); N = json.load(open(RAIZ / "dados" / "nominal.json", encoding="utf-8"))
@@ -17,7 +17,7 @@ with sync_playwright() as p:
     pg.on("console", lambda m: erros.append(f"console.{m.type}: {m.text}") if m.type in ("error", "warning") else None); pg.on("pageerror", lambda e: erros.append(f"pageerror: {e}"))
     pg.goto(url); pg.wait_for_selector("#arvore details.g")
     # ---- abas e público sem senha
-    conf("abas visíveis sem senha: Visão geral, Mapa de calor, Perfil dos atendimentos", pg.locator("nav.abas button:visible").all_inner_texts() == ["Visão geral", "Mapa de calor", "Perfil dos atendimentos"], pg.locator("nav.abas button:visible").all_inner_texts())
+    conf("abas visíveis sem senha: Visão geral, Mapa de calor, Perfil dos atendimentos e Inconsistências com cadeado", pg.locator("nav.abas button:visible").all_inner_texts() == ["Visão geral", "Mapa de calor", "Perfil dos atendimentos", "Inconsistências 🔒"], pg.locator("nav.abas button:visible").all_inner_texts())
     pub = (RAIZ / "site" / "painel.js").read_text("utf-8")
     conf("inconsistências não estão no arquivo público", '"incons"' not in pub and "lot_sem_prod" not in pub)
     # ---- grupos por boa prática
@@ -60,7 +60,7 @@ with sync_playwright() as p:
     pg.locator("#p-crumb button").first.click()
     for b, vista in (("aba-x", "x"), ("aba-u", "u"), ("aba-r", "r"), ("sub-p", "p")):
         pg.click("#" + b); pg.wait_for_timeout(250)
-        conf(f"parte {b} abre dentro do Perfil", pg.locator("#vista-" + vista).is_visible() and pg.get_attribute("#aba-p", "aria-selected") == "true" and pg.locator("#sel-ind").is_disabled())
+        conf(f"parte {b} abre dentro do Perfil", pg.locator("#vista-" + vista).is_visible() and pg.get_attribute("#aba-p", "aria-selected") == "true" and not pg.locator("#sel-ind").is_visible())
     pg.click("#aba-r"); pg.wait_for_selector("#r-ref table")
     conf("consultas por mil: frase do denominador corrigida e selo de comparação exploratória", "não a tendência" not in pg.inner_text("#vista-r") and "também a variação no tempo" in pg.inner_text("#r-ref-nota") and "comparação exploratória" in pg.inner_text("#r-aviso"))
     # ---- link que preserva a tela
@@ -72,13 +72,13 @@ with sync_playwright() as p:
     pg2.goto(url + "#v=m&i=p_cito&p=12"); pg2.reload(); pg2.wait_for_selector("#mapa-corpo td.c")
     conf("link direto para o mapa de calor de citopatológico em 12 meses", pg2.locator("#vista-m").is_visible() and pg2.input_value("#sel-ind") == "p_cito" and pg2.input_value("#sel-per") == "12")
     pg2.goto(url + "#v=i"); pg2.reload(); pg2.wait_for_selector("#arvore details.g"); pg2.wait_for_timeout(300)
-    conf("link para Inconsistências sem senha cai na Visão geral, sem nomes", pg2.locator("#vista-h").is_visible() and not pg2.locator("#aba-i").is_visible() and pg2.inner_text("#i-corpo") == "")
+    conf("link para Inconsistências sem senha cai na Visão geral, sem nomes", pg2.locator("#vista-h").is_visible() and pg2.locator("#aba-i .cad-ico").is_visible() and pg2.inner_text("#i-corpo") == "")
     pg2.close()
     pg.locator("#g0 > summary").click(); pg.select_option("#sel-ind", "atend")
     # ---- planilha de providências (pública: só alertas, sem nomes)
     with pg.expect_download() as d: pg.click("#f-barra .btn-prov")
-    txt = pathlib.Path(d.value.path()).read_bytes().decode("utf-8-sig"); lin = txt.split("\r\n")
-    conf("planilha de providências pública: cabeçalho, uma linha por alerta, sem inconsistências", lin[0].startswith('"Emitido em"') and "Responsável" in lin[0] and len(lin) > 40 and '"Inconsistência"' not in txt and lin[1].endswith('"novo"'), f"{len(lin) - 1} linhas")
+    lin = planilha(d.value.path())
+    conf("planilha de providências pública (.xlsx): cabeçalho, uma linha por alerta, sem inconsistências", d.value.suggested_filename.endswith(".xlsx") and lin[0][0] == "Emitido em" and "Responsável" in lin[0] and len(lin) > 40 and not any("Inconsistência" in l for l in lin) and lin[1][-1] == "novo", f"{len(lin) - 1} linhas")
     # ---- aviso contextual numa equipe abaixo do habitual em UBS com produção sem equipe
     alvo = None
     for gi, g in enumerate(P["gsaps"]):
@@ -103,15 +103,17 @@ with sync_playwright() as p:
     conf("cartões por tipo = JSON", all(br(sum(1 for x in inc if x["tipo"] == k)) == pg.inner_text(f"#i-cartoes button[data-t='{k}'] .n") for k in ("sem_ine", "lot_outra", "lot_sem_prod", "prod_fora_rh", "ine_fora_rh", "eq_sem_prod", "mudou_ubs", "lugar_errado")), {k: sum(1 for x in inc if x["tipo"] == k) for k in sorted({x["tipo"] for x in inc})})
     pg.click("#i-cartoes button[data-t='sem_ine']"); pg.wait_for_timeout(200); n_sem = sum(1 for x in inc if x["tipo"] == "sem_ine")
     conf("filtro 'sem INE' lista profissionais com nome", pg.locator("#i-corpo tbody tr").count() == min(n_sem, 500) and next(x["nome"] for x in inc if x["tipo"] == "sem_ine") in pg.inner_text("#i-corpo"), f"{n_sem} linhas")
-    pg.select_option("#i-gsap", P["gsaps"][0]["nome"]); pg.wait_for_timeout(150); n_g = sum(1 for x in inc if x["tipo"] == "sem_ine" and x["gsap"] == P["gsaps"][0]["nome"])
-    conf("filtro por GSAP", pg.locator("#i-corpo tbody tr").count() == n_g, n_g)
+    pg.evaluate("() => selecionar({ g: 0 })"); pg.wait_for_timeout(250)   # o seletor de GSAP da aba foi removido de propósito: vale a unidade da barra
+    n_g = sum(1 for x in inc if x["tipo"] == "sem_ine" and x["gsap"] == P["gsaps"][0]["nome"])
+    conf("filtro por GSAP (pela unidade da barra)", pg.locator("#i-corpo tbody tr").count() == n_g, n_g)
     pg.screenshot(path=str(RAIZ / "testes" / "shot_incons.png"))
     with pg.expect_download() as d: pg.click("#i-csv")
-    conf("CSV da lista filtrada", len(pathlib.Path(d.value.path()).read_bytes().decode("utf-8-sig").split("\r\n")) == n_g + 1)
+    conf("planilha da lista filtrada", len(planilha(d.value.path())) == n_g + 1)
+    pg.evaluate("() => selecionar({})"); pg.wait_for_timeout(250)   # providências da aba saem só da unidade escolhida: sem unidade, a Região inteira
     with pg.expect_download() as d: pg.click("#vista-i .btn-prov")
-    txt = pathlib.Path(d.value.path()).read_bytes().decode("utf-8-sig")
-    conf("planilha de providências com senha inclui as inconsistências", '"Inconsistência"' in txt and txt.count('"Inconsistência"') >= len(inc) - 20)
-    pg.select_option("#i-gsap", ""); pg.locator("#i-corpo button.lk").first.click(); pg.wait_for_timeout(400)
+    n_inc = sum(1 for l in planilha(d.value.path()) if "Inconsistência" in l)
+    conf("planilha de providências com senha inclui as inconsistências", n_inc > 0 and n_inc >= len(inc) - 20, n_inc)
+    pg.locator("#i-corpo button.lk[data-c]").first.click(); pg.wait_for_timeout(400)
     conf("clicar na unidade abre a Visão geral nela", pg.locator("#vista-h").is_visible() and pg.locator("#arvore details.u[open]").count() >= 1)
     conf("rótulo 'já saiu' trocado", "já saiu" not in pg.inner_text("body") and "vínculo atual confirmado" in pg.inner_text("label:has(#chk-inativos)"))
     # ---- relatório acompanha

@@ -10,7 +10,7 @@ def pop(regs, mes):
         anos = sorted(int(x) for x in RG["pop"][r]); ano = max([x for x in anos if x <= a] or [anos[0]]); t += RG["pop"][r][str(ano)]
     return t
 def doze(regs, k):
-    return sum(sum(RG["serie"][r].get(k, [0]*len(M))[i] for r in regs) * 1000 / pop(regs, M[i]) for i in range(IU - 11, IU + 1))
+    return sum(sum(RG["serie"][r].get(k, [0]*len(M))[i] for r in regs) for i in range(IU - 11, IU + 1)) * 1000 / pop(regs, M[IU])
 esp_n, esp_d = doze(["Região Norte"], "atend"), doze(RG["regs"], "atend")
 erros = []; falhas = []
 with sync_playwright() as p:

@@ -411,6 +411,14 @@ def a3(p): return s3(p["serie"].get("atend", zeros()))
 def inc(tipo, g, u, e, det, n=0, nome="", cat=""):
     incons.append({"tipo": tipo, "gsap": g["nome"], "ubs": u["nome"], "equipe": e["nome"] if e else "", "nome": nome, "cat": cat or "", "det": det, "n": n})
 _pess = defaultdict(list)
+# Saúde bucal: o InfoSaúde só traz a odontologia por equipe, não por profissional; dentista ou técnico sem registro individual não é inconsistência.
+def so_por_equipe(cat): c = (cat or "").lower(); return any(t in c for t in ("dentista", "higiene dental", "saúde bucal", "saude bucal", "thd", "tsb", "asb"))
+# Mesma equipe (INE) em mais de uma UBS (eMulti, eSB): só é 'sem produção' se não registrou em nenhuma delas.
+_TOT_INE = defaultdict(int)
+for g in saida_g:
+    for u in g["ubs"]:
+        for e in u["equipes"]:
+            if e["ine"]: _TOT_INE[e["ine"]] += sum(sum(v[max(IU - 2, 0):IU + 1]) for k, v in e["serie"].items() if k in BASE_REG)
 _ID_UBS.update({_SEQ[k]: c for k, c in lot_ubs.items() if k in _SEQ})
 for g in saida_g:
     for u in g["ubs"]:
@@ -435,7 +443,7 @@ for g in saida_g:
                 inc("mudou_ubs", g, u, e, f"INE {e['ine']} passou a registrar na {e['migrou']['para']}; último registro aqui em {rot_mes(e['migrou']['ultimo'])}. Conferir a lotação no RH.")
             elif not e["no_rh"] and tot3:
                 inc("ine_fora_rh", g, u, e, f"INE {e['ine']} ({e['tipo']}) tem {tot3} registros de {M3} a {ULT_R}, mas não consta na planilha de RH de {RH_ROT}.", tot3)
-            elif e["no_rh"] and not tot3:
+            elif e["no_rh"] and not tot3 and not _TOT_INE[e["ine"]]:
                 inc("eq_sem_prod", g, u, e, f"Equipe da planilha de RH de {RH_ROT} (INE {e['ine']}, {e['tipo']}) sem nenhum registro de {M3} a {ULT_R}.")
             if e["tipo"] == "eSF" and not e.get("migrou") and med12(s) >= 100 and s[IU] < 0.5 * med12(s) and sem_ubs >= 50:
                 inc("lugar_errado", g, u, e, f"{s[IU]} atendimentos em {ULT_R} (habitual {med12(s):.0f}) e a UBS tem {sem_ubs} atendimentos sem equipe vinculada no mesmo mês: parte pode ser desta equipe.", sem_ubs)
@@ -444,7 +452,7 @@ for g in saida_g:
                 if p["lotado"]:
                     aqui = p3(p); fora = [(x, p3(x[3])) for x in vinc if x[3] is not p and p3(x[3])]
                     tfora = sum(n for _, n in fora)
-                    if not aqui and not tfora:
+                    if not aqui and not tfora and not so_por_equipe(p["cat"]):
                         inc("lot_sem_prod", g, u, e, f"Consta na lotação de {RH_ROT} e não tem nenhum registro de {M3} a {ULT_R} (pode ser férias, afastamento ou função sem registro).", 0, p["nome"], p["cat"])
                     elif tfora > aqui and tfora >= 20:
                         (xg, xu, xe, _), n = max(fora, key=lambda t: t[1])

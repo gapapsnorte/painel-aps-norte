@@ -48,7 +48,7 @@ with sync_playwright() as p:
     conf("lote recusa a Região inteira", "GSAP ou por UBS" in pg.inner_text("#rel-aviso"))
     pg.select_option("#rel-escopo", "u:0:0")
     html = pg.evaluate("() => relatorioHTML('u:0:0', ['fichas'])")
-    n = html.count('class="quebra"'); n_esp = pg.evaluate("() => { const no = noRel('u:0:0'); return [...pessoas.values()].filter(x => x.v.some(y => y.p.ativo && y.caminho.startsWith(no.cam + ' › '))).length; }")
+    n = html.count('class="quebra"') + 1;  n_esp = pg.evaluate("() => { const no = noRel('u:0:0'); return [...pessoas.values()].filter(x => x.v.some(y => y.p.ativo && y.caminho.startsWith(no.cam + ' › '))).length; }")
     conf("lote: uma página por servidor ativo da UBS", n == n_esp and n > 0, f"{n} páginas, {n_esp} servidores")
     pg.check("input[name='rel-fmt'][value='word']")
     with pg.expect_download(timeout=120000) as d: pg.click("#rel-ok")

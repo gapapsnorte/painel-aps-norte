@@ -41,6 +41,13 @@ header p{margin:4px 0 0;color:var(--muted);font-size:.72rem}
 .pular{position:absolute;left:-9999px;top:0}
 .pular:focus{left:8px;top:8px;z-index:20;background:var(--card);color:var(--txt);padding:8px 12px;border-radius:8px;font-size:.9rem}
 
+/* cabeçalho: título à esquerda; Gerar relatório e Entrar/Sair à direita */
+.hdr{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:flex-start;justify-content:space-between}
+.hdr-tit{flex:1 1 320px;min-width:0}
+.hdr-acoes{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding-top:2px}
+.hdr-acoes button{font:inherit;font-size:.85rem;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--txt);cursor:pointer}
+.hdr-acoes button:hover{border-color:var(--accent)}
+.aviso-sessao{margin:6px 0 0;font-size:.8rem}
 /* abas */
 .abas{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:12px 0 10px;flex-wrap:wrap}
 .abas button{font:inherit;border:1px solid transparent;border-bottom:none;background:none;color:var(--muted);padding:6px 12px;border-radius:8px 8px 0 0;font-size:.9rem;cursor:pointer;margin-bottom:-1px}
@@ -48,6 +55,8 @@ header p{margin:4px 0 0;color:var(--muted);font-size:.72rem}
 
 /* barra de filtros */
 .ctrl{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;margin-bottom:8px}
+.ctrl.fixa .fora-aba,.ctrl.fixa.vazia{display:none !important}
+#grp-toggle{display:none}
 .ctrl.fixa{position:sticky;top:var(--nav-h,0px);z-index:20;background:var(--bg);padding:6px 14px 4px;box-shadow:0 6px 8px -8px rgba(0,0,0,.25)}
 label{font-size:.82rem;color:var(--muted);display:flex;align-items:center;gap:6px}
 select,input[type=search]{font:inherit;font-size:.9rem;padding:5px 7px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--txt)}
@@ -64,6 +73,8 @@ button.link{font:inherit;background:none;border:0;color:var(--accent);text-decor
 #achados button:hover{background:var(--bg)}
 #achados small{display:block;color:var(--muted)}
 .ctl{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:6px 0 10px}
+.ctl[hidden]{display:none}
+button.em-csv{font-size:.8rem;margin-left:-6px}
 .leg-x{display:flex;flex-wrap:wrap;gap:2px 12px;align-items:center;font-size:.8rem;color:var(--muted);margin:2px 0 8px}
 .leg-x i{display:inline-block;width:14px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
 
@@ -198,8 +209,9 @@ svg text{font:11px system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;fill:var
 .sinais .chip{max-width:100%;white-space:normal;overflow-wrap:anywhere}
 /* área dos gestores (senha) */
 body:not(.aberto) .so-aberto{display:none !important}
-body:not(.restrito) #btn-entrar{display:none}
-#btn-entrar{font:inherit;font-size:.85rem;color:var(--muted);background:none;border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer}
+body:not(.restrito) #btn-entrar,body:not(.restrito) #aba-i{display:none}
+body.aberto #aba-i .cad-ico{display:none}
+#btn-entrar{color:var(--muted);background:none}
 #btn-entrar:hover{color:var(--accent);border-color:var(--accent)}
 .restrito-nota{margin-top:10px;padding:9px 12px;border:1px dashed var(--line);border-radius:8px}
 .restrito-nota button{font:inherit;color:var(--accent);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline}
@@ -223,7 +235,13 @@ body:not(.restrito) #btn-entrar{display:none}
 #rel-print h1{font-size:16pt;margin:0 0 2pt}#rel-print h2{font-size:12.5pt;margin:14pt 0 4pt;border-bottom:1px solid #d5dae2;padding-bottom:2pt;break-after:avoid}#rel-print h3{font-size:10.5pt;margin:9pt 0 3pt;break-after:avoid}
 #rel-print table{border-collapse:collapse;width:100%;font-size:9pt;margin:4pt 0}#rel-print th,#rel-print td{border:1px solid #d5dae2;padding:2.5pt 5pt;text-align:right;vertical-align:top}#rel-print th{background:#eef1f5;font-weight:600}
 #rel-print td.l,#rel-print th.l{text-align:left}#rel-print tr.dest td{font-weight:700;background:#e3ebf5}#rel-print tr{break-inside:avoid}
-#rel-print .nota{color:#5b6575;font-size:8.5pt}#rel-print svg{max-width:100%}#rel-print .col{display:none}
+#rel-print .nota{color:#5b6575;font-size:8.5pt}#rel-print svg{max-width:100%;height:auto}#rel-print .col{display:none}
+/* impressão: nada pode passar da largura da folha nem ficar órfão na quebra de página */
+#rel-print th{white-space:normal;position:static;vertical-align:bottom}#rel-print td,#rel-print th{overflow-wrap:break-word}
+#rel-print .rolagem{overflow:visible}#rel-print h4{break-after:avoid}#rel-print thead{display:table-header-group}
+#rel-print table.junta,#rel-print .graf>div{break-inside:avoid}#rel-print table+p.nota{break-before:avoid}
+#rel-print .graf>div{min-width:0;padding-right:8pt}#rel-print .graf svg{width:100%;overflow:visible}#rel-print .quebra{break-before:page;page-break-before:always;height:0}
+@page{size:A4;margin:14mm 12mm}
 @media print{body.imprimindo-rel>*:not(#rel-print){display:none !important}body.imprimindo-rel #rel-print{display:block}body.imprimindo-rel{background:#fff}}
 #dlg-senha h2{margin:0 0 6px;font-size:1.05rem}
 #dlg-senha label{display:block;font-size:.85rem;margin-top:10px}
@@ -321,6 +339,22 @@ footer p{margin:10px 0 0}
   .x-barra.x-cab{display:none}
   .abas{overflow-x:auto;flex-wrap:nowrap}.abas button{white-space:nowrap}
 }
+@media (max-width:600px){   /* celular: topo enxuto, campos com 16 px (o iPhone não dá zoom ao tocar) e grupos de indicador recolhidos */
+  select,input,input[type=search],input[type=password],textarea{font-size:16px}
+  header{padding-top:8px}
+  header h1{font-size:1.15rem;line-height:1.2}
+  header p{font-size:.66rem;line-height:1.3}
+  .hdr-tit{flex:1 1 200px}
+  .abas{margin:8px 0 6px}
+  .ctrl.fixa{padding-top:2px}
+  #grp-toggle{display:block;text-align:left}
+  .ctrl label[data-ctl=ind]{grid-column:1/-1}
+  .ctrl label[data-ctl=ind] select{flex:1}
+  .ctl label{max-width:100%;min-width:0}
+  .ctl label select{flex:1 1 0;min-width:0}
+  .ctrl .grupos.recolhido{display:none}
+  .ctrl{gap:4px 8px;margin-bottom:4px}
+}
 @media print{.ctrl.fixa{position:static}details.caixa{break-inside:avoid}}
 
 .aviso-ctx{border:1px solid var(--line);border-left:4px solid var(--s4);border-radius:8px;padding:8px 12px;margin:0 0 10px;font-size:.86rem;background:var(--card)}
@@ -404,15 +438,18 @@ tr.sel-linha>td{background:var(--faixa)}
 <aside id="arv-lat" aria-label="Lista de unidades: GSAP, UBS e equipes"></aside>
 <div id="arv-fundo"></div>
 <div id="coluna">
-<header><div class="pagina">
-  <h1>Painel da Atenção Primária – Região Norte</h1>
-  <p id="sub"></p>
+<header><div class="pagina hdr">
+  <div class="hdr-tit"><h1>Painel da Atenção Primária – Região Norte</h1><p id="sub"></p></div>
+  <div class="hdr-acoes">
+    <button type="button" id="btn-rel" class="so-aberto" title="Monta um relatório em PDF ou Word com as partes que você escolher">Gerar relatório</button>
+    <button type="button" id="btn-entrar" title="Lista de profissionais, ficha do servidor e busca por nome: acesso dos gestores">Entrar</button>
+  </div>
 </div></header>
-<div class="pagina"><p id="consol" class="consol" hidden></p></div>
+<div class="pagina"><p id="consol" class="consol" hidden></p><p id="aviso-sessao" class="nota aviso-sessao" role="status" hidden></p></div>
 
 <div class="pagina">
   <nav class="abas" role="tablist" aria-label="Seção">
-    <button role="tab" id="aba-h" aria-selected="true">Visão geral</button><button role="tab" id="aba-m" aria-selected="false">Mapa de calor</button><button role="tab" id="aba-p" aria-selected="false">Perfil dos atendimentos</button><button role="tab" id="aba-i" class="so-aberto" aria-selected="false" title="Problemas de código e de vínculo: acesso dos gestores">Inconsistências</button>
+    <button role="tab" id="aba-h" aria-selected="true">Visão geral</button><button role="tab" id="aba-m" aria-selected="false">Mapa de calor</button><button role="tab" id="aba-p" aria-selected="false">Perfil dos atendimentos</button><button role="tab" id="aba-i" aria-selected="false" title="Problemas de código e de vínculo: acesso dos gestores (pede a senha)">Inconsistências <span class="cad-ico" aria-hidden="true">🔒</span></button>
   </nav>
 </div>
 
@@ -422,15 +459,14 @@ tr.sel-linha>td{background:var(--faixa)}
   <div class="busca"><input type="search" id="busca" placeholder="Buscar equipe, INE, UBS ou CNES" aria-label="Buscar equipe, INE, UBS ou CNES"><div id="achados" role="listbox"></div></div>
 </div></div>
 
-<div class="ctrl fixa pagina">
-  <div class="grupos" id="grp-ind" role="group" aria-label="Grupo de indicadores"></div>
-  <label>Indicador <select id="sel-ind"></select></label>
-  <details class="multi" id="multi" hidden><summary id="multi-rot">Comparar com outros motivos</summary><div class="lista"><p class="nota">Marque até 5 motivos para ver junto com o escolhido ao lado, na mesma GSAP, UBS ou equipe.</p><div id="multi-itens"></div><button type="button" class="neutro" id="multi-limpar">Limpar</button></div></details>
-  <label>Período <select id="sel-per"><option value="12">12 meses</option><option value="24" selected>24 meses</option><option value="36">36 meses</option><option value="99">Tudo</option></select></label>
-  <label class="chk so-aberto"><input type="checkbox" id="chk-inativos"> mostrar quem não tem vínculo atual confirmado</label>
-  <button type="button" id="btn-csv">Baixar lista (CSV)</button>
-  <button type="button" id="btn-rel" class="so-aberto" title="Monta um relatório em PDF ou Word com as partes que você escolher">Gerar relatório</button>
-  <button type="button" id="btn-entrar" title="Lista de profissionais, ficha do servidor e busca por nome: acesso dos gestores">Entrar</button>
+<div class="ctrl fixa pagina" id="barra-ctrl">
+  <button type="button" id="grp-toggle" data-ctl="ind" aria-expanded="false" aria-controls="grp-ind"></button>
+  <div class="grupos recolhido" id="grp-ind" data-ctl="ind" role="group" aria-label="Grupo de indicadores"></div>
+  <label data-ctl="ind">Indicador <select id="sel-ind"></select></label>
+  <details class="multi" id="multi" data-ctl="ind" hidden><summary id="multi-rot">Comparar com outros motivos</summary><div class="lista"><p class="nota">Marque até 5 motivos para ver junto com o escolhido ao lado, na mesma GSAP, UBS ou equipe.</p><div id="multi-itens"></div><button type="button" class="neutro" id="multi-limpar">Limpar</button></div></details>
+  <label data-ctl="per">Período <select id="sel-per"><option value="12">12 meses</option><option value="24" selected>24 meses</option><option value="36">36 meses</option><option value="99">Tudo</option></select></label>
+  <label class="chk so-aberto" data-ctl="ina"><input type="checkbox" id="chk-inativos"> mostrar quem não tem vínculo atual confirmado</label>
+  <button type="button" id="btn-csv" data-ctl="csv">Baixar lista (Excel)</button><button type="button" class="lk em-csv" id="btn-csv-txt" data-ctl="csv" title="O mesmo conteúdo em CSV (separado por ponto e vírgula), para outros programas">CSV</button>
 </div>
 <dialog id="dlg-senha" aria-labelledby="dlg-senha-t">
   <form id="form-senha">
@@ -438,7 +474,7 @@ tr.sel-linha>td{background:var(--faixa)}
     <p class="nota">A lista de profissionais de cada equipe, a ficha do servidor e a busca por nome ficam protegidas por senha. Os indicadores por equipe, UBS e GSAP continuam abertos para todos.</p>
     <label for="senha">Senha</label>
     <input type="password" id="senha" autocomplete="current-password" required>
-    <label class="chk"><input type="checkbox" id="senha-lembrar"> lembrar neste navegador</label>
+    <label class="chk"><input type="checkbox" id="senha-lembrar"> lembrar neste navegador por 12 horas</label>
     <p id="senha-erro" role="alert" hidden></p>
     <div class="botoes"><button type="button" id="senha-cancelar">Cancelar</button><button type="submit" id="senha-ok">Entrar</button></div>
   </form>
@@ -450,7 +486,7 @@ tr.sel-linha>td{background:var(--faixa)}
     <div class="kpis" id="kpis"></div>
     <section id="cmp-regioes"></section>
     <div class="painel-graf"><h2 id="tit-graf"></h2><div id="graf-regiao"></div></div>
-    <div class="ctl" id="f-barra"><label>Mostrar <select id="f-alerta"></select></label><button type="button" class="neutro abrir-cmp" data-g="">Comparar todas as equipes da Região</button><button type="button" class="neutro btn-prov" title="Uma linha por alerta (e por inconsistência, na área dos gestores), com colunas em branco para responsável, providência, prazo e devolutiva. O arquivo fica só no seu computador.">Baixar planilha de providências</button><button type="button" class="neutro so-btn" id="btn-so-sel" aria-pressed="false" hidden>Mostrar só esta unidade</button><span class="nota" id="f-resumo"></span></div>
+    <div class="ctl" id="f-barra"><label>Mostrar <select id="f-alerta"></select></label><button type="button" class="neutro abrir-cmp" data-g="">Comparar todas as equipes da Região</button><button type="button" class="neutro btn-prov" title="Uma linha por alerta (e por inconsistência, na área dos gestores), com colunas em branco para responsável, providência, prazo e devolutiva. O arquivo fica só no seu computador.">Baixar planilha de providências</button><button type="button" class="lk em-csv" title="O mesmo conteúdo em CSV (separado por ponto e vírgula), para outros programas">CSV</button><button type="button" class="neutro so-btn" id="btn-so-sel" aria-pressed="false" hidden>Mostrar só esta unidade</button><span class="nota" id="f-resumo"></span></div>
     <p class="nota aviso-sel" id="sel-aviso" role="status" hidden></p>
     <div id="arvore"></div>
   </div>
@@ -500,7 +536,7 @@ tr.sel-linha>td{background:var(--faixa)}
   <div id="vista-i" hidden>
     <p class="nota" id="i-nota"></p>
     <div id="i-cartoes"></div>
-    <div class="ctl"><label>Tipo <select id="i-tipo"></select></label><label>GSAP <select id="i-gsap"><option value="">Todas</option></select></label><label>Buscar <input type="search" id="i-q" placeholder="nome, categoria, UBS ou equipe"></label><button type="button" id="i-csv">Baixar esta lista (CSV)</button><button type="button" class="btn-prov">Baixar planilha de providências</button></div>
+    <div class="ctl"><label>Tipo <select id="i-tipo"></select></label><label>Buscar <input type="search" id="i-q" placeholder="nome, categoria, UBS ou equipe"></label><button type="button" id="i-csv">Baixar esta lista (Excel)</button><button type="button" class="lk em-csv" id="i-csv-txt" title="O mesmo conteúdo em CSV (separado por ponto e vírgula), para outros programas">CSV</button><button type="button" class="btn-prov">Baixar planilha de providências</button><button type="button" class="lk em-csv" title="O mesmo conteúdo em CSV (separado por ponto e vírgula), para outros programas">CSV</button></div>
     <p class="nota" id="i-sel" role="status"></p>
     <p class="nota" id="i-exp"></p>
     <div class="rolagem" id="i-corpo"></div>
@@ -512,6 +548,7 @@ tr.sel-linha>td{background:var(--faixa)}
       <label>Ordenar por <select id="mapa-ord"><option value="estrutura">GSAP e UBS</option><option value="queda">Último mês mais abaixo da média</option><option value="valor">Último mês (menor primeiro)</option></select></label>
     </div>
     <p class="nota" id="mapa-sel" role="status" hidden></p>
+    <details class="nota" id="mapa-zer" hidden></details>
     <div class="rolagem mapa-rol" id="mapa-corpo"></div>
   </div>
 </main>
@@ -583,6 +620,10 @@ function membros(grp) {
 }
 const grpDe = k => (k.startsWith("m_") ? "mot" : !EM_BP.has(k) ? "prod" : Object.keys(GRP_KS).find(g => GRP_KS[g].includes(k)) || "prod");
 const ultimoDoGrupo = {};
+function rotGrupos() {   // celular: botão que abre e fecha a lista de grupos de indicador
+  const g = GRUPOS.find(x => x[0] === estado.grp), t = $("#grp-toggle"), aberto = !$("#grp-ind").classList.contains("recolhido");
+  t.textContent = `Grupo: ${g ? g[1] : ""} ${aberto ? "▴" : "▾"}`; t.setAttribute("aria-expanded", String(aberto));
+}
 function montarInd(grp, k) {   // preenche o 2º passo com os indicadores do grupo
   estado.grp = grp;
   const l = membros(grp).map(x => [x, P.indicadores[x]]);
@@ -590,6 +631,7 @@ function montarInd(grp, k) {   // preenche o 2º passo com os indicadores do gru
   document.getElementById("sel-ind").value = k || ultimoDoGrupo[grp] || l[0][0];
   document.querySelectorAll("#grp-ind button").forEach(b => b.setAttribute("aria-pressed", b.dataset.g === grp));
   const mu = document.getElementById("multi"); mu.hidden = grp !== "mot"; if (grp !== "mot") mu.open = false;
+  rotGrupos();
   if (grp === "mot" && !document.getElementById("multi-itens").children.length)
     document.getElementById("multi-itens").innerHTML = l.map(([x, v]) => `<label><input type="checkbox" value="${x}"> ${esc(v.nome)}</label>`).join("");
 }
@@ -943,7 +985,11 @@ function popReg(regs, mes) {
 function serieReg(regs, k) {   // atendimentos (ou outro indicador) por mil habitantes, mês a mês
   return MESES.map((m, i) => { let v = 0, tem = false; regs.forEach(r => { const s = RG.serie[r] && RG.serie[r][k]; if (s && s[i] != null) { v += s[i]; tem = tem || s[i] > 0; } }); const pop = popReg(regs, m); return tem && pop ? v * 1000 / pop : null; });
 }
-function doze(s, fim) { if (fim < 11) return null; let t = 0; for (let i = fim - 11; i <= fim; i++) { if (s[i] == null) return null; t += s[i]; } return t; }
+function doze(regs, k, fim) {   // 12 meses: soma dos registros ÷ população do ano do último mês da janela (mesma conta da aba Consultas por mil hab.)
+  if (fim < 11) return null; let t = 0, tem = false;
+  for (let i = fim - 11; i <= fim; i++) regs.forEach(r => { const s = RG.serie[r] && RG.serie[r][k]; if (s && s[i] != null) { t += s[i]; tem = tem || s[i] > 0; } });
+  const pop = popReg(regs, MESES[fim]); return tem && pop ? t * 1000 / pop : null;
+}
 const nomeReg = r => r.replace("Região ", "");
 function renderCmpRegioes() {
   const el = $("#cmp-regioes"); if (!el) return;
@@ -953,7 +999,7 @@ function renderCmpRegioes() {
   const outras = RG.regs.filter(r => r !== "Região Norte");
   const entes = [{ rot: "Região Norte", regs: ["Região Norte"], cor: "var(--accent)", larg: 2.4 }, { rot: "Distrito Federal", regs: RG.regs, cor: "var(--s4)", larg: 2.4 }]
     .concat(outras.filter(r => regsLig.has(r)).map(r => ({ rot: nomeReg(r), regs: [r], cor: COR_REG[outras.indexOf(r) % COR_REG.length] })));
-  entes.forEach(e => { e.s = serieReg(e.regs, k); e.a12 = doze(e.s, IU); e.b12 = doze(e.s, IU - 12); });
+  entes.forEach(e => { e.s = serieReg(e.regs, k); e.a12 = doze(e.regs, k, IU); e.b12 = doze(e.regs, k, IU - 12); });
   const v12 = e => e.a12 != null && e.b12 ? e.a12 / e.b12 - 1 : null;
   const tv = v => v == null ? '<span class="var nd">–</span>' : `<span class="var ${v <= -0.1 ? "neg" : v >= 0.1 ? "pos" : "nd"}">${v >= 0 ? "+" : "−"}${Math.abs(Math.round(v * 100))}%</span>`;
   const jan = IU >= 11 ? `${mesRot(MESES[IU - 11])} a ${mesRot(MESES[IU])}` : "";
@@ -1279,34 +1325,101 @@ const TIPOS_INC = [
   ["mudou_ubs", "Equipe mudou de UBS", "O mesmo INE parou de registrar numa UBS e segue ativo em outra. Atualizar a lotação."],
   ["lugar_errado", "Registro provável em lugar errado", "Equipe muito abaixo do habitual em UBS com produção sem equipe, ou procedimento esperado (citopatológico, teste de sífilis) sem registro por três meses."]];
 const rotInc = k => (TIPOS_INC.find(x => x[0] === k) || [k, k])[1];
-const is = { tipo: "", gsap: "", q: "" };
+const is = { tipo: "", q: "" };
+function baseInc() {   // linhas da unidade escolhida na barra do topo (Região quando nada está escolhido)
+  const sl = estado.sel, G = sl.g != null ? P.gsaps[sl.g] : null, U = G && sl.u != null ? G.ubs[sl.u] : null, E = U && sl.e != null ? U.equipes[sl.e] : null;
+  return (NOM.incons || []).filter(x => !G || (x.gsap === G.nome && (!U || x.ubs === U.nome) && (!E || x.equipe === E.nome)));
+}
 function filtInc() {
   const t = semAcento(is.q.trim());
-  const sl = estado.sel, G = sl.g != null ? P.gsaps[sl.g] : null, U = G && sl.u != null ? G.ubs[sl.u] : null, E = U && sl.e != null ? U.equipes[sl.e] : null;
-  return (NOM.incons || []).filter(x => (!G || (x.gsap === G.nome && (!U || x.ubs === U.nome) && (!E || x.equipe === E.nome))) && (!is.tipo || x.tipo === is.tipo) && (!is.gsap || x.gsap === is.gsap) && (!t || semAcento(`${x.nome} ${x.cat} ${x.ubs} ${x.equipe}`).includes(t)));
+  return baseInc().filter(x => (!is.tipo || x.tipo === is.tipo) && (!t || semAcento(`${x.nome} ${x.cat} ${x.ubs} ${x.equipe}`).includes(t)));
+}
+/* liga a linha da inconsistência à pessoa da lotação (nominal.incons não traz o id): nome + unidade; sem ambiguidade, senão sem botão */
+function idDaLinha(x) {
+  if (!x.nome) return null;
+  const c = [...pessoas.values()].filter(p => p.nome === x.nome);
+  if (!c.length) return null;
+  if (c.length === 1) return c[0].id;
+  const naUbs = c.filter(p => p.v.some(y => y.g.nome === x.gsap && y.u.nome === x.ubs));
+  if (naUbs.length === 1) return naUbs[0].id;
+  const naEq = naUbs.filter(p => p.v.some(y => y.u.nome === x.ubs && y.e.nome === x.equipe));
+  return naEq.length === 1 ? naEq[0].id : null;
 }
 function renderIncons() {
   if (!NOM.aberto) { $("#i-nota").textContent = "As inconsistências trazem nomes de profissionais e são de acesso dos gestores."; $("#i-cartoes").innerHTML = $("#i-corpo").innerHTML = $("#i-exp").innerHTML = $("#i-sel").innerHTML = ""; return; }
-  const D = NOM.incons || [], cont = k => D.filter(x => x.tipo === k).length;
-  $("#i-nota").innerHTML = `Problemas de <b>código e de vínculo</b> que distorcem os números das outras abas: registro sem equipe (sem INE), lotação que não bate com a produção, equipe que não bate com a UBS e registro provavelmente feito em lugar errado. Referência: ${mesRot(MESES[Math.max(IU - 2, 0)])} a ${mesRot(MESES[IU])}; lotação da planilha de RH de ${RH}. São pontos para <b>conferir e corrigir o cadastro</b>, não juízo sobre o trabalho de ninguém. Clique num cartão para filtrar.`;
+  const D = baseInc(), cont = k => D.filter(x => x.tipo === k).length;
+  $("#i-nota").innerHTML = `Problemas de <b>código e de vínculo</b> que distorcem os números das outras abas: registro sem equipe (sem INE), lotação que não bate com a produção, equipe que não bate com a UBS e registro provavelmente feito em lugar errado. Referência: ${mesRot(MESES[Math.max(IU - 2, 0)])} a ${mesRot(MESES[IU])}; lotação da planilha de RH de ${RH}. São pontos para <b>conferir e corrigir o cadastro</b>, não juízo sobre o trabalho de ninguém. Clique num cartão para filtrar e, no nome do profissional, para abrir a ficha.`;
   $("#i-cartoes").innerHTML = TIPOS_INC.map(([k, r, d]) => `<button type="button" class="kpi" data-t="${k}" aria-pressed="${is.tipo === k}" title="${esc(d)}"><div class="r">${esc(r)}</div><div class="n">${fmt(cont(k))}</div></button>`).join("");
   $("#i-tipo").innerHTML = `<option value="">Todos (${D.length})</option>` + TIPOS_INC.map(([k, r]) => `<option value="${k}">${esc(r)} (${cont(k)})</option>`).join(""); $("#i-tipo").value = is.tipo;
-  $("#i-sel").textContent = estado.sel.g != null ? `Filtrado pela unidade escolhida na barra do topo: ${rotSel()}. Para ver todas, escolha “Região Norte” no caminho.` : "";
+  $("#i-sel").textContent = estado.sel.g != null ? `Filtrado pela unidade escolhida na barra do topo: ${rotSel()} (cartões, tabela e planilhas). Para ver todas, escolha “Região Norte” no caminho.` : "Contagens, tabela e planilhas da Região Norte inteira. Escolha uma unidade na barra do topo para ver só ela.";
   $("#i-exp").textContent = is.tipo ? TIPOS_INC.find(x => x[0] === is.tipo)[2] : "";
   const L = filtInc(), MAX = 500;
   $("#i-corpo").innerHTML = L.length ? `<table class="eq"><thead><tr><th class="l">Tipo</th><th class="l">UBS e equipe</th><th class="l">Profissional</th><th class="l">O que foi encontrado</th></tr></thead><tbody>${L.slice(0, MAX).map(x => {
     const cam = x.equipe ? `${x.gsap} › ${x.ubs} › ${x.equipe}` : `${x.gsap} › ${x.ubs}`;
-    return `<tr><td class="l">${esc(rotInc(x.tipo))}</td><td class="l"><button class="lk" data-c="${esc(cam)}">${esc(x.ubs)}${x.equipe ? " › " + esc(x.equipe) : ""}</button><small>${esc(x.gsap)}</small></td><td class="l">${x.nome ? esc(x.nome) : "–"}<small>${esc(x.cat)}</small></td><td class="l">${esc(x.det)}</td></tr>`; }).join("")}</tbody></table>` + (L.length > MAX ? `<p class="nota">Mostrando ${MAX} de ${fmt(L.length)} linhas; filtre ou baixe a lista completa.</p>` : "") : "<p class='nota'>Nenhuma inconsistência neste filtro.</p>";
+    return `<tr><td class="l">${esc(rotInc(x.tipo))}</td><td class="l"><button class="lk" data-c="${esc(cam)}">${esc(x.ubs)}${x.equipe ? " › " + esc(x.equipe) : ""}</button><small>${esc(x.gsap)}</small></td><td class="l">${x.nome ? (idDaLinha(x) ? `<button type="button" class="lk" data-fid="${esc(idDaLinha(x))}" title="Abrir a ficha do servidor">${esc(x.nome)}</button>` : esc(x.nome)) : "–"}<small>${esc(x.cat)}</small></td><td class="l">${esc(x.det)}</td></tr>`; }).join("")}</tbody></table>` + (L.length > MAX ? `<p class="nota">Mostrando ${MAX} de ${fmt(L.length)} linhas; filtre ou baixe a lista completa.</p>` : "") : "<p class='nota'>Nenhuma inconsistência neste filtro.</p>";
 }
-function baixarCSV(nome, linhas) {
-  const txt = linhas.map(l => l.map(c => `"${String(c ?? "").replace(/"/g, '""')}"`).join(";")).join("\r\n");
-  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["﻿" + txt], { type: "text/csv;charset=utf-8" })); a.download = nome; document.body.appendChild(a); a.click(); a.remove();
+/* Planilha Excel (.xlsx) montada na própria página: larguras de coluna, cabeçalho em negrito e fixo, filtro, texto longo com quebra,
+   códigos e meses como texto (o Excel não converte em data nem corta zeros) e impressão em paisagem ajustada à largura. Sem mesclagem. */
+const _CRC = (() => { const T = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; T[n] = c >>> 0; } return T; })();
+function crc32(b) { let c = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) c = _CRC[(c ^ b[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+function zipSemCompressao(arqs) {
+  const enc = new TextEncoder(), partes = [], central = []; let pos = 0;
+  const u16 = n => [n & 255, (n >>> 8) & 255], u32 = n => [n & 255, (n >>> 8) & 255, (n >>> 16) & 255, (n >>> 24) & 255];
+  arqs.forEach(([nome, txt]) => {
+    const nb = enc.encode(nome), d = enc.encode(txt), crc = crc32(d);
+    const cab = new Uint8Array([0x50, 0x4b, 3, 4, 20, 0, 0, 8, 0, 0, 0, 0, 0x21, 0, ...u32(crc), ...u32(d.length), ...u32(d.length), ...u16(nb.length), 0, 0]);
+    central.push(new Uint8Array([0x50, 0x4b, 1, 2, 20, 0, 20, 0, 0, 8, 0, 0, 0, 0, 0x21, 0, ...u32(crc), ...u32(d.length), ...u32(d.length), ...u16(nb.length), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...u32(pos)]), nb);
+    partes.push(cab, nb, d); pos += cab.length + nb.length + d.length;
+  });
+  const tc = central.reduce((s, x) => s + x.length, 0);
+  return new Blob([...partes, ...central, new Uint8Array([0x50, 0x4b, 5, 6, 0, 0, 0, 0, ...u16(arqs.length), ...u16(arqs.length), ...u32(tc), ...u32(pos), 0, 0])], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
 }
-function linhasProvidencias() {   // uma linha por alerta e por inconsistência, com as colunas de acompanhamento em branco
+function xlsxBlob(linhas, aba) {
+  const x = s => String(s ?? "").replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  const col = n => { let s = ""; for (n++; n > 0; n = Math.floor((n - 1) / 26)) s = String.fromCharCode(65 + (n - 1) % 26) + s; return s; };
+  const nc = Math.max(...linhas.map(l => l.length)), larg = Array(nc).fill(8);
+  linhas.slice(0, 2000).forEach(l => l.forEach((c, i) => { const n = String(c ?? "").length + 2; if (n > larg[i]) larg[i] = n; }));
+  const longa = larg.map(n => n > 60), W = larg.map(n => Math.min(n, 60));
+  const cel = (c, i, r) => { const ref = col(i) + (r + 1);
+    if (r === 0) return `<c r="${ref}" s="1" t="inlineStr"><is><t xml:space="preserve">${x(c)}</t></is></c>`;
+    if (typeof c === "number" && isFinite(c)) return `<c r="${ref}" s="${Number.isInteger(c) ? 3 : 0}"><v>${c}</v></c>`;
+    if (c == null || c === "") return "";
+    return `<c r="${ref}" s="${longa[i] ? 2 : 4}" t="inlineStr"><is><t xml:space="preserve">${x(c)}</t></is></c>`; };
+  const folha = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetPr><pageSetUpPr fitToPage="1"/></sheetPr>` +
+    `<sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><sheetFormatPr defaultRowHeight="15"/>` +
+    `<cols>${W.map((w, i) => `<col min="${i + 1}" max="${i + 1}" width="${w}" customWidth="1"/>`).join("")}</cols>` +
+    `<sheetData>${linhas.map((l, r) => `<row r="${r + 1}">${l.map((c, i) => cel(c, i, r)).join("")}</row>`).join("")}</sheetData>` +
+    `<autoFilter ref="A1:${col(nc - 1)}${linhas.length}"/><pageMargins left="0.4" right="0.4" top="0.5" bottom="0.5" header="0.3" footer="0.3"/><pageSetup paperSize="9" orientation="landscape" fitToWidth="1" fitToHeight="0"/></worksheet>`;
+  const estilos = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts>` +
+    `<fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE3EBF5"/><bgColor indexed="64"/></patternFill></fill></fills>` +
+    `<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>` +
+    `<cellXfs count="5"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>` +
+    `<xf numFmtId="49" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1" applyNumberFormat="1"><alignment vertical="center" wrapText="1"/></xf>` +
+    `<xf numFmtId="49" fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1" applyNumberFormat="1"><alignment vertical="top" wrapText="1"/></xf>` +
+    `<xf numFmtId="3" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/>` +
+    `<xf numFmtId="49" fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1" applyNumberFormat="1"><alignment vertical="top"/></xf></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
+  const nomeAba = x(String(aba || "Dados").replace(/[\\\/\?\*\[\]:']/g, " ").slice(0, 31));
+  return zipSemCompressao([
+    ["[Content_Types].xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>`],
+    ["_rels/.rels", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`],
+    ["xl/workbook.xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="${nomeAba}" sheetId="1" r:id="rId1"/></sheets><definedNames><definedName name="_xlnm.Print_Titles" localSheetId="0">'${nomeAba}'!$1:$1</definedName></definedNames></workbook>`],
+    ["xl/_rels/workbook.xml.rels", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`],
+    ["xl/styles.xml", estilos], ["xl/worksheets/sheet1.xml", folha]]);
+}
+let EM_CSV = false;   // o botão "CSV" ao lado de cada botão de planilha baixa o mesmo conteúdo em texto
+function baixarPlanilha(nome, linhas, aba) {
+  if (EM_CSV) { const txt = linhas.map(l => l.map(c => `"${String(c ?? "").replace(/"/g, '""')}"`).join(";")).join("\r\n");
+    const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["\ufeff" + txt], { type: "text/csv;charset=utf-8" })); a.download = nome.replace(/\.xlsx$/, ".csv"); document.body.appendChild(a); a.click(); a.remove(); return; }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(xlsxBlob(linhas, aba)); a.download = nome; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+}
+
+const sufUnidade = () => (estado.sel.g != null ? "_" + nomeArq(rotSel()) : "_regiao_norte");   // vai no nome dos arquivos da aba Inconsistências
+function linhasProvidencias(soUnidade) {   // uma linha por alerta e por inconsistência, com as colunas de acompanhamento em branco; soUnidade: só a unidade escolhida na barra
   const hoje = new Date().toLocaleDateString("pt-BR"), ref = mesRot(MESES[IU]), vazio = ["", "", "", "", "", "", "", "novo"];
   const L = [["Emitido em", "Mês de referência", "Origem", "GSAP", "UBS", "Equipe", "Profissional", "Problema observado", "Evidência", "Situação da validação (suspeita ou confirmado)", "Categoria (registro, vínculo, capacidade, processo de trabalho, outra)", "Responsável", "Providência pactuada", "Prazo", "Data de revisão", "Devolutiva e evidência de resolução", "Situação (novo, em verificação, ação pactuada, em acompanhamento, resolvido)"]];
-  sinais().forEach((l, cam) => { const [g, u, e] = cam.split(" › "); l.forEach(x => L.push([hoje, ref, "Alerta", g, u || "", e || "", "", x.rot, x.det, ...vazio])); });
-  if (NOM.aberto) (NOM.incons || []).forEach(x => { if (x.tipo === "lugar_errado" && x.det.startsWith("Nenhum registro de")) return; L.push([hoje, ref, "Inconsistência", x.gsap, x.ubs, x.equipe, x.nome, rotInc(x.tipo), x.det, ...vazio]); });
+  const alvo = rotSel(), daUnidade = cam => !soUnidade || estado.sel.g == null || cam === alvo || cam.startsWith(alvo + " › ");
+  sinais().forEach((l, cam) => { if (!daUnidade(cam)) return; const [g, u, e] = cam.split(" › "); l.forEach(x => L.push([hoje, ref, "Alerta", g, u || "", e || "", "", x.rot, x.det, ...vazio])); });
+  if (NOM.aberto) (soUnidade ? baseInc() : NOM.incons || []).forEach(x => { if (x.tipo === "lugar_errado" && x.det.startsWith("Nenhum registro de")) return; L.push([hoje, ref, "Inconsistência", x.gsap, x.ubs, x.equipe, x.nome, rotInc(x.tipo), x.det, ...vazio]); });
   return L;
 }
 
@@ -1581,18 +1694,25 @@ function irPara(caminho) {   // abre a equipe (ou UBS) na Visão geral: usado pe
   mostrarVista("h");
   selecionar(ix);
 }
-let vistaAtual = "h";
+let vistaAtual = "h", abaAposEntrar = "";
+/* A barra de indicador, período e filtro só aparece onde tem efeito: ind = grupos, indicador e comparação de motivos; per = período; ina = vínculo não confirmado
+   (só nas listas de profissionais da Visão geral); csv = lista do indicador. Perfil (menos "Tipo de atendimento, mês a mês", que usa o período) e Inconsistências não usam nenhum. */
+const CTL_VISTA = { h: ["ind", "per", "ina", "csv"], c: ["ind", "csv"], m: ["ind", "per", "csv"], x: ["per"] };
+function ajustarBarra(v) {
+  const usa = CTL_VISTA[v] || [];
+  document.querySelectorAll("#barra-ctrl [data-ctl]").forEach(el => el.classList.toggle("fora-aba", !usa.includes(el.dataset.ctl)));
+  $("#barra-ctrl").classList.toggle("vazia", !usa.length);
+}
 const VISTAS = { h: () => { if (estado.sel.g != null) abrirAteSel(true); }, c: () => renderComparar(), m: () => renderMapa(), p: () => renderPerfil(), x: () => renderAcesso(), r: () => renderRazao(), u: () => renderUsuarios(), i: () => renderIncons() };
 const PERFIL = ["p", "x", "u", "r"];
 function mostrarVista(v) {
-  if (v === "i" && !NOM.aberto) v = "h";
+  if (v === "i" && !NOM.aberto) { if (P.restrito) { abaAposEntrar = "i"; abrirSenha(); } return; }   // aba com cadeado: pede a senha e, entrando, cai nela
   vistaAtual = v;
   Object.keys(VISTAS).forEach(x => { $("#vista-" + x).hidden = x !== v; });
   $("#aba-h").setAttribute("aria-selected", v === "h" || v === "c"); $("#aba-m").setAttribute("aria-selected", v === "m"); $("#aba-p").setAttribute("aria-selected", PERFIL.includes(v)); $("#aba-i").setAttribute("aria-selected", v === "i");
   $("#sub-perfil").hidden = !PERFIL.includes(v);
   [["sub-p", "p"], ["aba-x", "x"], ["aba-u", "u"], ["aba-r", "r"]].forEach(([id, x]) => { const b = document.getElementById(id); b.setAttribute("aria-pressed", x === v); b.setAttribute("aria-selected", x === v); });
-  const sem = PERFIL.includes(v) || v === "i";
-  $("#sel-ind").disabled = sem; $("#sel-ind").title = sem ? "Esta aba não usa o seletor de indicador" : ""; document.querySelectorAll("#grp-ind button").forEach(b => b.disabled = sem);
+  ajustarBarra(v);
   const st = { x: xs, u: us, r: rs, p: ps }[v]; if (st) descerPara(st);   // as abas de perfil entram já descidas até a unidade escolhida
   VISTAS[v](); gravarURL();
 }
@@ -1652,7 +1772,10 @@ document.addEventListener("click", e => {
   if (!e.target.closest(".busca")) $("#achados").style.display = "none";
   const b = e.target.closest("button.pess"); if (b) abrirFicha(b.dataset.pid);
   const pr = e.target.closest("button.prio, circle.pt, #i-corpo button.lk"); if (pr && pr.dataset.c) irPara(pr.dataset.c);
-  if (e.target.closest("button.btn-prov")) baixarCSV(`providencias_aps_norte_${MESES[IU]}.csv`, linhasProvidencias());
+  const fi = e.target.closest("#i-corpo button[data-fid]"); if (fi) abrirFicha(fi.dataset.fid);
+  const emCsv = e.target.closest("button.em-csv");
+  if (emCsv && emCsv.previousElementSibling) { EM_CSV = true; try { emCsv.previousElementSibling.click(); } finally { EM_CSV = false; } return; }
+  if (e.target.closest("button.btn-prov")) { const so = !!e.target.closest("#vista-i"); baixarPlanilha(`providencias_aps_norte_${MESES[IU]}${so ? sufUnidade() : ""}.xlsx`, linhasProvidencias(so), "Providências"); }
   const ic = e.target.closest("#i-cartoes button"); if (ic) { is.tipo = is.tipo === ic.dataset.t ? "" : ic.dataset.t; renderIncons(); }
   const sec = e.target.closest("button.btn-sec[data-g]");
   if (sec) {
@@ -1716,6 +1839,7 @@ function cabFicha() { return `<h1>Ficha do servidor – APS Região Norte</h1><p
 const nomeArq = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Za-z0-9]+/g, "_").replace(/^_|_$/g, "").toLowerCase();
 function imprimirHTML(html, titulo) {
   $("#rel-print").innerHTML = html; document.body.classList.add("imprimindo-rel");
+  $("#rel-print").querySelectorAll("table").forEach(tb => { if (tb.rows.length <= 14) tb.classList.add("junta"); });
   const fim = () => { document.body.classList.remove("imprimindo-rel"); $("#rel-print").innerHTML = ""; window.removeEventListener("afterprint", fim); };
   window.addEventListener("afterprint", fim); const tit = document.title; document.title = titulo;
   setTimeout(() => { window.print(); document.title = tit; }, 50);
@@ -1740,16 +1864,21 @@ function corMapa(v, ref) {
   return (FAIXAS.slice(1).find(f => r < f[0] || (f[0] === 1.1 && r <= 1.1)) || FAIXAS[FAIXAS.length - 1])[1];
 }
 function renderMapa() {
-  const tipo = $("#mapa-tipo").value, ord = $("#mapa-ord").value, k = estado.ind, [a, b] = faixa(), L = [];
+  const tipo = $("#mapa-tipo").value, ord = $("#mapa-ord").value, k = estado.ind, [a, b] = faixa(), L = [], Z = [];
   const sl = estado.sel;
   P.gsaps.forEach((g, gi) => g.ubs.forEach((u, ui) => u.equipes.forEach((e, ei) => {
     if (sl.g != null && (gi !== sl.g || (sl.u != null && ui !== sl.u) || (sl.e != null && ei !== sl.e))) return;   // unidade escolhida: só as linhas dela
-    if (!e.ine || e.migrou || (tipo !== "*" && e.tipo !== tipo) || !e.serie[k]) return;
-    const v = e.serie[k].slice(a, b), ref = media12(e.serie[k]); if (!ref) return;
+    if (!e.ine || e.migrou || (tipo !== "*" && e.tipo !== tipo)) return;
+    const v = (e.serie[k] || []).slice(a, b), ref = e.serie[k] ? media12(e.serie[k]) : 0; if (!ref) { Z.push({ u: u.nome, e: e.nome, caminho: `${g.nome} › ${u.nome} › ${e.nome}` }); return; }
     L.push({ g: g.nome, u: u.nome, e, v, ref, rel: v[v.length - 1] / ref, caminho: `${g.nome} › ${u.nome} › ${e.nome}` });
   })));
   const ns = $("#mapa-sel");
   if (sl.g != null) { ns.hidden = false; ns.innerHTML = `Mostrando só <b>${esc(rotSel())}</b>. <button type="button" class="neutro" id="mapa-tudo">Mostrar todas as equipes</button>`; $("#mapa-tudo").addEventListener("click", () => selecionar({})); } else ns.hidden = true;
+  const nz = $("#mapa-zer"); nz.hidden = !Z.length;
+  if (Z.length) {
+    nz.innerHTML = `<summary><b>${Z.length} ${Z.length > 1 ? "equipes ficam" : "equipe fica"} fora do mapa</b>: nenhum registro de “${esc(nomeInd(k))}” de ${mesRot(MESES[Math.max(IU - 12, 0)])} a ${mesRot(MESES[Math.max(IU - 1, 0)])}, então não há média para comparar. Clique para ver quais.</summary><p>` + Z.map(z => `<button type="button" class="link" data-c="${esc(z.caminho)}">${esc(z.u)} · ${esc(z.e)}</button>`).join("; ") + "</p>";
+    nz.querySelectorAll("button").forEach(bt => bt.addEventListener("click", () => irPara(bt.dataset.c)));
+  }
   if (ord === "queda") L.sort((x, y) => x.rel - y.rel); else if (ord === "valor") L.sort((x, y) => x.v[x.v.length - 1] - y.v[y.v.length - 1]);
   const leg = `<div class="leg-mapa"><b>${esc(nomeInd(k))}</b><span>referência = média da equipe de ${mesRot(MESES[Math.max(IU - 12, 0)])} a ${mesRot(MESES[Math.max(IU - 1, 0)])}</span>${FAIXAS.map(f => `<span><i style="background:${f[1]}"></i>${f[2]}</span>`).join("")}</div>`;
   let h = `<table><thead><tr><th></th>${MESES.slice(a, b).map(m => `<th class="mes">${mesRot(m)}</th>`).join("")}<th class="mes">média</th></tr></thead><tbody>`, grupo = "";
@@ -1763,7 +1892,7 @@ function renderMapa() {
   document.querySelectorAll("#mapa-corpo td.rot").forEach(td => td.addEventListener("click", () => irPara(td.dataset.c)));
 }
 
-/* CSV do indicador escolhido */
+/* planilha do indicador escolhido */
 function csv() {
   const k = estado.ind, nivProf = IND[k].nivel === "prof" && NOM.aberto, linhas = [];
   const cab = ["GSAP", "UBS", "Equipe", "Tipo de equipe", ...(nivProf ? ["Profissional", ...(P.com_matricula ? ["Matrícula"] : []), "Categoria", "Na lotação " + RH] : []), ...MESES.map(m => m)];
@@ -1772,9 +1901,7 @@ function csv() {
     if (nivProf) e.prof.forEach(p => { if (p.serie[k]) linhas.push([g.nome, u.nome, e.nome, e.tipo, p.nome, ...(P.com_matricula ? [p.mat || ""] : []), p.cat || "", p.lotado ? "sim" : "não", ...p.serie[k].slice(0, IU + 1)]); });
     else if (e.serie[k]) linhas.push([g.nome, u.nome, e.nome, e.tipo, ...e.serie[k].slice(0, IU + 1)]);
   })));
-  const txt = linhas.map(l => l.map(c => `"${String(c).replace(/"/g, '""')}"`).join(";")).join("\r\n");
-  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["﻿" + txt], { type: "text/csv;charset=utf-8" }));
-  a.download = `aps_norte_${k}_${MESES[IU]}.csv`; a.click();
+  baixarPlanilha(`aps_norte_${k}_${MESES[IU]}.xlsx`, linhas, nomeInd(k));
 }
 
 /* ---------- relatório (área dos gestores): PDF pela impressão do navegador, Word como arquivo .doc ---------- */
@@ -1862,7 +1989,7 @@ function relatorioHTML(esc0, secoes) {
     const L = [...pessoas.values()].map(x => ({ x, y: x.v.find(y => y.p.ativo && (y.caminho === no.cam || y.caminho.startsWith(no.cam + " › "))) })).filter(o => o.y)
       .sort((a, b) => a.y.caminho.localeCompare(b.y.caminho, "pt-BR", { numeric: true }) || a.x.nome.localeCompare(b.x.nome, "pt-BR"));
     h.push(`<h2>Fichas individuais dos servidores (${L.length})</h2><p class="nota">Uma página por servidor em atividade (registrou nos últimos 3 meses), em ordem de UBS, equipe e nome. Últimos 12 meses: ${janelaRot()}.</p>`);
-    L.forEach(o => h.push(`<div class="quebra" style="page-break-before:always;break-before:page"></div><p class="nota">${esc(o.y.u.nome)} › ${esc(o.y.e.nome)}</p>` + fichaHTML(o.x, true)));
+    L.forEach((o, n) => h.push((n ? `<div class="quebra"></div>` : "") + `<p class="nota">${esc(o.y.u.nome)} › ${esc(o.y.e.nome)}</p>` + fichaHTML(o.x, true)));
   }
   return h.join("\n");
 }
@@ -1886,8 +2013,20 @@ async function relatorioWord(html, titulo) {   // página web de arquivo único 
     const p = await svgParaPng(s), larg = Math.min(p.w, 640), el = doc.createElement("img");
     el.setAttribute("src", `img${imgs.length + 1}.png`); el.setAttribute("width", Math.round(larg)); el.setAttribute("height", Math.round(p.h * larg / p.w)); imgs.push(p.b64); s.replaceWith(el);
   }
-  doc.querySelectorAll("table").forEach(x => { x.setAttribute("border", "1"); x.setAttribute("cellspacing", "0"); x.setAttribute("cellpadding", "3"); });
-  const pag = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>${esc(titulo)}</title><!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]--><style>@page{size:21cm 29.7cm;margin:2cm 1.8cm}body{font-family:Calibri,Arial,sans-serif;font-size:10.5pt;color:#1d2430}h1{font-size:16pt;margin:0}h2{font-size:12.5pt;margin:14pt 0 4pt;color:#1f5fa8}h3{font-size:10.5pt;margin:9pt 0 3pt}table{border-collapse:collapse;width:100%;font-size:9pt}th,td{border:1px solid #c3cad4;padding:2pt 4pt;text-align:right;vertical-align:top}th{background:#eef1f5}td.l,th.l{text-align:left}tr.dest td{font-weight:bold;background:#e3ebf5}.nota{color:#5b6575;font-size:8.5pt}</style></head><body>${doc.getElementById("r").innerHTML.replace(/var\(--([a-z0-9]+)\)/g, (_, v) => REL_LUZ[v] || "#5b6575")}</body></html>`;
+  doc.querySelectorAll("table").forEach(x => { x.setAttribute("border", "1"); x.setAttribute("cellspacing", "0"); x.setAttribute("cellpadding", "3"); x.setAttribute("width", "100%"); });
+  doc.querySelectorAll(".rolagem").forEach(x => x.replaceWith(...x.childNodes));
+  doc.querySelectorAll(".graf").forEach(g => {   // o Word não entende grade: gráficos dois a dois numa tabela sem borda, título junto do gráfico
+    const its = [...g.children].filter(c => c.querySelector("img")); if (!its.length) return;
+    const tb = doc.createElement("table"); tb.className = "semborda"; tb.setAttribute("border", "0"); tb.setAttribute("width", "100%"); tb.setAttribute("cellspacing", "0"); tb.setAttribute("cellpadding", "0");
+    for (let j = 0; j < its.length; j += 2) { const tr = doc.createElement("tr"); tr.setAttribute("style", "page-break-inside:avoid");
+      [its[j], its[j + 1]].forEach(c => { const td = doc.createElement("td"); td.setAttribute("width", "50%"); td.setAttribute("valign", "top"); td.setAttribute("style", "border:none");
+        if (c) { c.querySelectorAll("img").forEach(im => { const w = +im.getAttribute("width"), hh = +im.getAttribute("height"), nw = Math.min(w, 300); im.setAttribute("width", nw); im.setAttribute("height", Math.round(hh * nw / w)); }); td.append(...c.childNodes); }
+        tr.appendChild(td); });
+      tb.appendChild(tr); }
+    g.replaceWith(tb);
+  });
+  doc.querySelectorAll(".quebra").forEach(x => { const br = doc.createElement("br"); br.setAttribute("clear", "all"); br.setAttribute("style", "mso-special-character:line-break;page-break-before:always"); x.replaceWith(br); });
+  const pag = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>${esc(titulo)}</title><!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]--><style>@page{size:21cm 29.7cm;margin:2cm 1.8cm}body{font-family:Calibri,Arial,sans-serif;font-size:10.5pt;color:#1d2430}h1{font-size:16pt;margin:0}h2{font-size:12.5pt;margin:14pt 0 4pt;color:#1f5fa8}h3{font-size:10.5pt;margin:9pt 0 3pt}table{border-collapse:collapse;width:100%;font-size:9pt}th,td{border:1px solid #c3cad4;padding:2pt 4pt;text-align:right;vertical-align:top}th{background:#eef1f5}td.l,th.l{text-align:left}tr.dest td{font-weight:bold;background:#e3ebf5}.nota{color:#5b6575;font-size:8.5pt}h1,h2,h3,h4{page-break-after:avoid}h4{font-size:9.5pt;margin:6pt 0 2pt}tr{page-break-inside:avoid}thead{display:table-header-group}table.semborda,table.semborda td{border:none}table.semborda td{text-align:left;padding:0 6pt 4pt 0;width:50%}table.semborda h4{page-break-after:auto}</style></head><body>${doc.getElementById("r").innerHTML.replace(/var\(--([a-z0-9]+)\)/g, (_, v) => REL_LUZ[v] || "#5b6575")}</body></html>`;
   const b64 = s => { const by = new TextEncoder().encode(s); let bin = ""; for (let j = 0; j < by.length; j += 0x8000) bin += String.fromCharCode.apply(null, by.subarray(j, j + 0x8000)); return btoa(bin); };
   const q76 = s => s.replace(/(.{76})/g, "$1\r\n"), B = "----=_relatorio_aps_norte", base = "file:///C:/relatorio/";
   let m = `MIME-Version: 1.0\r\nContent-Type: multipart/related; boundary="${B}"; type="text/html"\r\n\r\n--${B}\r\nContent-Type: text/html; charset="utf-8"\r\nContent-Transfer-Encoding: base64\r\nContent-Location: ${base}relatorio.htm\r\n\r\n${q76(b64(pag))}\r\n`;
@@ -1908,10 +2047,7 @@ async function gerarRelatorio() {
   if (secoes.includes("fichas") && esc0 === "r") { $("#rel-aviso").textContent = "As fichas individuais saem por GSAP ou por UBS: escolha uma delas em Unidade (a Região inteira daria mais de mil páginas)."; return; }
   const html = relatorioHTML(esc0, secoes), nome = noRel(esc0).nome;
   if (fmtR === "pdf") {
-    $("#rel-print").innerHTML = html; $("#dlg-rel").close(); document.body.classList.add("imprimindo-rel");
-    const fim = () => { document.body.classList.remove("imprimindo-rel"); $("#rel-print").innerHTML = ""; window.removeEventListener("afterprint", fim); };
-    window.addEventListener("afterprint", fim); const tit = document.title; document.title = `Relatório APS Norte - ${nome} - ${MESES[IU]}`;
-    setTimeout(() => { window.print(); document.title = tit; }, 50);
+    $("#dlg-rel").close(); imprimirHTML(html, `Relatório APS Norte - ${nome} - ${MESES[IU]}`);
   } else {
     $("#rel-ok").disabled = true; $("#rel-aviso").textContent = "Montando o arquivo…";
     try {
@@ -1938,7 +2074,8 @@ function iniciar() {
   $("#ult").textContent = mesRot(MESES[IU]);
   { const o = $("#sel-per option[value='99']"); if (o) o.textContent = `Tudo (desde ${mesRot(MESES[0])})`; }
   $("#grp-ind").innerHTML = GRUPOS.map(([g, r, d]) => `<button type="button" data-g="${g}" aria-pressed="false"${d ? ` title="${esc(d)}"` : ""}>${esc(r)}</button>`).join("");
-  $("#grp-ind").addEventListener("click", e => { const b = e.target.closest("button[data-g]"); if (b && b.dataset.g !== estado.grp) { montarInd(b.dataset.g); mudar(); } });
+  $("#grp-ind").addEventListener("click", e => { const b = e.target.closest("button[data-g]"); if (b && b.dataset.g !== estado.grp) { montarInd(b.dataset.g); mudar(); } if (b) { $("#grp-ind").classList.add("recolhido"); rotGrupos(); } });
+  $("#grp-toggle").addEventListener("click", () => { $("#grp-ind").classList.toggle("recolhido"); rotGrupos(); });
   montarInd("prod", "atend");
   $("#multi-itens").addEventListener("change", () => { estado.cmpInd = [...document.querySelectorAll("#multi-itens input:checked")].map(c => c.value).filter(x => x !== estado.ind).slice(0, 5); mudar(); });
   $("#multi-limpar").addEventListener("click", () => { estado.cmpInd = []; $("#multi").open = false; mudar(); });
@@ -1948,10 +2085,9 @@ function iniciar() {
   document.body.classList.add("ocultar-inativos");
   ["x", "r", "u", "p", "i"].forEach(v => $("#aba-" + v).addEventListener("click", () => mostrarVista(v)));
   $("#sub-p").addEventListener("click", () => mostrarVista("p")); $("#p-ord").addEventListener("change", renderPerfil);
-  P.gsaps.forEach(g => $("#i-gsap").insertAdjacentHTML("beforeend", `<option>${esc(g.nome)}</option>`));
-  $("#i-tipo").addEventListener("change", e => { is.tipo = e.target.value; renderIncons(); }); $("#i-gsap").addEventListener("change", e => { is.gsap = e.target.value; renderIncons(); });
+  $("#i-tipo").addEventListener("change", e => { is.tipo = e.target.value; renderIncons(); });
   $("#i-q").addEventListener("input", e => { is.q = e.target.value; renderIncons(); });
-  $("#i-csv").addEventListener("click", () => baixarCSV(`inconsistencias_aps_norte_${MESES[IU]}.csv`, [["Tipo", "GSAP", "UBS", "Equipe", "Profissional", "Categoria", "O que foi encontrado"], ...filtInc().map(x => [rotInc(x.tipo), x.gsap, x.ubs, x.equipe, x.nome, x.cat, x.det])]));
+  $("#i-csv").addEventListener("click", () => baixarPlanilha(`inconsistencias_aps_norte_${MESES[IU]}${sufUnidade()}.xlsx`, [["Tipo", "GSAP", "UBS", "Equipe", "Profissional", "Categoria", "O que foi encontrado"], ...filtInc().map(x => [rotInc(x.tipo), x.gsap, x.ubs, x.equipe, x.nome, x.cat, x.det])]));
   document.querySelectorAll(".rh-rot").forEach(x => x.textContent = RH);
   document.addEventListener("click", e => { const sm = e.target.closest && e.target.closest("#arvore summary"); cliqueArv = sm ? sm.parentElement : null; }, true);
   document.addEventListener("toggle", e => {
@@ -2010,9 +2146,25 @@ function iniciar() {
 /* ---------- área dos gestores ----------
    site/nominal.js traz, cifrado (AES-GCM), tudo o que identifica servidor. A chave sai da senha por PBKDF2-SHA256.
    Nada disso está em texto aberto na página. "Lembrar" guarda a chave derivada (não a senha) só neste navegador. */
-const CH_LS = "aps_norte_chave";
-const lsLer = () => { try { return localStorage.getItem(CH_LS); } catch (e) { return null; } };
-const lsGravar = v => { try { if (v == null) localStorage.removeItem(CH_LS); else localStorage.setItem(CH_LS, v); } catch (e) {} };
+const CH_LS = "aps_norte_chave", AV_LS = "aps_norte_expirou", VALE_MS = 12 * 3600 * 1000;   // a chave lembrada vale 12 horas
+/* guardada como {k: chave em base64, t: momento da gravação}; chave sem carimbo (formato antigo), do futuro ou com mais de 12 h é vencida */
+function lsLer() {   // null = nada guardado; {ok:false} = havia chave, mas vencida; {ok:true, k, t} = vale
+  let r = null; try { r = localStorage.getItem(CH_LS); } catch (e) { return null; }
+  if (!r) return null;
+  let o = null; try { o = JSON.parse(r); } catch (e) {}
+  if (!o || typeof o.k !== "string" || !Number.isFinite(o.t) || o.t > Date.now() + 60000 || Date.now() - o.t >= VALE_MS) { lsGravar(null); return { ok: false }; }
+  return { ok: true, k: o.k, t: o.t };
+}
+const lsGravar = v => { try { if (v == null) localStorage.removeItem(CH_LS); else localStorage.setItem(CH_LS, JSON.stringify({ k: v, t: Date.now() })); } catch (e) {} };
+const avisarSessao = () => { const a = $("#aviso-sessao"); a.textContent = "A sessão lembrada passou de 12 horas: a área dos gestores foi fechada. Para voltar, entre de novo com a senha."; a.hidden = false; };
+function verificarValidade() {   // enquanto a página está aberta: passadas 12 h, apaga a chave e fecha a área (como o Sair), com um aviso depois de recarregar
+  if (!NOM.aberto || !NOM.selo || Date.now() - NOM.selo < VALE_MS) return;
+  lsGravar(null); try { sessionStorage.setItem(AV_LS, "1"); } catch (e) {}
+  location.reload();
+}
+setInterval(verificarValidade, 60000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) verificarValidade(); });
+window.addEventListener("focus", verificarValidade);
 const deB64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
 const paraB64 = b => btoa(String.fromCharCode.apply(null, b));
 function carregarNominal() {
@@ -2042,7 +2194,8 @@ function aplicarNominal(D) {
   $("#btn-entrar").textContent = "Sair"; $("#btn-entrar").title = "Fechar a área dos gestores neste navegador";
   $("#busca").placeholder = P.com_matricula ? "Buscar nome, matrícula, equipe, INE ou UBS" : "Buscar nome, equipe, INE ou UBS"; $("#busca").setAttribute("aria-label", $("#busca").placeholder);
   montarPessoas(); SIN = null; renderFiltro(); mudar();   // os alertas passam a trazer os nomes: refaz as etiquetas
-  if (vistaPendente) { const v = vistaPendente; vistaPendente = ""; mostrarVista(v); }
+  if (abaAposEntrar) { const v = abaAposEntrar; abaAposEntrar = ""; vistaPendente = ""; mostrarVista(v); }
+  else if (vistaPendente) { const v = vistaPendente; vistaPendente = ""; mostrarVista(v); }
 }
 /* devolve "" se entrou, ou a mensagem de erro */
 async function entrar(senha, lembrar) {
@@ -2050,13 +2203,17 @@ async function entrar(senha, lembrar) {
   let N; try { N = await carregarNominal(); } catch (e) { return "Não foi possível carregar a parte restrita. Confira a conexão e tente de novo."; }
   let chave; try { chave = await chaveDaSenha(senha, N); } catch (e) { return "Não foi possível verificar a senha neste navegador."; }
   let D; try { D = await decifrar(chave, N); } catch (e) { return "Senha incorreta."; }
-  if (lembrar) lsGravar(paraB64(chave));
+  if (lembrar) { lsGravar(paraB64(chave)); NOM.selo = Date.now(); }
   aplicarNominal(D); return "";
 }
 async function entrarLembrado() {
-  const g = lsLer(); if (!g || !P.restrito) return;
+  try { if (sessionStorage.getItem(AV_LS) === "1") { sessionStorage.removeItem(AV_LS); avisarSessao(); } } catch (e) {}
+  const g = lsLer(); if (!g) return;
+  if (!g.ok) { avisarSessao(); return; }   // vencida (ou sem carimbo): já foi apagada
+  if (!P.restrito) return;
   let N; try { N = await carregarNominal(); } catch (e) { return; }                       // sem rede: mantém a chave lembrada
-  let D; try { D = await decifrar(deB64(g), N); } catch (e) { lsGravar(null); return; }   // senha trocada: esquece a chave antiga
+  let D; try { D = await decifrar(deB64(g.k), N); } catch (e) { lsGravar(null); return; }   // senha trocada: esquece a chave antiga
+  NOM.selo = g.t;
   aplicarNominal(D);
 }
 function abrirSenha() {
@@ -2067,6 +2224,7 @@ function abrirSenha() {
 if (P.restrito) document.body.classList.add("restrito");
 $("#btn-entrar").addEventListener("click", () => { if (NOM.aberto) { lsGravar(null); location.reload(); } else abrirSenha(); });
 $("#senha-cancelar").addEventListener("click", () => $("#dlg-senha").close());
+$("#dlg-senha").addEventListener("close", () => { if (!NOM.aberto) abaAposEntrar = ""; });
 $("#dlg-senha").addEventListener("click", e => { if (e.target === $("#dlg-senha")) $("#dlg-senha").close(); });
 $("#form-senha").addEventListener("submit", async ev => {
   ev.preventDefault();

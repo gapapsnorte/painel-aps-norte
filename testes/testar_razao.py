@@ -49,7 +49,7 @@ with sync_playwright() as p:
         pg.screenshot(path=str(RAIZ / "testes" / "shot_razao_ubs.png"))
         pg.locator("#r-corpo button.lk").first.click(); pg.wait_for_timeout(300); print("  clique na equipe abre a hierarquia:", pg.locator("#vista-h").is_visible()); ok &= pg.locator("#vista-h").is_visible()
         pg.click("#aba-p"); pg.click("#aba-r"); pg.wait_for_selector("#r-ref table"); pg.screenshot(path=str(RAIZ / "testes" / "shot_razao.png"), full_page=True)
-        print("  seletor de indicador do topo desabilitado na aba:", pg.locator("#sel-ind").is_disabled())
+        print("  seletor de indicador do topo oculto na aba:", not pg.locator("#sel-ind").is_visible())
         pg.close()
     nav.close()
 print("erros de console:", erros or "nenhum"); ok &= not erros

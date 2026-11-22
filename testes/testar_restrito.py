@@ -3,7 +3,7 @@ com a senha certa tudo volta. Uso: python -X utf8 testes/testar_restrito.py (APS
 import base64, gzip, hashlib, json, pathlib, re, subprocess, sys, unicodedata
 from playwright.sync_api import sync_playwright
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
-from _entrar import senha, entrar
+from _entrar import senha, entrar; from _entrar import planilha, planilha_txt
 
 RAIZ = pathlib.Path(__file__).resolve().parent.parent
 SITE = RAIZ / "site"; URL = (SITE / "index.html").as_uri()
@@ -99,7 +99,7 @@ with sync_playwright() as p:
     confere("sem senha: busca por nome não acha servidor", "Profissional" not in pg.inner_text("#achados"), pg.inner_text("#achados")[:40].replace("\n", " "))
     pg.fill("#busca", ""); pg.select_option("#sel-ind", "atend")
     with pg.expect_download() as d: pg.click("#btn-csv")
-    csv = pathlib.Path(d.value.path()).read_text("utf-8-sig", errors="ignore")
+    csv = planilha_txt(d.value.path())
     confere("sem senha: CSV sem coluna de profissional e sem nomes", "Profissional" not in csv.splitlines()[0] and not nomes_em(csv), csv.splitlines()[0][:60])
     confere("sem senha: nada guardado no navegador", pg.evaluate("() => localStorage.length") == 0)
     # ---------- 3. senha errada ----------
@@ -124,7 +124,7 @@ with sync_playwright() as p:
     confere("senha certa: etiquetas de ACS trazem os nomes no detalhe", (not acs) or bool(nomes_em(txt_al)))
     pg.click("#aba-h")
     with pg.expect_download() as d: pg.click("#btn-csv")
-    csv = pathlib.Path(d.value.path()).read_text("utf-8-sig", errors="ignore")
+    csv = planilha_txt(d.value.path())
     confere("senha certa: CSV com coluna de profissional", "Profissional" in csv.splitlines()[0])
     guardado = pg.evaluate("() => localStorage.getItem('aps_norte_chave')")
     confere("lembrar: guarda a chave derivada, não a senha", bool(guardado) and senha() not in guardado and pg.evaluate("() => localStorage.length") == 1)
