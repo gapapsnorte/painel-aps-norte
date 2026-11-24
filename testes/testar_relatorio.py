@@ -4,7 +4,7 @@ O arquivo Word de exemplo fica em testes/_dicas/ (pasta fora do git, porque cont
 import base64, json, pathlib, re, sys, unicodedata
 from playwright.sync_api import sync_playwright
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
-from _entrar import entrar
+from _entrar import entrar, esperar
 
 RAIZ = pathlib.Path(__file__).resolve().parent.parent
 URL = (RAIZ / "site" / "index.html").as_uri()
@@ -50,19 +50,19 @@ with sync_playwright() as pw:
     # PDF: a impressão é trocada por um marcador, e o conteúdo é lido na hora em que o navegador imprimiria
     pg.evaluate("() => { window.print = () => { window._imp = document.getElementById('rel-print').innerHTML; window._classe = document.body.classList.contains('imprimindo-rel'); }; }")
     pg.check("input[name='rel-sec'][value='resumo']"); pg.check("input[name='rel-sec'][value='alertas']")
-    pg.click("#rel-ok"); pg.wait_for_function("window._imp !== undefined")
+    pg.click("#rel-ok"); esperar(pg, "window._imp !== undefined")
     imp = pg.evaluate("window._imp")
     confere("PDF: só os itens marcados entram", "Resumo dos indicadores principais" in imp and "Alertas de" in imp and "Pessoas atendidas" not in imp and "Profissionais por equipe" not in imp)
     confere("PDF: página entra no modo de impressão do relatório", pg.evaluate("window._classe") is True)
     confere("PDF: cabeçalho traz a unidade e o mês", u0["nome"] in imp and "Último mês completo" in imp)
 
-    pg.evaluate("window._imp = undefined"); pg.click("#btn-rel"); pg.wait_for_selector("#dlg-rel[open]"); pg.click("#rel-todas"); pg.click("#rel-ok"); pg.wait_for_function("window._imp !== undefined")
+    pg.evaluate("window._imp = undefined"); pg.click("#btn-rel"); pg.wait_for_selector("#dlg-rel[open]"); pg.click("#rel-todas"); pg.click("#rel-ok"); esperar(pg, "window._imp !== undefined")
     imp = pg.evaluate("window._imp")
     titulos = ["Resumo dos indicadores principais", "por mês", "Alertas de", "por equipe", "contra a Região", "Perfil dos atendimentos em", "Perfil dos atendimentos, ", "Produção por boa prática", "Pessoas atendidas", "por mil cadastrados", "Profissionais por equipe", "Inconsistências de código", "Quadro de providências"]
     confere("PDF com tudo marcado: as 13 partes", all(t in imp for t in titulos), [t for t in titulos if t not in imp])
     confere("PDF com tudo: lista nominal traz o profissional da equipe", norm(nome0) in norm(imp))
     confere("PDF com tudo: aviso de uso interno", "uso interno da gestão" in imp)
-    confere("matrícula, CNS e CPF fora do relatório (versão publicada)", not re.search(r"(?<![0-9.])[0-9]{11,}", re.sub(r"<svg.*?</svg>", "", imp, flags=re.S)) and ("mat. " not in imp or bool(pg.evaluate("P.com_matricula"))))
+    confere("matrícula, CNS e CPF fora do relatório (versão publicada)", not re.search(r"(?<![0-9.])[0-9]{11,}", re.sub(r"<svg.*?</svg>", "", imp, flags=re.S)) and "mat. " not in imp)
     # confere um número da tabela contra o JSON
     iu = P["meses"].index(P["ultimo_mes_completo"]); v = u0["serie"]["atend"][iu]
     confere("número do resumo = JSON (atendimentos da UBS no mês)", f"{v:,}".replace(",", ".") in imp, v)

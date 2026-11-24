@@ -17,7 +17,7 @@ with sync_playwright() as p:
     pg.on("console", lambda m: erros.append(f"console.{m.type}: {m.text}") if m.type in ("error", "warning") else None); pg.on("pageerror", lambda e: erros.append(f"pageerror: {e}"))
     pg.goto(url); pg.wait_for_selector("#arvore details.g")
     # ---- abas e público sem senha
-    conf("abas visíveis sem senha: Visão geral, Mapa de calor, Perfil dos atendimentos e Inconsistências com cadeado", pg.locator("nav.abas button:visible").all_inner_texts() == ["Visão geral", "Mapa de calor", "Perfil dos atendimentos", "Inconsistências 🔒"], pg.locator("nav.abas button:visible").all_inner_texts())
+    conf("abas visíveis sem senha: Visão geral, Mapa de calor, Perfil dos atendimentos e Inconsistências com cadeado", pg.locator("nav.abas button:visible").all_inner_texts() == ["Visão geral", "Mapa de calor", "Perfil dos atendimentos", "Inconsistências 🔒", "Força de trabalho 🔒"], pg.locator("nav.abas button:visible").all_inner_texts())
     pub = (RAIZ / "site" / "painel.js").read_text("utf-8")
     conf("inconsistências não estão no arquivo público", '"incons"' not in pub and "lot_sem_prod" not in pub)
     # ---- grupos por boa prática

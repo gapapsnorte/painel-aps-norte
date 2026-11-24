@@ -6,7 +6,7 @@ url = (RAIZ / "site" / "index.html").as_uri()
 P = json.load(open(RAIZ / "dados" / "painel.json", encoding="utf-8"))
 N = json.load(open(RAIZ / "dados" / "nominal.json", encoding="utf-8"))   # bloco nominal em claro: só existe no computador (dados/ fica fora do git)
 EQ = {f"{u['cnes']}|{e['ine'] or 'SEM'}": e["nome"] for g in P["gsaps"] for u in g["ubs"] for e in u["equipes"]}
-alvo = next((x, EQ[k]) for k, l in N["prof"].items() for x in l if x.get("mat") and x["lotado"] and x["serie"].get("atend"))
+alvo = next((x, EQ[k]) for k, l in N["prof"].items() for x in l if x["lotado"] and x["serie"].get("atend"))
 prof, nome_eq = alvo
 erros = []
 with sync_playwright() as p:
@@ -14,12 +14,10 @@ with sync_playwright() as p:
     pg.on("console", lambda m: erros.append(f"console.{m.type}: {m.text}") if m.type in ("error", "warning") else None)
     pg.on("pageerror", lambda e: erros.append(f"pageerror: {e}"))
     pg.goto(url); pg.wait_for_selector("#arvore details.g"); entrar(pg)
-    # 1. busca por matrícula (com pontos também)
-    mat = prof["mat"]; mat_fmt = mat[:-3] + "." + mat[-3:]
-    for q in (mat, mat_fmt):
-        pg.fill("#busca", q); pg.wait_for_selector("#achados button[data-i]")
-        achou = pg.locator("#achados button[data-i]").first.inner_text()
-        print(f"busca '{q}':", "OK" if prof["nome"].split()[0].lower() in achou.lower() else "FALHOU", "|", achou.replace("\n", " ")[:90])
+    # 1. busca pelo nome completo
+    pg.fill("#busca", prof["nome"]); pg.wait_for_selector("#achados button[data-i]")
+    achou = pg.locator("#achados button[data-i]").first.inner_text()
+    print("busca pelo nome completo:", "OK" if prof["nome"].split()[0].lower() in achou.lower() else "FALHOU")
     pg.locator("#achados button[data-i]").first.click(); pg.wait_for_selector("dialog#ficha[open]")
     print("ficha abriu para:", pg.locator("#ficha-t").inner_text(), "| sub:", pg.locator("#ficha-sub").inner_text())
     print("ficha: gráficos", pg.locator("#ficha .graf svg").count(), "| linhas de equipe", pg.locator("#ficha tbody tr").count())

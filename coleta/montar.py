@@ -1,23 +1,27 @@
 """Agrega os dados brutos na hierarquia GSAP -> UBS -> equipe -> profissionais e calcula alertas.
-Entrada: coleta/referencia.json (lotação do RH) e dados/brutos/*.json (coleta.py).
+Entradas: coleta/referencia.json (lotação do RH, com o CNS já embaralhado), dados/brutos/*.json (coleta.py, razao.py,
+regioes.py e usuarios.py) e, opcional, coleta/ivt_apsdf_2024.json (IVT por equipe).
 Saída:   site/painel.js e dados/painel.json: só agregados (Região, GSAP, UBS, equipe), SEM nenhum nome de servidor.
-         site/nominal.js: tudo o que identifica servidor (lista de profissionais por equipe e alertas com nomes), CIFRADO com a senha
-         dos gestores (AES-GCM; chave derivada da senha por PBKDF2-SHA256). Sem senha configurada, o bloco nominal não é gerado.
-         CNS, CPF e matrícula não vão para a versão publicada, nem cifrados (a matrícula só entra quando gerado no computador dela).
+         site/nominal.js: tudo o que identifica servidor (lista de profissionais por equipe, alertas com nomes, inconsistências,
+         força de trabalho, IVT), CIFRADO com a senha dos gestores (AES-GCM; chave derivada da senha por PBKDF2-SHA256).
+         Sem senha configurada, o bloco nominal não é gerado.
+         CNS, CPF e matrícula não existem em nenhuma saída: o CNS chega aqui já embaralhado (sigilo.hc) e só liga a
+         lotação à produção; CPF e matrícula nem são lidos da planilha de RH.
 Uso: python montar.py"""
-import json, hashlib, pathlib, re, datetime as dt
-from collections import defaultdict
+import base64, gzip, hashlib, json, math, os, re, unicodedata
+from collections import Counter, defaultdict
+import datetime as dt
+from comum import AQUI, RAIZ, OUT as BR, BRT, hoje_brt
+from familias import FAMILIAS, COD2FAM
+from motivos import NOMES as MOT_NOMES, fam_cid, fam_ciap, SEM_CID
+from sigilo import hc   # CNS -> código embaralhado
 
-AQUI = pathlib.Path(__file__).parent
-RAIZ = AQUI.parent
-BR = RAIZ / "dados" / "brutos"
 ref = json.load(open(AQUI / "referencia.json", encoding="utf-8"))
 _m = re.search(r"(\d{2})[ .](\d{4})", ref.get("fonte", ""))   # competência da planilha de RH, tirada do nome do arquivo
 RH_ROT = (["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"][int(_m.group(1)) - 1] + "/" + _m.group(2)) if _m and 1 <= int(_m.group(1)) <= 12 else "data não identificada"
 log = json.load(open(BR / "_log.json", encoding="utf-8"))
 MESES = log["meses"]; NM = len(MESES); IX = {m: i for i, m in enumerate(MESES)}
-BRT = dt.timezone(dt.timedelta(hours=-3))                 # Brasília (sem horário de verão); no GitHub o relógio é UTC
-hoje = dt.datetime.now(BRT).date()
+hoje = hoje_brt()
 MES_PARCIAL = f"{hoje.year}-{hoje.month:02d}"          # mês em curso: incompleto, fora de alertas
 ULT = MESES[-2] if MESES[-1] == MES_PARCIAL else MESES[-1]   # último mês completo
 IU = IX[ULT]
@@ -43,11 +47,9 @@ IND = {  # id: (nome, unidade, nível: 'prof' = por profissional e equipe; 'eq' 
     "odonto1": ("Primeira consulta odontológica", "consultas", "eq"),
     "odonto": ("Consultas odontológicas (total)", "consultas", "eq"),
 }
-from familias import FAMILIAS, COD2FAM
 GRP = {k: "Atendimento e produção" for k in IND}
 for _k in ("prenatal", "has", "dm", "mental", "colo", "mama", "ist", "odonto1", "odonto"): GRP[_k] = "Condições avaliadas e odontologia (só por equipe)"
 for _k, (_nome, _c) in FAMILIAS.items(): IND[_k] = (_nome, "procedimentos", "prof"); GRP[_k] = "Procedimentos"
-from motivos import NOMES as MOT_NOMES, fam_cid, fam_ciap, SEM_CID
 for _k, _n in MOT_NOMES.items(): IND[_k] = (_n, "CID registrados", "eq"); GRP[_k] = "Motivos de consulta (CID, só por equipe)"
 TIPOS_ACESSO = {"Consulta no dia": "a_dia", "Consulta agendada": "a_agend", "Consulta agendada programada / Cuidado continuado": "a_prog",
                 "Atendimento de urgência": "a_urg", "Escuta inicial / Orientação": "a_escuta"}
@@ -61,7 +63,7 @@ COND_MAP = {"prenatal": "Pré-natal", "has": "Hipertensão arterial", "dm": "Dia
 def L(n): return json.load(open(BR / f"{n}.json", encoding="utf-8"))
 # ---- indicador 'consultas por mil hab.' (RIPSA COB.1.01): denominadores ----
 _cad = L("cadastros") if (BR / "cadastros.json").exists() else []
-CAD_COMP = max((c["comp"] for c in _cad), default=None)          # última competência de cadastros no InfoSaúde (parada em abr/2025)
+CAD_COMP = max((c["comp"] for c in _cad), default=None)          # última competência de cadastros no InfoSaúde (a base está sem atualização)
 CAD_CNES, CAD_INE, CAD_INE_CNES = defaultdict(int), defaultdict(int), defaultdict(set)
 for _c in _cad:
     if _c["comp"] != CAD_COMP: continue
@@ -78,28 +80,15 @@ def titulo(s):
     SIGLAS = {"Ubs": "UBS", "Ii": "II", "Der": "DER", "Esf": "eSF", "Acs": "ACS", "Thd": "THD", "Sob": "SOB", "Cepis": "CEPIS"}
     t = " ".join(SIGLAS.get(w, w) for w in t.split(" "))   # palavra inteira, sem regex: nao troca o inicio de Sobradinho
     return t
-import os
-def _pepper():
-    p = os.environ.get("APS_PEPPER")
-    if not p:
-        f = pathlib.Path(__file__).parent / "pepper.local"
-        if f.exists(): p = f.read_text(encoding="utf-8-sig").strip()
-    if not p: raise SystemExit("Falta o segredo APS_PEPPER (variável de ambiente, ou arquivo coleta/pepper.local).")
-    return p
-PEPPER = _pepper()
-def hc(c): return hashlib.sha256((PEPPER + "|" + str(c)).encode()).hexdigest()[:12] if c else ""   # igual nos dois scripts
 _SEQ = {}
 def pid(chave): return _SEQ.setdefault(chave, f"p{len(_SEQ) + 1}")   # id sequencial: nada derivado do CNS sai do gerador
-import unicodedata
-def norm_nome(s): return re.sub(r"[^A-Z]", "", unicodedata.normalize("NFD", str(s or "")).upper())   # tira qualquer acento (antes a lista era parcial)
+def norm_nome(s): return re.sub(r"[^A-Z]", "", unicodedata.normalize("NFD", str(s or "")).upper())   # só letras A-Z, sem qualquer acento
 def ine10(x):
     x = str(x or "")
     return x.zfill(10) if x.isdigit() else ""
 
 # ---------- estrutura a partir do RH ----------
 ubs_ref = ref["ubs"]; eq_ref = ref["equipes"]; lot_ref = ref["lotacao"]
-_priv = AQUI / "referencia_privada.json"
-PRIV = json.load(open(_priv, encoding="utf-8")) if _priv.exists() else {}   # só existe no computador dela; no GitHub o painel sai sem matrícula
 APS = {c: u for c, u in ubs_ref.items() if re.match(r"UBS", u["nome_rh"] or "")}   # só UBS na hierarquia
 estr = {}   # cnes -> {"gsap","nome","ra","eq": {ine: {...}}}
 def no_ubs(cnes, nome=None):
@@ -124,31 +113,35 @@ for cnes in APS: no_ubs(cnes)
 for ine, e in eq_ref.items():
     if e["cnes"] in APS: no_eq(e["cnes"], ine)
 
+SEM_IDENTIFICACAO = {"producao": 0, "lotacao": 0}   # linhas sem CNS e sem nome: não há como saber quem é, então são puladas e contadas
 def no_prof(eq, cns, nome, cat=None):
     chave = cns or norm_nome(nome)
     if chave not in eq["prof"]:
         eq["prof"][chave] = {"id": pid(chave), "nome": titulo(nome), "cat": cat, "cargo": None, "chs": None, "lotado": False, "serie": {}}
     p = eq["prof"][chave]
     if cat and not p["cat"]: p["cat"] = cat
-    if PRIV.get(chave): p["mat"] = PRIV[chave]
     return p
 
 # lotados (RH) -> aparecem mesmo sem produção
-por_cns_lot = {}
+VINC = {}
 for ine, lista in lot_ref.items():
     if ine.startswith("UBS:"): continue
     e = eq_ref.get(ine)
     if not e or e["cnes"] not in APS: continue
     eqn = no_eq(e["cnes"], ine)
     for x in lista:
+        if not (x["cns"] or norm_nome(x["nome"])): SEM_IDENTIFICACAO["lotacao"] += 1; continue
         p = no_prof(eqn, x["cns"], x["nome"], x["cat"])
         p.update(lotado=True, cargo=x["cargo"], chs=x["chs"], cat=x["cat"] or p["cat"])
-        por_cns_lot[x["cns"]] = ine
+        VINC[p["id"]] = x.get("vinculo")        # só alimenta o quadro "Força de trabalho" (bloco cifrado); não fica no profissional
 
-lot_ubs = {}   # chave do profissional -> CNES, para quem está no RH lotado na UBS sem equipe (antes era descartado e virava "não consta na lotação")
+lot_ubs = {}   # chave do profissional -> CNES, para quem está no RH lotado na UBS sem equipe (senão viraria "não consta na lotação")
 for _k, _lista in lot_ref.items():
     if _k.startswith("UBS:"):
-        for _x in _lista: lot_ubs[_x["cns"] or norm_nome(_x["nome"])] = _k[4:]
+        for _x in _lista:
+            _chave = _x["cns"] or norm_nome(_x["nome"])
+            if _chave: lot_ubs[_chave] = _k[4:]
+            else: SEM_IDENTIFICACAO["lotacao"] += 1
 
 def soma_serie(p, ind, i, v):
     s = p["serie"].setdefault(ind, zeros()); s[i] += v
@@ -163,8 +156,10 @@ def processa(nome_arq, fn):
         cnes = str(l["cnes"]).zfill(7)
         if cnes not in APS:
             fn(None, None, l, i, cnes); continue
+        if "nome" in l and not (l.get("cns") or norm_nome(l["nome"])):    # linha de profissional sem CNS e sem nome
+            SEM_IDENTIFICACAO["producao"] += 1; continue
         ine = ine10(l["ine"])
-        eq = no_eq(cnes, ine if ine and ine in eq_ref else (ine or ""), tipo=l.get("tipo_eq"), nome_prod=l.get("ubs"))
+        eq = no_eq(cnes, ine, tipo=l.get("tipo_eq"), nome_prod=l.get("ubs"))
         fn(eq, None, l, i, cnes)
 
 def f_atend(eq, _, l, i, cnes):
@@ -204,7 +199,7 @@ def f_mot(eq, _, l, i, cnes):
     if fam == SEM_CID[0] and TEM_CIAP: return     # sem CID: o motivo vem do CIAP (motivos_ciap), para não contar duas vezes
     eq["serie"][fam][i] += l["n"] or 0
 
-TEM_CIAP = (BR / "motivos_ciap.json").exists()   # registros sem CID, por CIAP (coleta.py); sem o arquivo, vale a regra antiga (sem CID = sem motivo)
+TEM_CIAP = (BR / "motivos_ciap.json").exists()   # registros sem CID, por CIAP (coleta.py); sem o arquivo, sem CID = sem motivo
 def f_motc(eq, _, l, i, cnes):
     if eq is None: return
     eq["serie"][fam_ciap(l["ciap"])][i] += l["n"] or 0
@@ -324,6 +319,38 @@ for g, d in sorted(gsaps.items(), key=lambda t: (t[0].startswith("Fora"), t[0]))
     d["ubs"].sort(key=lambda x: x["nome"])
     saida_g.append({"nome": g, "ubs": d["ubs"], "serie": agrega([x["serie"] for x in d["ubs"]]), "n_esf": sum(x["n_esf"] for x in d["ubs"])})
 regiao = agrega([g["serie"] for g in saida_g])
+
+# ---------- tipo de UBS e de equipe ----------
+# Porte (parte aberta): terços da população cadastrada da UBS, na última competência do InfoSaúde (a base está sem atualização).
+# Zona (parte aberta): campo "Urbana/Rural" de cada equipe na planilha de RH; a UBS leva a contagem das suas equipes (nada é estimado).
+# IVT (SÓ bloco cifrado): IVT-APSDF 2024 (Nota Técnica 5/2024 SES/SAIS/COAPS), por INE da eSF; sem INE na lista = "sem IVT", não se estima.
+_ubs_l = [u for g in saida_g for u in g["ubs"]]
+_cads = sorted(u["cad"] for u in _ubs_l if u["cad"])
+def _corte(q): return _cads[max(math.ceil(len(_cads) * q) - 1, 0)] if _cads else None
+C1, C2 = _corte(1 / 3), _corte(2 / 3)
+PORTE_ROT = f"Porte pela população cadastrada em {rot_mes(CAD_COMP)} (base parada nessa data): pequeno até {C1:,} · médio de {C1 + 1:,} a {C2:,} · grande acima de {C2:,}".replace(",", ".") if _cads else None
+for u in _ubs_l:
+    u["porte"] = None if not u["cad"] or not _cads else ("Pequeno" if u["cad"] <= C1 else "Médio" if u["cad"] <= C2 else "Grande")
+    _zn = defaultdict(int)
+    for e in u["equipes"]:
+        if e["ine"] and e.get("zona") in ("Urbana", "Rural") and e["tipo"] == "eSF": _zn[e["zona"]] += 1
+    u["zona_n"] = dict(_zn) or None
+    u["zona"] = None if not _zn else (next(iter(_zn)) if len(_zn) == 1 else "Mista")
+IVT_ARQ = AQUI / "ivt_apsdf_2024.json"
+IVT = {x["ine"]: (x["ivt"], x["classe"]) for x in json.load(open(IVT_ARQ, encoding="utf-8"))} if IVT_ARQ.exists() else {}
+FAIXAS = ["Baixa", "Média", "Alta"]
+IVT_SEM = "sem IVT (equipe criada depois de 2024)"
+ivt_eq, ivt_ubs, _ivt_usados = {}, {}, set()
+for u in (_ubs_l if IVT else ()):     # sem o arquivo do IVT não há o que casar
+    cont, sem = {f: 0 for f in FAIXAS}, 0
+    for e in u["equipes"]:
+        if e["tipo"] != "eSF" or not e["ine"] or e.get("migrou"): continue
+        if e["ine"] in IVT:
+            ivt_eq[f"{u['cnes']}|{e['ine']}"] = list(IVT[e["ine"]]); cont[IVT[e["ine"]][1]] += 1; _ivt_usados.add(e["ine"])
+        else: sem += 1
+    mx = max(cont.values()); top = [f for f in FAIXAS if cont[f] == mx] if mx else []
+    ivt_ubs[u["cnes"]] = {"c": cont, "sem": sem, "faixa": top[0] if len(top) == 1 else None, "empate": top if len(top) > 1 else None}
+IVT_FORA = sorted(set(IVT) - _ivt_usados)     # INE com IVT que não casou com eSF da Norte na lotação atual (só para o relatório de conferência)
 alertas.sort(key=lambda a: (a["nivel"] != "alta", a["tipo"], a["caminho"]))
 
 # ---------- Norte × DF × regiões: totais mensais por região de saúde (regioes.py) e população por ano ----------
@@ -349,6 +376,9 @@ def bloco_razao():
     POPR = defaultdict(int)
     for x in pp:
         if x["reg"]: POPR[(int(x["ano"]), x["reg"])] += x["pop"] or 0
+    POP_ANOS = defaultdict(dict)    # região -> {ano: população}, só anos com população
+    for (a, r), v in POPR.items():
+        if v: POP_ANOS[r][a] = v
     REGS = sorted({r for (_, r) in POPR if r.startswith("Região ")}, key=lambda r: (r != "Região Norte", r))
     N = defaultdict(int)
     for x in rz:
@@ -357,9 +387,12 @@ def bloco_razao():
     def janela(ano_fim, mes_fim):      # 12 meses terminando em (ano_fim, mes_fim)
         return [((ano_fim * 12 + mes_fim - 1 - k) // 12, (ano_fim * 12 + mes_fim - 1 - k) % 12 + 1) for k in range(11, -1, -1)]
     def soma(regs, meses, cat): return sum(N[(r, a, m, cat)] for r in regs for a, m in meses)
-    def popu(regs, ano): return sum(POPR.get((ano, r), 0) for r in regs)
+    def pop_regiao(r, ano):     # ano sem população usa o maior ano anterior disponível (como diz a nota pública)
+        anos = [a for a in POP_ANOS.get(r, ()) if a <= ano]
+        return POP_ANOS[r][max(anos)] if anos else 0
+    def popu(regs, ano): return sum(pop_regiao(r, ano) for r in regs)
     entes = [("Região Norte", ["Região Norte"]), ("Distrito Federal", REGS)] + [(r, [r]) for r in REGS if r != "Região Norte"]
-    anos_ok = [a for a in range(2022, uy + (1 if um == 12 else 0)) if popu(REGS, a)]
+    anos_ok = [a for a in range(2022, uy + (1 if um == 12 else 0)) if any(POP_ANOS.get(r, {}).get(a) for r in REGS)]   # só anos com população própria
     out = []
     for nome, regs in entes:
         anos = {}
@@ -386,7 +419,6 @@ RAZAO = bloco_razao()
 USUARIOS = L("usuarios") if (BR / "usuarios.json").exists() else None   # pessoas distintas e hiperfrequentadores (coleta/usuarios.py); só contagens por faixa
 
 # ---------- separa o que identifica servidor (bloco nominal) do que é público ----------
-import base64, gzip
 SAL_SENHA = "6d1a1def6f094a28d4e7c3edea6257aa"     # sal fixo do PBKDF2 (não é segredo; fixo para o "lembrar neste navegador" valer entre atualizações)
 ITERACOES = 600_000
 SENHA_MIN = 12
@@ -468,6 +500,61 @@ for a in alertas:
         incons.append({"tipo": "lugar_errado", "gsap": gn, "ubs": un, "equipe": en, "nome": "", "cat": "", "det": a["texto"] + " Pode estar sendo registrado em outra equipe, sem equipe ou fora do campo de procedimento.", "n": 0})
 incons.sort(key=lambda x: (x["tipo"], x["gsap"], x["ubs"], x["equipe"], -x["n"], x["nome"]))
 
+# ---------- força de trabalho (só no bloco cifrado): lotados por categoria, produção em 12 meses, vínculo e carga horária ----------
+def cat_grupo(c):
+    c = (c or "").lower()
+    if "médic" in c or "medic" in c: return "Médico"
+    if "enfermeiro" in c: return "Enfermeiro"
+    if "técnico" in c and "enferm" in c or "tecnico" in c and "enferm" in c: return "Técnico de enfermagem"
+    if "agente comunit" in c: return "ACS"
+    if "cirurgi" in c or "dentista" in c: return "Cirurgião-dentista"
+    if "higiene dental" in c or "thd" in c or "saúde bucal" in c or "saude bucal" in c or "asb" in c or "tsb" in c: return "THD/ASB"
+    return "Outros"
+CATS_FT = ["Médico", "Enfermeiro", "Técnico de enfermagem", "ACS", "Cirurgião-dentista", "THD/ASB", "Outros"]
+def p12(p): return sum(sum(v[max(IU - 11, 0):IU + 1]) for k, v in p["serie"].items() if k in BASE_REG)
+def prod12(pid_): return sum(p12(x[3]) for x in _pess.get(pid_, []))
+def linha_ft(pessoas):    # pessoas: {id: (categoria, chs, vínculo)}; cada pessoa conta uma vez
+    r = {"n": len(pessoas), "cat": {c: 0 for c in CATS_FT}, "res": 0, "com": 0, "sem": 0, "ch": 0, "e40": 0.0, "sch": 0, "vinc": defaultdict(int)}
+    for i, (cat, chs, vinc) in pessoas.items():
+        r["cat"][cat_grupo(cat)] += 1
+        if "residente" in (cat or "").lower() or (vinc or "").lower().startswith("residente"): r["res"] += 1
+        if prod12(i): r["com"] += 1
+        else: r["sem"] += 1
+        if chs: r["ch"] += chs
+        else: r["sch"] += 1
+        if chs and chs >= 20: r["e40"] += chs / 40        # equivalente em 40 h: só informativo, mesma regra da ficha (CHS >= 20)
+        r["vinc"][vinc or "sem vínculo informado"] += 1
+    r["e40"] = round(r["e40"], 1); r["vinc"] = dict(r["vinc"])
+    return r
+FT = {}
+def _sit(e):    # mesma janela das inconsistências (3 últimos meses completos); INE em duas UBS conta a produção das duas
+    if e.get("migrou"): return "mudou de UBS"
+    return "com produção" if sum(s3(v) for k, v in e["serie"].items() if k in BASE_REG) or _TOT_INE[e["ine"]] else "sem produção"
+_pes_g = defaultdict(dict)
+for g in saida_g:
+    for u in g["ubs"]:
+        pu = {}; sit = {"com produção": 0, "sem produção": 0, "mudou de UBS": 0}
+        for e in u["equipes"]:
+            if not e["ine"]: continue
+            pe = {p["id"]: (p["cat"], p["chs"], VINC.get(p["id"])) for p in e["prof"] if p["lotado"]}
+            st = _sit(e); sit[st] += 1
+            FT[f"E|{u['cnes']}|{e['ine']}"] = {**linha_ft(pe), "sit": st}
+            pu.update(pe)
+        ps = {}
+        for x in lot_ref.get("UBS:" + u["cnes"], []):
+            k = x["cns"] or norm_nome(x["nome"])
+            if not k: continue      # sem CNS e sem nome: já contado e pulado acima
+            i = _SEQ.get(k) or "s:" + k
+            ps[i] = (x["cat"], x["chs"], x.get("vinculo"))
+        FT[f"S|{u['cnes']}"] = linha_ft(ps)
+        pu.update(ps); lin = linha_ft(pu); lin.update(sit=sit, usem=len(ps)); FT[f"U|{u['cnes']}"] = lin
+        _pes_g[g["nome"]].update(pu)
+    lin = linha_ft(_pes_g[g["nome"]]); lin.update(usem=sum(FT[f"U|{u['cnes']}"]["usem"] for u in g["ubs"]),
+        sit={k: sum(FT[f"U|{u['cnes']}"]["sit"][k] for u in g["ubs"]) for k in ("com produção", "sem produção", "mudou de UBS")}); FT[f"G|{g['nome']}"] = lin
+_tudo = {}
+for d in _pes_g.values(): _tudo.update(d)
+lin = linha_ft(_tudo); lin.update(usem=sum(v["usem"] for k, v in FT.items() if k.startswith("G|")), sit={k: sum(v["sit"][k] for kk, v in FT.items() if kk.startswith("G|")) for k in ("com produção", "sem produção", "mudou de UBS")}); FT["R"] = lin
+
 nominal_prof, nomes_todos = {}, set()
 for g in saida_g:
     for u in g["ubs"]:
@@ -483,16 +570,17 @@ if EM_CI:
     with open(_h, "a", encoding="utf-8", newline="") as _fh:
         if _h.stat().st_size == 0: _fh.write("gerado_em,mes,atendimentos_regiao\n")
         for _i in range(max(NM - 3, 0), NM): _fh.write(f"{GERADO},{MESES[_i]},{_at[_i]}\n")
-nominal = {"gerado": GERADO, "com_matricula": bool(PRIV), "prof": nominal_prof, "alertas": alertas_nominais, "incons": incons}
-if EM_CI and (PRIV or any("mat" in p for l in nominal_prof.values() for p in l)):
-    raise SystemExit("Matrícula encontrada numa geração feita no GitHub: abortado. A matrícula só pode existir na geração local.")
+ivt_nominal = {"eq": ivt_eq, "ubs": ivt_ubs, "sem": IVT_SEM, "fonte": "IVT-APSDF 2024 (Nota Técnica 5/2024 SES/SAIS/COAPS)"} if IVT else None
+nominal = {"gerado": GERADO, "prof": nominal_prof, "alertas": alertas_nominais, "incons": incons, "ft": FT, "ivt": ivt_nominal}
+if any("mat" in p or "cns" in p for l in nominal_prof.values() for p in l):
+    raise SystemExit("TRAVA: matrícula ou CNS no bloco dos gestores. Esses campos não fazem parte do painel. Nada foi gravado.")
 
 painel = {
     "gerado": GERADO, "meses": MESES, "ultimo_mes_completo": ULT,
     "mes_parcial": MES_PARCIAL if MESES[-1] == MES_PARCIAL else None,
     "fonte": f"InfoSaúde-DF · Sala de Situação · Atenção Primária (SES-DF); lotação: RH APS Norte {RH_ROT}", "rh_rot": RH_ROT,
     "indicadores": {k: {"nome": v[0].strip(), "sub": v[0].startswith(" "), "unidade": v[1], "nivel": v[2], "grp": GRP[k]} for k, v in IND.items()},
-    "regiao": regiao, "razao": RAZAO, "regioes": REGIOES, "usuarios": USUARIOS, "gsaps": saida_g, "alertas": alertas, "restrito": bool(SENHA),
+    "regiao": regiao, "tipo_ubs": {"cortes": [C1, C2], "rot": PORTE_ROT, "comp": CAD_COMP, "n": len(_cads)}, "razao": RAZAO, "regioes": REGIOES, "usuarios": USUARIOS, "gsaps": saida_g, "alertas": alertas, "restrito": bool(SENHA),
     "fora_da_aps": {k: v for k, v in sorted(fora_aps.items(), key=lambda t: -sum(t[1]))[:12]},
 }
 publico = json.dumps(painel, ensure_ascii=False, separators=(",", ":"))
@@ -503,6 +591,7 @@ _html_norm = norm_nome(_html)
 _vaz = sorted(n for n in nomes_todos if len(norm_nome(n)) >= 10 and " " in n and (norm_nome(n) in _pub_norm or norm_nome(n) in _html_norm))
 if _vaz: raise SystemExit(f"TRAVA: {len(_vaz)} nome(s) de servidor apareceriam na parte pública (ex.: equipe ou unidade com o mesmo texto de um nome). Nada foi gravado.")
 if re.search(r"(?<![0-9.])[0-9]{11,}", publico): raise SystemExit("TRAVA: sequência de 11 ou mais dígitos na parte pública (pode ser CNS ou CPF). Nada foi gravado.")
+if re.search(r'(?<![a-z])ivt(?![a-z])', publico, re.I) or '"ft":' in publico or '"vinc"' in publico: raise SystemExit("TRAVA: IVT ou quadro de força de trabalho na parte pública. Nada foi gravado.")
 if '"prof":' in publico or '"mat":' in publico or '"cns":' in publico or '"nome_rh":' in publico: raise SystemExit("TRAVA: campo nominal na parte pública. Nada foi gravado.")
 
 (RAIZ / "dados").mkdir(exist_ok=True)
@@ -511,8 +600,7 @@ if '"prof":' in publico or '"mat":' in publico or '"cns":' in publico or '"nome_
 (RAIZ / "site" / "painel.js").write_text("window.PAINEL=" + publico + ";", "utf-8")
 _nom_js = RAIZ / "site" / "nominal.js"; _nom_claro = RAIZ / "dados" / "nominal.json"
 if SENHA:
-    from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-    import unicodedata
+    from cryptography.hazmat.primitives.ciphers.aead import AESGCM     # só quando há senha: sem ela o montar não exige o pacote
     chave = hashlib.pbkdf2_hmac("sha256", unicodedata.normalize("NFC", SENHA).encode("utf-8"), bytes.fromhex(SAL_SENHA), ITERACOES, 32)
     iv = os.urandom(12)
     claro = gzip.compress(json.dumps(nominal, ensure_ascii=False, separators=(",", ":")).encode("utf-8"), 9)
@@ -534,5 +622,13 @@ print("atendimentos região (últimos 4):", regiao["atend"][-4:], "| só APS (ex
 print("inconsistências por tipo:", {t: sum(1 for x in incons if x["tipo"] == t) for t in sorted({x["tipo"] for x in incons})})
 print("alertas por tipo:", {t: sum(1 for a in alertas if a["tipo"] == t) for t in sorted({a['tipo'] for a in alertas})})
 for a in alertas[:12]: print(" -", a["nivel"], "|", a["caminho"], "|", a["texto"])   # texto público, sem nomes
+print("porte (cortes de população cadastrada):", C1, C2, "| UBS por porte:", dict(Counter(u["porte"] for u in _ubs_l)))
+print("zona (UBS):", dict(Counter(u["zona"] for u in _ubs_l)),
+      "| equipes por zona:", dict(Counter(e.get("zona") for u in _ubs_l for e in u["equipes"] if e["tipo"] == "eSF")))
+print("IVT: eSF casadas", len(ivt_eq), "de", len(IVT), "no arquivo; INE do arquivo sem eSF na lotação atual:", len(IVT_FORA),
+      "| eSF sem IVT:", sum(v["sem"] for v in ivt_ubs.values()), "| por faixa (equipes):", dict(Counter(v[1] for v in ivt_eq.values())),
+      "| UBS por faixa mais frequente:", dict(Counter(v["faixa"] or ("empate" if v["empate"] else "sem IVT") for v in ivt_ubs.values())))
 print("bloco nominal:", f"cifrado em site/nominal.js ({round(_nom_js.stat().st_size / 1e6, 2)} MB)" if SENHA else "NÃO gerado (sem senha)")
 print("tamanho:", round((RAIZ / "dados" / "painel.json").stat().st_size / 1e6, 2), "MB")
+if any(SEM_IDENTIFICACAO.values()):
+    print("linhas puladas por não terem CNS nem nome:", SEM_IDENTIFICACAO)

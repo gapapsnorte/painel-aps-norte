@@ -1,23 +1,21 @@
 """Coleta mensal da Região Norte (Sala de Situação do InfoSaúde) no nível profissional × equipe.
-Saída: ../dados/brutos/<conjunto>.json  (lista de linhas). Uso: python coleta.py [AAAA-MM inicial]"""
-import json, re, sys, time, pathlib, datetime as dt
+Saída: ../dados/brutos/<conjunto>.json  (lista de linhas). Uso: python coleta.py [AAAA-MM inicial] [--so-ciap]
+O CNS do profissional é trocado pelo código embaralhado (sigilo.hc) antes de gravar: o número real não vai para o disco."""
+import json, re, sys, time, datetime as dt
 from pbi_lib import Painel, col, conta, soma, lit_txt, lit_int, em
+from sigilo import embaralhar_linhas, pepper
+from comum import AQUI, OUT, URL, TETO, hoje_brt, mes_where, lit_dt
+from familias import COD2FAM
 
-AQUI = pathlib.Path(__file__).parent
-OUT = AQUI.parent / "dados" / "brutos"; OUT.mkdir(parents=True, exist_ok=True)
-URL = {i["titulo"]: i["url"] for i in json.load(open(AQUI / "paineis_aps.json", encoding="utf-8"))}
-INICIO = sys.argv[1] if len(sys.argv) > 1 else "2022-01"
-hoje = dt.date.today()
+_args = [a for a in sys.argv[1:] if not a.startswith("--")]     # "--so-ciap" pode vir em qualquer posição
+INICIO = _args[0] if _args else "2022-01"
+pepper()    # sem o segredo, para antes de consultar: nada de coletar para depois não poder gravar
+hoje = hoje_brt()
 MESES = []
 a, m = map(int, INICIO.split("-"))
 while (a, m) <= (hoje.year, hoje.month):
     MESES.append((a, m)); a, m = (a + (m == 12), m % 12 + 1)
-TETO = 30000
 log = []
-
-def mes_where(alias, c_ano, c_mes, a, m, inteiro=False):
-    if inteiro: return [em(col(alias, c_ano), [lit_int(a)]), em(col(alias, c_mes), [lit_int(m)])]
-    return [em(col(alias, c_ano), [lit_txt(str(a))]), em(col(alias, c_mes), [lit_txt(str(m).zfill(2))])]
 
 def coleta(nome, titulo, entidades, select, filtro_regiao, tempo, por_mes=True):
     t0 = time.time(); p = Painel(URL[titulo]); todas = []
@@ -28,12 +26,7 @@ def coleta(nome, titulo, entidades, select, filtro_regiao, tempo, por_mes=True):
         else:
             alias, c_ano, _c, inteiro = tempo
             where = [filtro_regiao, em(col(alias, c_ano), [lit_int(alvo) if inteiro else lit_txt(str(alvo))])]
-        for tentativa in range(3):
-            try:
-                r = p.consulta(entidades, select, where, limite=TETO); break
-            except Exception as ex:
-                if tentativa == 2: raise
-                time.sleep(5)
+        r = p.consulta(entidades, select, where, limite=TETO)
         if len(r) >= TETO:
             raise RuntimeError(f"{nome} {alvo}: {len(r)} linhas = teto; dividir mais a consulta")
         if por_mes:
@@ -42,7 +35,7 @@ def coleta(nome, titulo, entidades, select, filtro_regiao, tempo, por_mes=True):
             for l in r: l["compt"] = f"{alvo}-{str(l['mes']).zfill(2)}"
         todas += r
     if not todas: raise RuntimeError(f"{nome}: a coleta voltou vazia (coluna ou filtro mudou no InfoSaúde?)")
-    (OUT / f"{nome}.json").write_text(json.dumps(todas, ensure_ascii=False), "utf-8")
+    (OUT / f"{nome}.json").write_text(json.dumps(embaralhar_linhas(todas), ensure_ascii=False), "utf-8")
     msg = f"[{nome}] {len(todas)} linhas em {time.time()-t0:.0f}s"; print(msg); log.append(msg)
     return todas
 
@@ -89,8 +82,6 @@ coleta("odonto", "Atendimentos Odontológicos na APS", {"f": "odont_tipo_consult
        regiao("f"), ("f", "i_ano_compt", "i_mes_compt", False), por_mes=False)
 
 # 7. Procedimentos (famílias de interesse): profissional x equipe x código, por mês
-from familias import COD2FAM
-def lit_dt(a, m): return {"Literal": {"Value": f"datetime'{a}-{m:02d}-01T00:00:00'"}}
 def coleta_proc():
     t0 = time.time(); p = Painel(URL["Painel de Procedimentos"]); todas = []
     PR = {"f": "f_vw_procedimentos_invidualizados_sem_codigo_ab"}
@@ -99,17 +90,12 @@ def coleta_proc():
     cods = em(col("f", "i_cod_procedimento"), [lit_txt(c) for c in COD2FAM])
     for a, m in MESES:
         where = [regiao("f"), cods, em(col("f", "data_compt"), [lit_dt(a, m)])]
-        for tentativa in range(3):
-            try:
-                r = p.consulta(PR, sel, where, limite=TETO); break
-            except Exception:
-                if tentativa == 2: raise
-                time.sleep(5)
+        r = p.consulta(PR, sel, where, limite=TETO)
         if len(r) >= TETO: raise RuntimeError(f"procedimentos {a}-{m:02d}: {len(r)} linhas = teto; dividir a consulta")
         for l in r: l["compt"] = f"{a}-{str(m).zfill(2)}"
         todas += r
     if not todas: raise RuntimeError("procedimentos: a coleta voltou vazia (coluna ou filtro mudou no InfoSaúde?)")
-    (OUT / "procedimentos.json").write_text(json.dumps(todas, ensure_ascii=False), "utf-8")
+    (OUT / "procedimentos.json").write_text(json.dumps(embaralhar_linhas(todas), ensure_ascii=False), "utf-8")
     msg = f"[procedimentos] {len(todas)} linhas em {time.time()-t0:.0f}s"; print(msg); log.append(msg)
 coleta_proc()
 
@@ -122,12 +108,7 @@ def coleta_motivos():
         t0 = time.time()
         def q(a, m, lista):
             where = [regiao("e")] + mes_where("f", "i_ano_compt", "i_mes_compt", a, m) + [em(col("e", "i_estab_cnes"), [lit_txt(c) for c in lista])] + extra
-            for tentativa in range(3):
-                try:
-                    r = p.consulta(E, sel, where, limite=TETO); break
-                except Exception:
-                    if tentativa == 2: raise
-                    time.sleep(5)
+            r = p.consulta(E, sel, where, limite=TETO)
             if len(r) >= TETO:
                 if len(lista) == 1: raise RuntimeError(f"{nome} {a}-{m:02d} cnes {lista[0]}: {len(r)} linhas = teto")
                 h = len(lista) // 2; return q(a, m, lista[:h]) + q(a, m, lista[h:])

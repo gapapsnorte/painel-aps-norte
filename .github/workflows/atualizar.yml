@@ -5,10 +5,7 @@ on:
     - cron: "7 6 * * *"     # pedido para 03h07 em Brasília: costuma sair entre 07h e 10h
     - cron: "7 13 * * *"    # pedido para 10h07: costuma sair entre 14h e 17h (segunda carga do dia)
   workflow_dispatch:
-permissions:
-  contents: write
-  pages: write
-  id-token: write
+permissions: {}      # cada tarefa declara só o que usa
 concurrency:
   group: pages
   cancel-in-progress: false     # uma rodada manual não cancela a publicação em andamento
@@ -16,12 +13,15 @@ jobs:
   construir:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    permissions:
+      contents: write     # grava a data da atualização e o histórico de consolidação
+      pages: read
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install requests cryptography
+      - run: pip install -r coleta/requirements.txt     # versões fixas: esta tarefa recebe a senha e a lotação
       - name: Buscar a lotação (RH) no repositório privado
         uses: actions/checkout@v4
         with:
@@ -32,9 +32,12 @@ jobs:
       - name: Colocar a lotação no lugar (não fica no repositório público nem no site)
         run: |
           cp _rh/referencia.json coleta/referencia.json
+          if [ -f _rh/ivt_apsdf_2024.json ]; then cp _rh/ivt_apsdf_2024.json coleta/; fi     # índice de vulnerabilidade: só na área dos gestores
           rm -rf _rh
       - name: Coletar do InfoSaúde (API pública do Power BI)
         working-directory: coleta
+        env:
+          APS_PEPPER: ${{ secrets.APS_PEPPER }}    # o CNS do profissional é embaralhado antes de ir para o disco
         run: python coleta.py 2022-01
       - name: Coletar população, cadastros e consultas por região (indicador por mil hab.)
         working-directory: coleta
@@ -61,13 +64,8 @@ jobs:
           git config user.name "painel-aps-norte[bot]"
           git config user.email "actions@users.noreply.github.com"
           git add ultima_atualizacao.txt historico_consolidacao.csv   # o histórico mede em quantos dias o InfoSaúde fecha cada mês
-          git diff --cached --quiet || (git commit -q -m "Atualização de $(cat ultima_atualizacao.txt)" && git push)
-      - if: ${{ vars.PUBLICAR == 'sim' }}       # sem publicar, não deixa cópia do site baixável nos artefatos
-        uses: actions/upload-artifact@v4
-        with:
-          name: painel-site
-          path: site
-          retention-days: 3
+          git diff --cached --quiet || (git commit -q -m "Atualização de $(cat ultima_atualizacao.txt)" && git pull -q --rebase origin main && git push) \
+            || echo "::warning::Não consegui gravar a data da atualização no repositório (o painel é publicado mesmo assim)."
       - if: ${{ vars.PUBLICAR == 'sim' }}
         uses: actions/configure-pages@v5
       - if: ${{ vars.PUBLICAR == 'sim' }}
@@ -78,6 +76,9 @@ jobs:
     needs: construir
     if: ${{ vars.PUBLICAR == 'sim' }}
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}

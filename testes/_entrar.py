@@ -1,6 +1,6 @@
 """Apoio aos testes: senha da área dos gestores e entrada na página.
 A senha vem da variável APS_SENHA ou de coleta/senha.local (fora do git); nunca fica escrita nos testes."""
-import os, pathlib
+import os, pathlib, time
 
 RAIZ = pathlib.Path(__file__).resolve().parent.parent
 
@@ -20,6 +20,15 @@ def entrar(pg, lembrar=False):
     pg.fill("#senha", senha())
     if lembrar: pg.check("#senha-lembrar")
     pg.click("#senha-ok"); pg.wait_for_selector("body.aberto", timeout=30000)
+
+
+def esperar(pg, expressao, timeout=30000):
+    """Espera a expressão JavaScript ficar verdadeira. Faz o papel de pg.wait_for_function, que avalia texto dentro
+    da página e por isso é barrado pela Content-Security-Policy; pg.evaluate passa pelo depurador e não é."""
+    limite = time.monotonic() + timeout / 1000
+    while not pg.evaluate(expressao):
+        if time.monotonic() > limite: raise TimeoutError(f"não ficou verdadeiro em {timeout} ms: {expressao}")
+        pg.wait_for_timeout(100)
 
 
 def planilha(caminho):

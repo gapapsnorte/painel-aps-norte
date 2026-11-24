@@ -66,7 +66,7 @@ with sync_playwright() as p:
     conf("'Voltar à Visão geral' volta", pg.locator("#vista-h").is_visible() and not pg.locator("#vista-c").is_visible())
     pg.locator("#g0 > summary").click(); pg.wait_for_timeout(200)
     # ---- Vários motivos de consulta na mesma unidade
-    conf("abas: Visão geral, Mapa de calor, Perfil dos atendimentos, Inconsistências", [t.replace("🔒", "").strip() for t in pg.locator("nav.abas button").all_inner_texts()] == ["Visão geral", "Mapa de calor", "Perfil dos atendimentos", "Inconsistências"], pg.locator("nav.abas button").all_inner_texts())
+    conf("abas: Visão geral, Mapa de calor, Perfil dos atendimentos, Inconsistências", [t.replace("🔒", "").strip() for t in pg.locator("nav.abas button").all_inner_texts()] == ["Visão geral", "Mapa de calor", "Perfil dos atendimentos", "Inconsistências", "Força de trabalho"], pg.locator("nav.abas button").all_inner_texts())
     conf("fora de Motivos, a marcação múltipla não aparece", not pg.locator("#multi").is_visible())
     pg.click("#grp-ind button[data-g='mot']"); pg.wait_for_timeout(250); pg.select_option("#sel-ind", "m_has")
     conf("em Motivos aparece 'Comparar com outros motivos'", pg.locator("#multi").is_visible() and pg.locator("#multi-itens input").count() == 30, pg.inner_text("#multi-rot"))

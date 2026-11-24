@@ -1,16 +1,14 @@
 """Totais mensais por região de saúde do DF (InfoSaúde, Power BI público), desde jan/2022, para cada indicador do painel.
 Mesmas regras de contagem de coleta.py/montar.py, agrupando por região de saúde (sem filtrar a Norte).
 Saída: ../dados/brutos/regioes.json = [{"reg","compt","ind","n"}]. Uso (de dentro de coleta/): python -X utf8 regioes.py"""
-import json, sys, time, pathlib, datetime as dt
+import json, time
 from collections import defaultdict
-from pbi_lib import Painel, col, conta, soma, lit_txt, lit_int, em
+from pbi_lib import Painel, col, conta, soma, lit_txt, em
 from familias import COD2FAM, FAMILIAS
+from comum import OUT, URL, TETO, hoje_brt, mes_where as mes_where_comum, lit_dt
 
-AQUI = pathlib.Path(__file__).parent
-OUT = AQUI.parent / "dados" / "brutos"; OUT.mkdir(parents=True, exist_ok=True)
-URL = {i["titulo"]: i["url"] for i in json.load(open(AQUI / "paineis_aps.json", encoding="utf-8"))}
-TETO = 30000; ANO0 = 2022
-hoje = dt.date.today()
+ANO0 = 2022
+hoje = hoje_brt()
 ANOS = list(range(ANO0, hoje.year + 1))
 MESES = [(a, m) for a in ANOS for m in range(1, 13) if (a, m) <= (hoje.year, hoje.month)]
 T0 = time.time()
@@ -31,16 +29,8 @@ def reg_norm(r):
     return None
 
 
-def tentar(p, *a, **k):
-    for t in range(3):
-        try: return p.consulta(*a, **k)
-        except Exception:
-            if t == 2: raise
-            time.sleep(5)
-
-
 def ano_where(alias, ano): return em(col(alias, "i_ano_compt"), [lit_txt(str(ano))])
-def mes_where(alias, a, m): return [ano_where(alias, a), em(col(alias, "i_mes_compt"), [lit_txt(str(m).zfill(2))])]
+def mes_where(alias, a, m): return mes_where_comum(alias, "i_ano_compt", "i_mes_compt", a, m)
 
 
 ACUM = defaultdict(float)   # (reg, compt, ind) -> n
@@ -60,7 +50,7 @@ def vazia(nome, total):
 p = Painel(URL["Atendimentos Individuais na APS"]); tot = 0
 ENT = {"f": "fAtd_indiv", "e": "dEstabelecimentos", "fa": "fAtendimentos", "pr": "dProfissionais"}
 for a, m in MESES:
-    r = tentar(p, ENT, [("reg", col("e", "i_desc_regiao_saude")), ("cat", col("pr", "i_cat_prof")), ("tipo", col("f", "i_tipo_atendimento")),
+    r = p.consulta(ENT, [("reg", col("e", "i_desc_regiao_saude")), ("cat", col("pr", "i_cat_prof")), ("tipo", col("f", "i_tipo_atendimento")),
                         ("n", soma("fa", "i_qtd_atendimento_prof"))], mes_where("f", a, m), limite=TETO)
     checa("atendimentos", r, (a, m)); tot += len(r); c = f"{a}-{m:02d}"
     for l in r:
@@ -73,7 +63,7 @@ vazia("atendimentos", tot); print(f"[atendimentos] {tot} linhas, {time.time()-T0
 # 2. Visitas: região x desfecho
 p = Painel(URL["Visita Domiciliar dos ACS"]); tot = 0
 for a, m in MESES:
-    r = tentar(p, {"f": "tab_visita_domiciliar"}, [("reg", col("f", "i_desc_regiao_saude")), ("desfecho", col("f", "i_desc_desfecho_visita")), ("n", conta("f", "i_id_fato"))],
+    r = p.consulta({"f": "tab_visita_domiciliar"}, [("reg", col("f", "i_desc_regiao_saude")), ("desfecho", col("f", "i_desc_desfecho_visita")), ("n", conta("f", "i_id_fato"))],
                mes_where("f", a, m), limite=TETO)
     checa("visitas", r, (a, m)); tot += len(r); c = f"{a}-{m:02d}"
     for l in r:
@@ -84,7 +74,7 @@ vazia("visitas", tot); print(f"[visitas] {tot} linhas, {time.time()-T0:.0f}s", f
 # 3. Vacinas
 p = Painel(URL["Vacinas Aplicadas na APS"]); tot = 0
 for a, m in MESES:
-    r = tentar(p, {"f": "tab_vacinacao_vacina"}, [("reg", col("f", "i_desc_regiao_saude")), ("n", conta("f", "i_id_fato_vacinacao_vacina"))], mes_where("f", a, m), limite=TETO)
+    r = p.consulta({"f": "tab_vacinacao_vacina"}, [("reg", col("f", "i_desc_regiao_saude")), ("n", conta("f", "i_id_fato_vacinacao_vacina"))], mes_where("f", a, m), limite=TETO)
     checa("vacinas", r, (a, m)); tot += len(r)
     for l in r: add("vacinas", l["reg"], f"{a}-{m:02d}", "vacinas", l["n"] or 0)
 vazia("vacinas", tot); print(f"[vacinas] {tot} linhas, {time.time()-T0:.0f}s", flush=True)
@@ -92,7 +82,7 @@ vazia("vacinas", tot); print(f"[vacinas] {tot} linhas, {time.time()-T0:.0f}s", f
 # 4. Atividades coletivas
 p = Painel(URL["Atividade Coletiva na APS"]); tot = 0
 for a, m in MESES:
-    r = tentar(p, {"f": "fDados"}, [("reg", col("f", "i_desc_regiao_saude")), ("n", conta("f", "i_id_fato")), ("part", soma("f", "i_qtd_participantes"))], mes_where("f", a, m), limite=TETO)
+    r = p.consulta({"f": "fDados"}, [("reg", col("f", "i_desc_regiao_saude")), ("n", conta("f", "i_id_fato")), ("part", soma("f", "i_qtd_participantes"))], mes_where("f", a, m), limite=TETO)
     checa("coletivas", r, (a, m)); tot += len(r); c = f"{a}-{m:02d}"
     for l in r: add("coletivas", l["reg"], c, "coletivas", l["n"] or 0); add("coletivas", l["reg"], c, "participantes", l["part"] or 0)
 vazia("coletivas", tot); print(f"[coletivas] {tot} linhas, {time.time()-T0:.0f}s", flush=True)
@@ -100,7 +90,7 @@ vazia("coletivas", tot); print(f"[coletivas] {tot} linhas, {time.time()-T0:.0f}s
 # 5. Condições avaliadas (por ano; o mês vem na linha)
 p = Painel(URL["Atendimentos Individuais na APS – Condição Avaliada"]); tot = 0
 for ano in ANOS:
-    r = tentar(p, {"f": "cond_aval"}, [("reg", col("f", "i_desc_regiao_saude")), ("mes", col("f", "i_mes_compt"))] + [(k, soma("f", c)) for k, c in CONDS.items()], [ano_where("f", ano)], limite=TETO)
+    r = p.consulta({"f": "cond_aval"}, [("reg", col("f", "i_desc_regiao_saude")), ("mes", col("f", "i_mes_compt"))] + [(k, soma("f", c)) for k, c in CONDS.items()], [ano_where("f", ano)], limite=TETO)
     checa("condicoes", r, ano); tot += len(r)
     for l in r:
         c = f"{ano}-{str(l['mes']).zfill(2)}"
@@ -110,7 +100,7 @@ vazia("condicoes", tot); print(f"[condicoes] {tot} linhas, {time.time()-T0:.0f}s
 # 6. Odontologia
 p = Painel(URL["Atendimentos Odontológicos na APS"]); tot = 0
 for ano in ANOS:
-    r = tentar(p, {"f": "odont_tipo_consulta"}, [("reg", col("f", "i_desc_regiao_saude")), ("mes", col("f", "i_mes_compt")),
+    r = p.consulta({"f": "odont_tipo_consulta"}, [("reg", col("f", "i_desc_regiao_saude")), ("mes", col("f", "i_mes_compt")),
                ("primeira", soma("f", "Primeira consulta odontológica")), ("n", soma("f", "i_qtd_total"))], [ano_where("f", ano)], limite=TETO)
     checa("odonto", r, ano); tot += len(r)
     for l in r:
@@ -122,8 +112,8 @@ p = Painel(URL["Painel de Procedimentos"]); tot = 0
 PR = {"f": "f_vw_procedimentos_invidualizados_sem_codigo_ab"}
 cods = em(col("f", "i_cod_procedimento"), [lit_txt(c) for c in COD2FAM])
 for a, m in MESES:
-    r = tentar(p, PR, [("reg", col("f", "i_desc_regiao_saude")), ("cod", col("f", "i_cod_procedimento")), ("n", soma("f", "i_qtd"))],
-               [cods, em(col("f", "data_compt"), [{"Literal": {"Value": f"datetime'{a}-{m:02d}-01T00:00:00'"}}])], limite=TETO)
+    r = p.consulta(PR, [("reg", col("f", "i_desc_regiao_saude")), ("cod", col("f", "i_cod_procedimento")), ("n", soma("f", "i_qtd"))],
+               [cods, em(col("f", "data_compt"), [lit_dt(a, m)])], limite=TETO)
     checa("procedimentos", r, (a, m)); tot += len(r)
     for l in r:
         fam = COD2FAM.get(str(l["cod"]))

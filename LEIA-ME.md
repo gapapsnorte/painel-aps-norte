@@ -1,6 +1,6 @@
 # Painel da APS – Região Norte (InfoSaúde)
 
-**Publicação:** repositório público `gapapsnorte/painel-aps-norte`, página em https://gapapsnorte.github.io/painel-aps-norte/ (GitHub Pages), atualizada pelo GitHub Actions duas vezes ao dia (agendado para 03h07 e 10h07; o GitHub costuma iniciar 4 a 7 horas depois, então a página muda de manhã e no meio da tarde). A página mostra os **nomes dos profissionais** (decisão da responsável, 08/11/2026); **matrícula, CPF e CNS nunca vão ao ar**: o CNS é embaralhado com um segredo (`APS_PEPPER`, guardado só no seu computador em `coleta/pepper.local` e nos Segredos do GitHub) e a matrícula só existe na versão gerada localmente. Para tirar a página do ar: no repositório, Settings > Pages > Unpublish, ou apagar a variável `PUBLICAR`.
+**Publicação:** repositório público `gapapsnorte/painel-aps-norte`, página em https://gapapsnorte.github.io/painel-aps-norte/ (GitHub Pages), atualizada pelo GitHub Actions duas vezes ao dia (agendado para 03h07 e 10h07; o GitHub costuma iniciar 4 a 7 horas depois, então a página muda de manhã e no meio da tarde). A página mostra os **nomes dos profissionais** (decisão da responsável, 08/11/2026); **matrícula, CPF e CNS nunca vão ao ar**: o CNS é embaralhado com um segredo (`APS_PEPPER`, guardado só no seu computador em `coleta/pepper.local` e nos Segredos do GitHub) e a matrícula nem é lida da planilha de RH. Para tirar a página do ar: no repositório, Settings > Pages > Unpublish, ou apagar a variável `PUBLICAR`.
 
 
 Painel estático: GSAP → UBS → equipe → lista de profissionais, com série mensal em cada caixa, alertas e busca.
@@ -32,9 +32,9 @@ Depois é só reabrir `site\index.html`. Não usar `python -I` (não acha `pbi_l
 
 ## O que o painel mostra (v2, 08/11/2026)
 - Hierarquia GSAP > UBS > equipe > profissionais, com série mensal, gráfico da equipe contra a mediana das eSF e o ano anterior.
-- **Mapa de calor** equipes x meses (cor = mês contra a mediana da própria equipe), **ficha do servidor** (todas as equipes, séries somadas) e busca por nome ou **matrícula**.
+- **Mapa de calor** equipes x meses (cor = mês contra a mediana da própria equipe), **ficha do servidor** (todas as equipes, séries somadas) e busca por nome.
 - Indicadores: atendimentos (médicos, enfermeiros), visitas ACS, vacinas, atividades coletivas; por equipe: condições avaliadas, odontologia; **20 famílias de procedimentos** (`coleta/familias.py`, códigos SIGTAP) e **24 linhas de cuidado por CID** (`coleta/motivos.py`).
-- Matrícula: `montar_referencia.py` grava `coleta/referencia_privada.json` (CNS embaralhado -> matrícula). **Esse arquivo é só local e está no .gitignore**: no GitHub o painel sai sem matrícula. Para ter a matrícula, gere o painel no seu computador.
+- Matrícula: não existe mais no painel (nem na versão local); `coleta/referencia_privada.json` deixou de existir. Veja a seção "Revisão de 23/11/2026".
 
 ## Abas (v3, 08/11/2026)
 - **Prioridades:** equipes (eSF) e UBS com sinal no último mês completo, da mais para a menos urgente (zero atendimentos > bem abaixo do habitual > sem médico > queda sobre o ano anterior > ACS sem visita > sem registro de procedimento). "Habitual" = mediana de 12 meses da própria equipe.
@@ -45,7 +45,7 @@ Depois é só reabrir `site\index.html`. Não usar `python -I` (não acha `pbi_l
 ## Regras que importam
 - **Atendimentos individuais = soma de `fAtendimentos.i_qtd_atendimento_prof`** (confere com o painel do InfoSaúde: UBS 5 Planaltina 47.351 em 2026; região 498.780 × 498.763). Filtrar o ano na tabela-fato com a medida do painel dá zero.
 - Cada consulta devolve no máximo 30 mil linhas, **sem erro**: a coleta é por mês e aborta se bater no teto.
-- CNS/CPF/matrícula são usados só para ligar profissional à lotação e **nunca vão para a página**.
+- O CNS (embaralhado) serve só para ligar profissional à lotação e **nunca vai para a página**; CPF e matrícula nem são lidos.
 - Alertas (último mês completo): eSF sem atendimento (média anterior ≥ 100), sem médico (média ≥ 30), queda ≥ 30% sobre o mesmo mês do ano anterior (base ≥ 150 na equipe, ≥ 600 na UBS), ACS lotado sem visita, produção sem equipe ≥ 30% na UBS. São sinais para conferir, não conclusões.
 - Motivos (CID e, na falta dele, CIAP; desde 16/11/2026): um atendimento pode ter mais de um código. ~4 em 10 registros vêm sem CID, mas a maioria tem CIAP (`fam_ciap()` em `coleta/motivos.py`, coleta em `dados/brutos/motivos_ciap.json`); só ~6% ficam sem nenhum dos dois. Ler como perfil, não como contagem exata.
 - Mês em consolidação (16/11/2026): nos 10 primeiros dias do mês a página avisa que o último mês completo ainda pode mudar (`CONSOL` em `site/index.html`, calculado da data de geração). O GitHub grava a cada rodada `historico_consolidacao.csv` (total de atendimentos da Região nos 3 últimos meses), para medir em quantos dias o InfoSaúde fecha o mês.
@@ -55,8 +55,7 @@ Depois é só reabrir `site\index.html`. Não usar `python -I` (não acha `pbi_l
 - Indicador RIPSA COB.1.01 (3ª ed., jun/2026): consultas de médico na APS por população. Ao lado, enfermeiro e médico + enfermeiro (acréscimo do painel). Aqui “por mil” = razão da ficha (por 100) × 10; a ficha não traz meta.
 - **Região, DF e regiões de saúde:** numerador = atendimentos individuais do InfoSaúde (categoria MÉDICO inclui residentes, ~3%); denominador = série de população por RA do painel Cobertura (`base_populacional`). Brasil = tabela da ficha RIPSA (2022–2024), só para médico. Decisão dela (11/11): série do InfoSaúde, não o Censo fixo (que daria Norte ~9% maior).
 - **GSAP, UBS e equipe:** denominador = população **cadastrada** (`base_cadastros`, última competência **abr/2025**, parada no InfoSaúde), com aviso na tela; não se compara com a tabela de cima. Variação = 12 meses contra os 12 anteriores, mesmo denominador.
-- Coleta em `coleta
-azao.py` (~1 min); `montar.py` grava `razao` no painel.json e `cad` por UBS/equipe; `validar.py` barra se faltar. Teste: `testes	estar_razao.py` (confere os números da tela contra o JSON).
+- Coleta em `coleta\razao.py` (~1 min); `montar.py` grava `razao` no painel.json e `cad` por UBS/equipe; `validar.py` barra se faltar. Teste: `testes\testar_razao.py` (confere os números da tela contra o JSON).
 - **Filtro "População (denominador)" (11/11/2026, pedido dela):** série do InfoSaúde por RA (padrão), Censo 2022 (fixo; só Norte 345.286 e DF 2.817.381, as outras regiões ficam "–") ou população cadastrada (abr/2025, por região). Vale para a tabela Brasil/DF/regiões; a tabela GSAP/UBS/equipe sempre usa a cadastrada. Coleta extra: `cadastros_regiao.json`.
 
 ## Área dos gestores (nomes sob senha) — preparado em 11/11/2026, ainda não publicado
@@ -66,8 +65,8 @@ azao.py` (~1 min); `montar.py` grava `razao` no painel.json e `cad` por UBS/equi
 - **Como funciona:** `coleta/montar.py` grava `site/painel.js` (só agregados, sem nenhum nome) e `site/nominal.js` (bloco nominal comprimido e cifrado com AES-GCM; a chave sai da senha por PBKDF2-SHA256 com 600 mil iterações). A página só baixa o `nominal.js` quando alguém clica em **Entrar**, e decifra no navegador (Web Crypto). Senha errada não abre nada.
 - **Senha:** variável `APS_SENHA` (Segredo do GitHub) ou arquivo `coleta/senha.local` (fora do git), mínimo de 12 caracteres. Sem senha, o painel sai só com a parte aberta e o botão Entrar some. Para trocar a senha: trocar o Segredo e o arquivo local e rodar a atualização; quem tinha "lembrar neste navegador" precisa digitar a nova.
 - **"Lembrar neste navegador"** guarda a chave derivada (não a senha) só naquele navegador; **Sair** apaga.
-- **Travas:** `montar.py` não grava nada se achar nome de servidor, sequência de 11+ dígitos ou campo nominal na parte aberta, e aborta se houver matrícula numa geração feita no GitHub. `validar.py` repete a conferência dos nomes antes de publicar. O resumo impresso (que fica no registro público das execuções) não tem nomes.
-- **Identificador do profissional:** sequencial (p1, p2…), sem nada derivado do CNS. CNS, CPF e matrícula não vão para a versão publicada, nem cifrados; a matrícula só aparece quando o painel é gerado no computador (com `coleta/referencia_privada.json`).
+- **Travas:** `montar.py` não grava nada se achar nome de servidor, sequência de 11+ dígitos ou campo nominal na parte aberta, nem se houver matrícula ou CNS no bloco dos gestores. `validar.py` repete a conferência dos nomes antes de publicar. O resumo impresso (que fica no registro público das execuções) não tem nomes.
+- **Identificador do profissional:** sequencial (p1, p2…), sem nada derivado do CNS. CNS, CPF e matrícula não vão para a versão publicada, nem cifrados.
 - **Cópia em claro para testes:** `dados/nominal.json`, só no computador (a pasta `dados/` é ignorada pelo git; no GitHub o arquivo não é criado).
 - **Testes:** `testes/testar_restrito.py` (sem senha não há nome em nenhuma aba nem em nenhum arquivo de `site/`; senha errada; senha certa; lembrar; sair; celular). Os testes antigos entram com a senha por `testes/_entrar.py`. Rodar com `APS_SENHA` definida ou com `coleta/senha.local`.
 - **Limites:** senha única não registra quem entrou e só se revoga trocando a senha de todos; o arquivo cifrado é público, então a proteção depende de a senha ser longa; o InfoSaúde continua público com nomes.
@@ -79,7 +78,7 @@ azao.py` (~1 min); `montar.py` grava `razao` no painel.json e `cad` por UBS/equi
   1. `python -X utf8 coleta/montar_referencia.py "<caminho da planilha>" coleta/referencia.json "<nome da aba>"`
   2. `python -X utf8 enviar_rh.py` (confere que o destino é privado e envia; `--simular` só mostra)
   3. opcional, para não esperar o horário: `gh workflow run atualizar.yml --repo gapapsnorte/painel-aps-norte`
-- A planilha original do RH e o `coleta/referencia_privada.json` (matrícula) continuam só no computador.
+- A planilha original do RH continua só no computador.
 
 ## Ajustes de 12/11/2026 (local, ainda não publicado)
 - **Seletor de indicador em dois passos:** cinco botões de grupo (Atendimentos e produção, Condições avaliadas, Motivos de consulta, Procedimentos, Perfil de acesso) e, abaixo, o indicador do grupo. Odontologia fica em Atendimentos e produção. Cada grupo lembra o último indicador usado.
@@ -133,3 +132,42 @@ Feito a partir da avaliação externa do painel e das escolhas dela. Tudo local;
 - **Providências (CSV/Excel):** colunas novas "Primeira verificação", "Hipótese", "Medida a observar" (Data de revisão já existia).
 - **Ficha por servidor:** médicos num grupo só (inclui residentes); coluna "Equivalente em 40 h" só informativa (CHS >= 20); tipo de atendimento por profissional no campo nominal `tp` (só bloco cifrado, travado no `validar.py`); blocos por cargo: técnico (sem escuta inicial, pois técnico não consta na base de Atendimentos Individuais; procedimentos e vacinas), ACS (visitas), saúde bucal (produção da eSB, dita como da equipe).
 - **Teste:** `testes/testar_lote2.py`. Cópia de antes: `_backup_2026-11-22_antes_lote2`.
+
+## Lote 3, fatia 1 (22/11/2026), local, não publicado
+Tipo de UBS e de equipe, mais a aba **Força de trabalho** (com cadeado, só para quem entrou com a senha). Nada foi commitado nem publicado. Cópia de antes: `_backup_2026-11-22_antes_lote3` (montar.py, validar.py, index.html, atualizar.yml). `coleta/ivt_apsdf_2024.json` continua **não rastreado**: sem ele no repositório o GitHub gera o painel sem IVT (o montar aceita a falta do arquivo; o validar não reclama), então só entra na publicação se for versionado de propósito.
+- **Porte (parte aberta, agregado):** terços da população cadastrada da UBS (`base_cadastros`, **abr/2025**, parada no InfoSaúde; o rótulo diz isso). Cortes calculados no `montar.py` por posição nos terços (`painel.tipo_ubs.cortes`): pequeno até 3.335, médio de 3.336 a 9.584, grande acima de 9.584 (36 UBS com cadastro, 12 em cada porte). A equipe herda o porte da UBS.
+- **Zona (parte aberta):** a planilha de RH tem a coluna "Urbana/Rural" por equipe (`referencia.json`, campo `zona`); é o único campo confiável e é o que se usa. UBS = zona das suas eSF, ou "Mista" com a contagem (hoje 22 urbanas, 13 rurais, 1 mista). Nada de zona estimada.
+- **IVT (SÓ no bloco cifrado, `nominal.ivt`):** IVT-APSDF 2024 (Nota Técnica 5/2024 SES/SAIS/COAPS), por INE da eSF (99 eSF casadas, igual a `_analise_2026-11/IVT/ivt_norte.json`: 38 baixa, 53 média, 8 alta). eSF que não está na lista aparece como "sem IVT (equipe criada depois de 2024)"; não se estima. eSB, eMulti e eCR: "IVT não se aplica (só eSF)". **IVT da UBS = faixa mais frequente entre as eSF da UBS**, com a contagem por faixa; empate fica como "empatado entre X e Y" (hoje 2 UBS), sem regra de desempate. eSF que mudou de UBS não conta.
+- **Onde aparece:** linha discreta "Tipo: …" na ficha da UBS e da equipe (Visão geral) e na aba nova, ambas só com a senha. Comparar equipes, pares da ficha e Consultas por mil **não foram mexidos**.
+- **Aba Força de trabalho** (`#aba-f`, `#vista-f`, `renderForca()`): segue a unidade da barra (Região > uma linha por GSAP; GSAP > uma por UBS; UBS ou equipe > as equipes da UBS mais a linha "Lotados na UBS, sem equipe"; a linha de total fica fixa no topo). Colunas: lotados por categoria (médico, enfermeiro, técnico de enfermagem, ACS, cirurgião-dentista, THD/ASB, outros; residentes ficam dentro da categoria e aparecem também numa coluna), com e sem produção nos 12 meses (qualquer registro de BASE_REG em qualquer equipe), lotados em "UBS:" sem equipe, carga horária semanal somada, equivalente em 40 h (só CHS >= 20, informativo), vínculo e situação da equipe (com produção / sem produção / mudou de UBS, janela de 3 meses como em Inconsistências). Tabela ordenável, botão Excel + CSV (`baixarPlanilha`, sem mescladas). Tudo vem de `nominal.ft` (cifrado); o texto de vínculo do RH nunca vai para a parte aberta.
+- **Travas novas:** `montar.py` aborta se houver "ivt", `"ft"` ou `"vinc"` na parte aberta. `validar.py` barra "ivt" em `painel.js`, INE com IVT em `index.html`, campos `vinculo|vinc|ft|ivt` nos arquivos abertos e a falta dos cortes de porte. Testadas: acrescentar "ivt" ao `painel.js` faz o validar falhar.
+- **Decisões provisórias (dela rever):** (1) IVT só sob senha; (2) porte e zona existem na parte aberta, mas por ora só aparecem sob senha; (3) UBS de IVT empatado fica "empatado"; (4) "sem produção" na aba inclui dentista/THD, cuja odontologia só é registrada por equipe, e quem está de férias (a nota da aba diz isso); (5) a situação da equipe do RH ("Completa", "Incompleta: CD…") não entrou: é texto livre.
+- **Teste:** `testes/testar_lote3.py` (parte aberta sem IVT; porte e IVT recalculados fora do montar; aba com cadeado; depois de entrar, números da tela = JSON e lotação do JSON = planilha de RH; ordenar; Excel e CSV; celular).
+
+## Revisão de 23/11/2026 (privacidade e limpeza)
+
+- **O que o painel guarda da planilha de RH:** só unidade, gerência, equipe, tipo, situação e zona e, de cada pessoa, nome, categoria, cargo, carga horária, vínculo e um código embaralhado do CNS. CPF, matrícula e observações não são lidos.
+- **Matrícula:** o arquivo `coleta\referencia_privada.json` deixou de existir; não há mais matrícula em nenhuma versão do painel.
+- **CNS embaralhado já na coleta:** `coleta\coleta.py` grava o CNS do profissional já embaralhado (`coleta\sigilo.py`); o número real não chega ao disco. Por isso o passo de coleta do workflow agora também recebe o Segredo `APS_PEPPER` (no computador, vale o arquivo `coleta\pepper.local`).
+- **Envio da lotação:** `enviar_rh.py` recusa enviar se houver campo a mais no arquivo ou CNS sem embaralhar.
+- **Conferência antes de publicar:** `validar.py` confere também os nomes de quem registrou produção (não só os da lotação) e o formato do arquivo cifrado dos gestores.
+- **Workflow:** cada tarefa tem só as permissões de que precisa; as versões dos pacotes ficam fixas em `coleta\requirements.txt`.
+- **Como gerar a referência (lotação):** `python -X utf8 coleta\montar_referencia.py "<planilha>" coleta\referencia.json "RH APS Norte"`.
+- **O que mudou nesta limpeza (os números do painel ficaram iguais; foi conferido comparando antes e depois):**
+  - o decodificador do Power BI (`pbi_lib.py`) não decodifica mais duas vezes o valor repetido; teste em `coleta\teste_pbi_lib.py`;
+  - a nova tentativa em caso de falha (3 vezes, 5 s) ficou num lugar só, dentro da consulta, e também vale para abrir o painel; se a página do InfoSaúde mudar, o erro diz que o iframe do Power BI não foi achado;
+  - o que estava copiado em vários scripts (pastas, teto de linhas, endereços dos painéis, filtro de mês, data de Brasília) foi para `coleta\comum.py`; a "data de hoje" agora é sempre a de Brasília;
+  - tirados códigos e variáveis sem uso; imports no topo; resumo impresso do `montar.py` sem artifícios;
+  - `validar.py`: limiares com nome e comentário no topo, linha final quebrada;
+  - profissional sem CNS e sem nome não vira "uma pessoa só": a linha é pulada e a contagem aparece no resumo (só se for maior que zero);
+  - população: ano sem população usa o último ano disponível, como diz a nota publicada (hoje nenhum ano cai nesse caso);
+  - docstring e comentários do `montar.py` atualizados.
+- **Página (`site\index.html`), sem mudança no que aparece na tela (capturas antes × depois iguais):**
+  - entrar: a mensagem de senha incorreta ficou separada da de arquivo restrito incompleto; a chave lembrada só é esquecida quando a senha de fato não confere;
+  - entrar sem marcar "lembrar" apaga a chave guardada antes; **Sair** fecha a área dos gestores também nas outras abas abertas do mesmo navegador e tira os nomes da memória;
+  - CSV: texto que começa com `=`, `+`, `-` ou `@` ganha um apóstrofo na frente, para o Excel não tratar como fórmula (número continua número);
+  - relatório só com fichas individuais leva o mesmo aviso de dados nominais dos outros;
+  - política de segurança de conteúdo (`Content-Security-Policy`) no cabeçalho: a página só carrega arquivos da própria pasta e não envia dados a outro endereço; conferida no Chrome e no Edge, pela internet e por duplo clique;
+  - a caixa "Período" tem largura mínima: antes abria ora estreita, ora larga, e empurrava os botões de baixar para outra linha;
+  - tirado o código sem uso (funções, estilos e todo o tratamento de matrícula, que deixou de existir).
+- **Testes:** `testes\testar_sessao.py` (senha errada × arquivo incompleto, Sair entre abas, nomes fora da página depois de sair, CSV sem fórmula). Para esperar uma condição da página, os testes usam `esperar` (em `testes\_entrar.py`) no lugar de `wait_for_function`, que a política de segurança barra.

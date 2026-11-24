@@ -2,20 +2,17 @@
 Para cada equipe (INE) e UBS conta, nos últimos 12 meses fechados, quantas pessoas distintas foram atendidas e quantos atendimentos
 cada uma teve; guarda só CONTAGENS por faixa de frequência. A chave da pessoa (cns_cpf) é lida em memória, agregada e descartada:
 nada identificável é gravado. Saída: ../dados/brutos/usuarios.json.  Uso: python usuarios.py"""
-import json, sys, pathlib, time, datetime as dt
+import json
 from collections import defaultdict
 from pbi_lib import Painel, col, conta_distinta, lit_txt, lit_int, em
+from comum import AQUI, OUT, URL, TETO, hoje_brt
 
-AQUI = pathlib.Path(__file__).parent
-OUT = AQUI.parent / "dados" / "brutos"; OUT.mkdir(parents=True, exist_ok=True)
-URL = {i["titulo"]: i["url"] for i in json.load(open(AQUI / "paineis_aps.json", encoding="utf-8"))}
-TETO = 30000
 FAIXAS = [(1, 1), (2, 3), (4, 5), (6, 11), (12, 23), (24, 10**9)]     # atendimentos por pessoa em 12 meses
 ROT = ["1", "2–3", "4–5", "6–11", "12–23", "24+"]
 
 
 def meses_janela(n=12, hoje=None):
-    hoje = hoje or dt.date.today(); a, m = hoje.year, hoje.month
+    hoje = hoje or hoje_brt(); a, m = hoje.year, hoje.month
     out = []
     for _ in range(n):
         m -= 1
@@ -24,17 +21,9 @@ def meses_janela(n=12, hoje=None):
     return sorted(out)
 
 
-def tentar(fn, *a, **k):
-    for t in range(3):
-        try: return fn(*a, **k)
-        except Exception:
-            if t == 2: raise
-            time.sleep(5)
-
-
 def main():
     ref = json.load(open(AQUI / "referencia.json", encoding="utf-8"))
-    ubs = ref["ubs"]; eq = ref["equipes"]
+    ubs = ref["ubs"]
     meses = meses_janela(); ini, fim = meses[0], meses[-1]
     p = Painel(URL["Atendimentos Individuais na APS"]); ent = {"u": "fUsuarios_unicos"}
     por_ano = defaultdict(list)
@@ -45,7 +34,7 @@ def main():
         for ano, ms in por_ano.items():
             where = [em(col("u", "i_estab_cnes"), [lit_txt(cnes)]), em(col("u", "i_ano_compt"), [lit_int(ano)]),
                      em(col("u", "i_mes_compt"), [lit_txt(f"{m:02d}") for m in ms])]
-            r = tentar(p.consulta, ent, [("ine", col("u", "i_ine")), ("cns", col("u", "cns_cpf")), ("n", conta_distinta("u", "linha_id"))], where, limite=TETO)
+            r = p.consulta(ent, [("ine", col("u", "i_ine")), ("cns", col("u", "cns_cpf")), ("n", conta_distinta("u", "linha_id"))], where, limite=TETO)
             if len(r) >= TETO: raise RuntimeError(f"UBS {cnes} {ano} bateu no teto; dividir por mês")
             for l in r:
                 lidas += 1

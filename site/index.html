@@ -4,12 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; font-src 'self' data:; base-uri 'none'; form-action 'none'">
 <title>Painel da APS – Região Norte</title>
 <style>
 /* Padrão visual dos painéis – DIRAPS Norte (mesmo do painel de filas de regulação) */
 :root{
   --bg:#f6f7f9; --card:#fff; --txt:#1d2430; --muted:#5b6575; --line:#e2e6ec; --accent:#1f5fa8;
-  --in:#1d2430; --out:#13915a; --saldo:#d33a2c;
+  --out:#13915a; --saldo:#d33a2c;
   --alerta-bg:#fff4e5; --alerta-txt:#8a4b00; --aviso-bg:#fdecec; --aviso-txt:#8f1d1d;
   /* categorias dos gráficos (azul, verde, âmbar, vermelho, cinza) */
   --s1:#1f5fa8; --s2:#5a8fcf; --s3:#13915a; --s4:#b9770e; --s5:#d33a2c; --s6:#5b6575; --s7:#9bb7d8; --s8:#7fb89c; --s9:#1d2430; --s0:#c3cad4;
@@ -17,18 +18,12 @@
   --h0:#8f1d1d; --h1:#d33a2c; --h2:#e8a15b; --h3:#f5dfbf; --h4:#e2e6ec; --h5:#9bb7d8; --h6:#1f5fa8;
   --faixa:#e3ebf5;
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+@media (prefers-color-scheme:dark){:root{
   --bg:#12161c; --card:#1b2129; --txt:#e6e9ee; --muted:#9aa4b2; --line:#2c3440; --accent:#6ea8ff;
-  --in:#e6e9ee; --out:#3ccf8e; --saldo:#ff6b5e;
+  --out:#3ccf8e; --saldo:#ff6b5e;
   --alerta-bg:#3a2a12; --alerta-txt:#ffc27a; --aviso-bg:#3d1b1b; --aviso-txt:#ffb3b3;
   --s1:#6ea8ff; --s2:#4a7fc0; --s3:#3ccf8e; --s4:#ffc27a; --s5:#ff6b5e; --s6:#9aa4b2; --s7:#3b5a85; --s8:#2f8a68; --s9:#e6e9ee; --s0:#3a4452;
   --h0:#7a1f1a; --h1:#b8453b; --h2:#a8742f; --h3:#4a3d28; --h4:#2c3440; --h5:#3b5a85; --h6:#6ea8ff; --faixa:#232c3a;}}
-:root[data-theme="dark"]{
-  --bg:#12161c; --card:#1b2129; --txt:#e6e9ee; --muted:#9aa4b2; --line:#2c3440; --accent:#6ea8ff;
-  --in:#e6e9ee; --out:#3ccf8e; --saldo:#ff6b5e;
-  --alerta-bg:#3a2a12; --alerta-txt:#ffc27a; --aviso-bg:#3d1b1b; --aviso-txt:#ffb3b3;
-  --s1:#6ea8ff; --s2:#4a7fc0; --s3:#3ccf8e; --s4:#ffc27a; --s5:#ff6b5e; --s6:#9aa4b2; --s7:#3b5a85; --s8:#2f8a68; --s9:#e6e9ee; --s0:#3a4452;
-  --h0:#7a1f1a; --h1:#b8453b; --h2:#a8742f; --h3:#4a3d28; --h4:#2c3440; --h5:#3b5a85; --h6:#6ea8ff; --faixa:#232c3a;}
 
 *{box-sizing:border-box}
 html{font-size:14px;scroll-padding-top:160px}
@@ -61,6 +56,7 @@ header p{margin:4px 0 0;color:var(--muted);font-size:.72rem}
 label{font-size:.82rem;color:var(--muted);display:flex;align-items:center;gap:6px}
 select,input[type=search]{font:inherit;font-size:.9rem;padding:5px 7px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--txt)}
 select{max-width:100%;cursor:pointer}
+#sel-per{min-width:11.75em}   /* cabe a opção mais longa, "Tudo (desde jan/22)": o Chrome nem sempre refaz a largura quando esse texto é escrito na carga */
 input[type=search]{min-width:200px;padding:6px 9px}
 .ctrl button,button.neutro{font:inherit;font-size:.9rem;padding:5px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--txt);cursor:pointer}
 .ctrl button:hover,button.neutro:hover{border-color:var(--accent)}
@@ -136,8 +132,6 @@ details.u,details.e{margin-left:10px}
 
 /* marcadores */
 .tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:0 7px;font-size:.7rem;color:var(--muted);white-space:nowrap;margin-left:6px;vertical-align:1px}
-.alerta{display:inline-block;background:var(--alerta-bg);color:var(--alerta-txt);border-radius:6px;padding:2px 8px;font-size:.78rem;margin-left:6px;vertical-align:1px}
-.alerta.alta{background:var(--aviso-bg);color:var(--aviso-txt)}
 .chip{display:inline-block;border-radius:6px;padding:2px 8px;font-size:.78rem;margin:3px 4px 0 0;background:var(--alerta-bg);color:var(--alerta-txt)}
 .chip.alta{background:var(--aviso-bg);color:var(--aviso-txt)}
 
@@ -160,19 +154,6 @@ button.btn-sec:hover{border-color:var(--accent)}
 .nota{font-size:.84rem;color:var(--muted)}
 p.nota{margin:0 0 8px}
 
-/* prioridades */
-button.prio{display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:12px;align-items:center;width:100%;text-align:left;font:inherit;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 12px;margin:0 0 8px;cursor:pointer}
-button.prio:hover{border-color:var(--accent)}
-button.prio b{font-size:.92rem}
-button.prio small{display:block;color:var(--muted);font-size:.75rem}
-
-/* alertas */
-.alertas section{margin:12px 0}
-.alertas h3{margin:0 0 6px;font-size:.92rem}
-#vista-a button.alerta{display:block;width:100%;margin:0 0 6px;padding:8px 12px;border-radius:10px;font:inherit;text-align:left;cursor:pointer;border:1px solid transparent;color:var(--alerta-txt);background:var(--alerta-bg)}
-#vista-a button.alerta.alta{color:var(--aviso-txt);background:var(--aviso-bg)}
-#vista-a button.alerta:hover{border-color:currentColor}
-#vista-a button.alerta small{display:block;opacity:.85}
 
 /* acesso */
 .x-barra{display:grid;grid-template-columns:minmax(140px,1.1fr) minmax(0,2fr) minmax(0,1fr) 130px;gap:12px;align-items:center;width:100%;text-align:left;font:inherit;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 12px;margin:0 0 6px}
@@ -209,8 +190,8 @@ svg text{font:11px system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;fill:var
 .sinais .chip{max-width:100%;white-space:normal;overflow-wrap:anywhere}
 /* área dos gestores (senha) */
 body:not(.aberto) .so-aberto{display:none !important}
-body:not(.restrito) #btn-entrar,body:not(.restrito) #aba-i{display:none}
-body.aberto #aba-i .cad-ico{display:none}
+body:not(.restrito) #btn-entrar,body:not(.restrito) #aba-i,body:not(.restrito) #aba-f{display:none}
+body.aberto #aba-i .cad-ico,body.aberto #aba-f .cad-ico{display:none}
 #btn-entrar{color:var(--muted);background:none}
 #btn-entrar:hover{color:var(--accent);border-color:var(--accent)}
 .restrito-nota{margin-top:10px;padding:9px 12px;border:1px dashed var(--line);border-radius:8px}
@@ -335,7 +316,7 @@ footer p{margin:10px 0 0}
   details.caixa>summary{grid-template-columns:1fr auto}
   details.caixa>summary .sp,details.caixa>summary .num{justify-self:end}
   details.u,details.e{margin-left:4px}
-  button.prio,.x-barra{grid-template-columns:1fr}
+  .x-barra{grid-template-columns:1fr}
   .x-barra.x-cab{display:none}
   .abas{overflow-x:auto;flex-wrap:nowrap}.abas button{white-space:nowrap}
 }
@@ -363,15 +344,17 @@ footer p{margin:10px 0 0}
 table.eq tr.det>td{background:var(--bg);text-align:left;padding:10px 12px}
 .tres{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px 22px}
 .tres .grande{font-size:1.6rem;font-weight:700;font-variant-numeric:tabular-nums}
-#vista-p button.lk,#vista-i button.lk{font:inherit;color:var(--accent);background:none;border:0;padding:0;cursor:pointer;text-align:left}
-#vista-p button.lk:hover,#vista-i button.lk:hover{text-decoration:underline}
+#vista-p button.lk,#vista-i button.lk,#vista-f button.lk{font:inherit;color:var(--accent);background:none;border:0;padding:0;cursor:pointer;text-align:left}
+#vista-p button.lk:hover,#vista-i button.lk:hover,#vista-f button.lk:hover{text-decoration:underline}
 #vista-p .bar-r{display:inline-block;width:64px;height:8px;background:var(--line);border-radius:4px;vertical-align:middle;overflow:hidden;margin-left:4px}
 #vista-p .bar-r i{display:block;height:100%;background:var(--accent)}
-#sub-perfil button,#vista-i .ctl button{font:inherit;font-size:.88rem;padding:5px 11px;border:1px solid var(--line);border-radius:999px;background:var(--card);color:var(--txt);cursor:pointer}
-#vista-i .ctl button{border-radius:8px}
-#sub-perfil button:hover,#vista-i .ctl button:hover{border-color:var(--accent)}
+#sub-perfil button,#vista-i .ctl button,#vista-f .ctl button{font:inherit;font-size:.88rem;padding:5px 11px;border:1px solid var(--line);border-radius:999px;background:var(--card);color:var(--txt);cursor:pointer}
+#vista-i .ctl button,#vista-f .ctl button{border-radius:8px}
+#sub-perfil button:hover,#vista-i .ctl button:hover,#vista-f .ctl button:hover{border-color:var(--accent)}
 #sub-perfil button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:#fff}
 #vista-i .ctl input[type=search]{width:230px}
+#vista-f td.l small{display:block}#vista-f tr.sel-f td{background:var(--bg)}#vista-f .tipo-un{margin:6px 0 10px}
+.tipo-linha{margin:2px 0 8px;font-size:.82rem;color:var(--muted)}
 #i-cartoes{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin:10px 0}
 #i-cartoes .kpi{text-align:left}
 #i-corpo td.l small{display:block;color:var(--muted)}
@@ -449,7 +432,7 @@ tr.sel-linha>td{background:var(--faixa)}
 
 <div class="pagina">
   <nav class="abas" role="tablist" aria-label="Seção">
-    <button role="tab" id="aba-h" aria-selected="true">Visão geral</button><button role="tab" id="aba-m" aria-selected="false">Mapa de calor</button><button role="tab" id="aba-p" aria-selected="false">Perfil dos atendimentos</button><button role="tab" id="aba-i" aria-selected="false" title="Problemas de código e de vínculo: acesso dos gestores (pede a senha)">Inconsistências <span class="cad-ico" aria-hidden="true">🔒</span></button>
+    <button role="tab" id="aba-h" aria-selected="true">Visão geral</button><button role="tab" id="aba-m" aria-selected="false">Mapa de calor</button><button role="tab" id="aba-p" aria-selected="false">Perfil dos atendimentos</button><button role="tab" id="aba-i" aria-selected="false" title="Problemas de código e de vínculo: acesso dos gestores (pede a senha)">Inconsistências <span class="cad-ico" aria-hidden="true">🔒</span></button><button role="tab" id="aba-f" aria-selected="false" title="Lotação por categoria, produção em 12 meses, vínculo e carga horária: acesso dos gestores (pede a senha)">Força de trabalho <span class="cad-ico" aria-hidden="true">🔒</span></button>
   </nav>
 </div>
 
@@ -492,7 +475,7 @@ tr.sel-linha>td{background:var(--faixa)}
   </div>
   <div id="vista-c" class="cmp" hidden>
     <p><button type="button" class="neutro" id="cmp-voltar">← Voltar à Visão geral</button></p>
-    <h2 id="cmp-tit">Comparar equipes da Região</h2>
+    <h2>Comparar equipes da Região</h2>
     <p class="nota" id="cmp-nota"></p>
     <div class="ctl"><label>Equipes <select id="cmp-tipo"><option value="eSF">eSF</option><option value="eSB">eSB (bucal)</option><option value="eMulti">eMulti</option></select></label><label>GSAP <select id="cmp-gsap"><option value="">Todas</option></select></label><label>Valor <select id="cmp-modo"><option value="1">Último mês</option><option value="3m">Média dos últimos 3 meses</option></select></label></div>
     <div class="leg-x" id="cmp-leg"></div>
@@ -540,6 +523,14 @@ tr.sel-linha>td{background:var(--faixa)}
     <p class="nota" id="i-sel" role="status"></p>
     <p class="nota" id="i-exp"></p>
     <div class="rolagem" id="i-corpo"></div>
+  </div>
+  <div id="vista-f" hidden>
+    <p class="nota" id="f-nota"></p>
+    <p class="nota tipo-un" id="f-tipo"></p>
+    <div class="ctl"><button type="button" id="f-csv">Baixar este quadro (Excel)</button><button type="button" class="lk em-csv" id="f-csv-txt" title="O mesmo conteúdo em CSV (separado por ponto e vírgula), para outros programas">CSV</button></div>
+    <p class="nota" id="f-sel" role="status"></p>
+    <div class="rolagem" id="f-corpo"></div>
+    <p class="nota" id="f-rod"></p>
   </div>
   <div id="vista-m" class="mapa" hidden>
     <p class="nota">Cada linha é uma equipe e cada coluna um mês. A cor compara o mês com a <b>média da própria equipe</b> nos 12 meses anteriores ao último mês completo (não muda com o período escolhido, que só define quantos meses aparecem). Quanto mais escuro o vermelho, mais abaixo da média. As etiquetas de alerta seguem usando a mediana desses mesmos 12 meses, que um mês atípico não desloca. Clique no nome para abrir a equipe.</p>
@@ -655,9 +646,9 @@ const fmt = n => (n == null ? "–" : Math.round(n).toLocaleString("pt-BR"));
 const mesRot = m => { const [a, n] = m.split("-"); return MES_ABR[+n - 1] + "/" + a.slice(2); };
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const IND = P.indicadores;
+const FRACAO_BAIXA = 0.7;   // abaixo de 70% do habitual = sinal de queda (o texto dos alertas fala em 70%)
 const RH = P.rh_rot || "jun/2026";   // competência da planilha de lotação
 const faixa = () => { const n = Math.min(estado.per, MESES.length); return [MESES.length - n, MESES.length]; };
-const S = (obj, k) => (obj.serie && obj.serie[k]) || (obj[k]) || null;
 
 function variacao(s) {
   if (!s || IU < 12) return null;
@@ -772,7 +763,6 @@ function sumario(nome, meta, s, extra = "") {
   const v = s ? s[IU] : null;
   return `<summary><span><span class="nome">${esc(nome)}</span><span class="meta">${meta}</span>${extra}</span><span class="num" title="${mesRot(MESES[IU])}">${s ? fmt(v) : "–"}</span>${htmlVar(s)}${spark(s)}</summary>`;
 }
-function alertasDe(caminho) { return P.alertas.filter(a => a.caminho === caminho); }
 /* ---------- sinais de alerta: etiquetas nas equipes e UBS, e filtro da Visão geral ----------
    Juntam os alertas calculados na geração (P.alertas) com o sinal "bem abaixo do habitual" (mediana de 12 meses da própria equipe ou UBS). */
 const TIPOS_SINAL = [["zerada", "Nenhum atendimento no mês"], ["habitual", "Bem abaixo do habitual"], ["medico", "Sem atendimento médico"], ["queda", "Queda contra o mesmo mês do ano anterior"],
@@ -818,8 +808,8 @@ function sinais() {
   /* queda de atendimentos em níveis (eSF e UBS), sempre contra o "habitual" (mediana dos 12 meses anteriores ao último mês completo):
      só o último mês abaixo de 70% = atenção (amarelo); último mês e o anterior, os dois abaixo de 70% = prioridade alta (vermelho), sem repetir o amarelo do mesmo mês */
   const hab = (cam, sr) => {
-    if (!sr) return; const m = habitual(sr); if (!m || m < 150 || !(sr[IU] > 0) || !(sr[IU] / m < 0.7)) return;
-    if (IU >= 1 && sr[IU - 1] / m < 0.7)
+    if (!sr) return; const m = habitual(sr); if (!m || m < 150 || !(sr[IU] > 0) || !(sr[IU] / m < FRACAO_BAIXA)) return;
+    if (IU >= 1 && sr[IU - 1] / m < FRACAO_BAIXA)
       poe(cam, "habitual", "alta", "2 meses seguidos abaixo de 70% do habitual", `${fmt(sr[IU - 1])} atendimentos em ${mesRot(MESES[IU - 1])} e ${fmt(sr[IU])} em ${mesRot(MESES[IU])}, os dois abaixo de 70% do habitual (mediana dos 12 meses anteriores: ${fmt(m)}).`, "atend");
     else poe(cam, "habitual", "media", `${Math.round((1 - sr[IU] / m) * 100)}% abaixo do habitual`, `${fmt(sr[IU])} atendimentos em ${mesRot(MESES[IU])}; o habitual (mediana dos 12 meses anteriores) é ${fmt(m)}.`, "atend");
   };
@@ -837,7 +827,7 @@ function passa(cam) {   // com filtro ligado: o próprio nó ou algum nó abaixo
   return false;
 }
 function etiquetas(cam, nivel) {
-  const proprias = (sinais().get(cam) || []).map(x => `<span class="chip ${x.nivel}" title="${esc((CONSOL ? NOTA_CONSOL() : "") + dicaSinal(cam, x))}">${esc(x.rot)}${CONSOL ? " (em consolidação)" : ""}</span>`).join("");
+  const proprias = (sinais().get(cam) || []).map(x => `<span class="chip ${esc(x.nivel)}" title="${esc((CONSOL ? NOTA_CONSOL() : "") + dicaSinal(cam, x))}">${esc(x.rot)}${CONSOL ? " (em consolidação)" : ""}</span>`).join("");
   let conta = "";
   if (nivel !== "e") {   // GSAP e UBS: quantas equipes abaixo têm algum sinal
     let n = 0, alta = 0;
@@ -890,7 +880,7 @@ function preencher(d) {
     });
   } else if (t === "u") {
     const ui = +d.dataset.ui, u = P.gsaps[gi].ubs[ui], g = P.gsaps[gi];
-    corpo.innerHTML = estado.fil ? "" : `<div class="nota">${esc(nomeInd(estado.ind))} – ${esc(u.nome)}</div>${barras(u.serie[estado.ind], 1100, 130)}${multiGraf(u.serie, u.nome)}${cmpCard(g, u)}`;
+    corpo.innerHTML = estado.fil ? "" : `${tipoLinha(u, null)}<div class="nota">${esc(nomeInd(estado.ind))} – ${esc(u.nome)}</div>${barras(u.serie[estado.ind], 1100, 130)}${multiGraf(u.serie, u.nome)}${cmpCard(g, u)}`;
     u.equipes.forEach((e, ei) => {
       const x = document.createElement("details"); x.className = "caixa e"; x.id = `g${gi}u${ui}e${ei}`; x.dataset.t = "e"; x.dataset.gi = gi; x.dataset.ui = ui; x.dataset.ei = ei;
       const cam = `${g.nome} › ${u.nome} › ${e.nome}`; if (!passa(cam)) return;
@@ -900,13 +890,13 @@ function preencher(d) {
     });
   } else {
     const ui = +d.dataset.ui, ei = +d.dataset.ei, e = P.gsaps[gi].ubs[ui].equipes[ei];
-    corpo.innerHTML = avisoCtx(P.gsaps[gi], P.gsaps[gi].ubs[ui], e) + multiGraf(e.serie, e.nome) + tabelaEquipe(e) + tabelaProf(e);
+    corpo.innerHTML = tipoLinha(P.gsaps[gi].ubs[ui], e) + avisoCtx(P.gsaps[gi].ubs[ui], e) + multiGraf(e.serie, e.nome) + tabelaEquipe(e) + tabelaProf(e);
   }
   marcarSo(); destacarH();
 }
-function avisoCtx(g, u, e) {   // o que conferir antes de concluir que a equipe parou: produção sem equipe na mesma UBS, mudança de UBS, total da unidade
+function avisoCtx(u, e) {   // o que conferir antes de concluir que a equipe parou: produção sem equipe na mesma UBS, mudança de UBS, total da unidade
   const s = e.serie.atend; if (!e.ine || !s) return "";
-  const h = habitual(s), baixo = h >= 50 && s[IU] < 0.7 * h, sem = u.equipes.find(x => !x.ine), ns = sem && sem.serie.atend ? sem.serie.atend[IU] : 0, tu = u.serie.atend ? u.serie.atend[IU] : 0, l = [];
+  const h = habitual(s), baixo = h >= 50 && s[IU] < FRACAO_BAIXA * h, sem = u.equipes.find(x => !x.ine), ns = sem && sem.serie.atend ? sem.serie.atend[IU] : 0, tu = u.serie.atend ? u.serie.atend[IU] : 0, l = [];
   if (e.migrou) l.push(`Esta equipe passou a registrar na <b>${esc(e.migrou.para)}</b> (último registro aqui: ${e.migrou.ultimo ? mesRot(e.migrou.ultimo) : "–"}). Não é equipe parada: confira a lotação no RH.`);
   if (baixo && ns > 0) l.push(`Nesta UBS, <b>${fmt(ns)} atendimentos</b> de ${mesRot(MESES[IU])} (${tu ? Math.round(ns / tu * 100) : 0}% do total da unidade) estão <b>sem equipe vinculada</b>. Parte pode ser desta equipe; o painel não redistribui nada.`);
   if (baixo) l.push(`A equipe registrou ${fmt(s[IU])} atendimentos em ${mesRot(MESES[IU])}; o habitual é ${fmt(h)}. O total da UBS foi ${fmt(tu)} (${htmlVar(u.serie.atend)} versus ${IU >= 12 ? mesRot(MESES[IU - 12]) : "ano anterior"}).`);
@@ -983,9 +973,9 @@ function tabelaProf(e) {
       const z = s[IU] === 0 && p.lotado && (k === "atend" || k === "visitas") ? " sem-prod" : "";
       return `<td class="v"><span class="${z}">${fmt(s[IU])}</span> ${spark(s, 70, 18)}</td>`;
     }).join("");
-    const tag = p.lotado ? "" : (p.ativo ? '<span class="tag" title="Produziu nos últimos 3 meses, mas não consta na lotação de ' + RH + '">fora do RH</span>' : `<span class="tag" title="Não consta na lotação de ${RH} e não tem registro nos últimos 3 meses. Último registro: ${p.ultimo ? mesRot(p.ultimo) : "–"}">vínculo não confirmado${p.ultimo ? " · último registro " + mesRot(p.ultimo) : ""}</span>`);
+    const tag = p.lotado ? "" : (p.ativo ? '<span class="tag" title="Produziu nos últimos 3 meses, mas não consta na lotação de ' + RH + '">fora do RH</span>' : `<span class="tag" title="Não consta na lotação de ${esc(RH)} e não tem registro nos últimos 3 meses. Último registro: ${p.ultimo ? mesRot(p.ultimo) : "–"}">vínculo não confirmado${p.ultimo ? " · último registro " + mesRot(p.ultimo) : ""}</span>`);
     const cargo = [p.cat, p.chs ? p.chs + " h" : ""].filter(Boolean).join(" · ");
-    return `<tr class="${p.ativo ? "" : "inativo"}"><td class="l"><button class="pess" data-pid="${p.id}">${esc(p.nome)}</button>${tag}<span class="meta">${esc(cargo)}${p.mat ? " · mat. " + esc(p.mat) : ""}</span></td>${celulas}</tr>`;
+    return `<tr class="${p.ativo ? "" : "inativo"}"><td class="l"><button class="pess" data-pid="${esc(p.id)}">${esc(p.nome)}</button>${tag}<span class="meta">${esc(cargo)}</span></td>${celulas}</tr>`;
   }).join("");
   return `<div class="rolagem" style="margin-top:10px"><table><thead><tr><th class="l">Profissional</th>${cab}</tr></thead><tbody>${lin}</tbody></table></div>`;
 }
@@ -997,7 +987,7 @@ function renderTopo() {
     `<button class="kpi" data-k="${k}" aria-pressed="${k === estado.ind}"><div class="r">${esc(nomeInd(k))}</div><div class="n">${fmt(P.regiao[k][IU])}</div>${htmlVar(P.regiao[k])} <span class="r">versus ${IU >= 12 ? mesRot(MESES[IU - 12]) : "ano anterior"}</span></button>`).join("");
   $("#tit-graf").textContent = `${nomeInd(estado.ind)} – Região Norte`;
   $("#graf-regiao").innerHTML = barras(P.regiao[estado.ind], 1100, 190) + multiGraf(P.regiao, "Região Norte");
-  document.querySelectorAll(".kpi").forEach(b => b.addEventListener("click", () => defInd(b.dataset.k)));
+  $("#kpis").querySelectorAll(".kpi").forEach(b => b.addEventListener("click", () => defInd(b.dataset.k)));
   renderCmpRegioes();
 }
 /* ---------- Norte × DF × regiões (por mil habitantes) ---------- */
@@ -1124,10 +1114,10 @@ function pilhaTempo(ser, w = 920, h = 200) {
 }
 function renderAcesso() {
   const no = noAcesso(), i = xs.mes, ord = $("#x-ord").value;
-  const crumb = [`<button data-e="r">Região Norte</button>`];
+  const crumb = [xs.esc === "r" ? "<span>Região Norte</span>" : `<button data-e="r">Região Norte</button>`];
   if (xs.esc !== "r") crumb.push(xs.esc === "g" ? `<span>${esc(P.gsaps[xs.gi].nome)}</span>` : `<button data-e="g">${esc(P.gsaps[xs.gi].nome)}</button>`);
   if (xs.esc === "u") crumb.push(`<span>${esc(P.gsaps[xs.gi].ubs[xs.ui].nome)}</span>`);
-  $("#x-crumb").innerHTML = crumb.join(" › ").replace(/^<button data-e="r">(.*?)<\/button>/, xs.esc === "r" ? "<span>$1</span>" : '<button data-e="r">$1</button>');
+  $("#x-crumb").innerHTML = crumb.join(" › ");
   $("#x-crumb").querySelectorAll("button").forEach(b => b.addEventListener("click", () => { xs.esc = b.dataset.e; renderAcesso(); }));
   $("#x-leg").innerHTML = TIPOS.map(([, r, c]) => `<span><i style="background:${c}"></i>${esc(r)}</span>`).join("") + '<span style="margin-left:14px">Quem atendeu:</span>' + QUEM.map(([, r, c]) => `<span><i style="background:${c};border:1px solid var(--line)"></i>${esc(r)}</span>`).join("");
   $("#x-tit-pizza").textContent = `${no.nome} em ${mesRot(MESES[i])}: tipo de atendimento e quem atendeu`;
@@ -1225,7 +1215,7 @@ const p1 = (a, b) => (b ? (a / b * 100).toFixed(1).replace(".", ",") + "%" : "�
 function medU(d, cad) {
   if (!d || !d.pess) return null;
   const hf = d.fp[4] + d.fp[5];
-  return { d, cad, pess: d.pess, atend: d.atend, apc: d.atend / d.pess, um: d.fp[0] / d.pess, hfn: hf, hf: hf / d.pess, ahf: (d.fa[4] + d.fa[5]) / d.atend, top: d.top10 / d.atend, max: d.max, cob: cad ? d.pess / cad * 100 : null };
+  return { d, cad, pess: d.pess, atend: d.atend, apc: d.atend / d.pess, um: d.fp[0] / d.pess, hfn: hf, hf: hf / d.pess, ahf: (d.fa[4] + d.fa[5]) / d.atend, max: d.max, cob: cad ? d.pess / cad * 100 : null };
 }
 function noUsuarios() {
   const cadU = l => l.reduce((t, u) => t + (u.cad || 0), 0);
@@ -1375,7 +1365,7 @@ function idDaLinha(x) {
 function renderIncons() {
   if (!NOM.aberto) { $("#i-nota").textContent = "As inconsistências trazem nomes de profissionais e são de acesso dos gestores."; $("#i-cartoes").innerHTML = $("#i-corpo").innerHTML = $("#i-exp").innerHTML = $("#i-sel").innerHTML = ""; return; }
   const D = baseInc(), cont = k => D.filter(x => x.tipo === k).length;
-  $("#i-nota").innerHTML = `Problemas de <b>código e de vínculo</b> que distorcem os números das outras abas: registro sem equipe (sem INE), lotação que não bate com a produção, equipe que não bate com a UBS e registro provavelmente feito em lugar errado. Referência: ${mesRot(MESES[Math.max(IU - 2, 0)])} a ${mesRot(MESES[IU])}; lotação da planilha de RH de ${RH}. São pontos para <b>conferir e corrigir o cadastro</b>, não juízo sobre o trabalho de ninguém. Clique num cartão para filtrar e, no nome do profissional, para abrir a ficha.`;
+  $("#i-nota").innerHTML = `Problemas de <b>código e de vínculo</b> que distorcem os números das outras abas: registro sem equipe (sem INE), lotação que não bate com a produção, equipe que não bate com a UBS e registro provavelmente feito em lugar errado. Referência: ${mesRot(MESES[Math.max(IU - 2, 0)])} a ${mesRot(MESES[IU])}; lotação da planilha de RH de ${esc(RH)}. São pontos para <b>conferir e corrigir o cadastro</b>, não juízo sobre o trabalho de ninguém. Clique num cartão para filtrar e, no nome do profissional, para abrir a ficha.`;
   $("#i-cartoes").innerHTML = TIPOS_INC.map(([k, r, d]) => `<button type="button" class="kpi" data-t="${k}" aria-pressed="${is.tipo === k}" title="${esc(d)}"><div class="r">${esc(r)}</div><div class="n">${fmt(cont(k))}</div></button>`).join("");
   $("#i-tipo").innerHTML = `<option value="">Todos (${D.length})</option>` + TIPOS_INC.map(([k, r]) => `<option value="${k}">${esc(r)} (${cont(k)})</option>`).join(""); $("#i-tipo").value = is.tipo;
   $("#i-sel").textContent = estado.sel.g != null ? `Filtrado pela unidade escolhida na barra do topo: ${rotSel()} (cartões, tabela e planilhas). Para ver todas, escolha “Região Norte” no caminho.` : "Contagens, tabela e planilhas da Região Norte inteira. Escolha uma unidade na barra do topo para ver só ela.";
@@ -1385,6 +1375,69 @@ function renderIncons() {
     const cam = x.equipe ? `${x.gsap} › ${x.ubs} › ${x.equipe}` : `${x.gsap} › ${x.ubs}`;
     return `<tr><td class="l">${esc(rotInc(x.tipo))}</td><td class="l"><button class="lk" data-c="${esc(cam)}">${esc(x.ubs)}${x.equipe ? " › " + esc(x.equipe) : ""}</button><small>${esc(x.gsap)}</small></td><td class="l">${x.nome ? (idDaLinha(x) ? `<button type="button" class="lk" data-fid="${esc(idDaLinha(x))}" title="Abrir a ficha do servidor">${esc(x.nome)}</button>` : esc(x.nome)) : "–"}<small>${esc(x.cat)}</small></td><td class="l">${esc(x.det)}</td></tr>`; }).join("")}</tbody></table>` + (L.length > MAX ? `<p class="nota">Mostrando ${MAX} de ${fmt(L.length)} linhas; filtre ou baixe a lista completa.</p>` : "") : "<p class='nota'>Nenhuma inconsistência neste filtro.</p>";
 }
+/* ---------- Tipo de UBS e de equipe e aba Força de trabalho (área dos gestores) ----------
+   Porte e zona vêm da parte aberta (P.tipo_ubs, u.porte, u.zona, e.zona); o IVT (NOM.ivt) só existe depois da senha. */
+const FAIXAS_IVT = ["Baixa", "Média", "Alta"];
+const rotFaixa = f => f.toLowerCase();
+function tipoUbsPartes(u) {
+  const t = [];
+  if (u.porte) t.push(`porte ${u.porte.toLowerCase()} (${fmt(u.cad)} cadastrados em ${mesRot(P.tipo_ubs.comp)})`); else t.push("porte: sem população cadastrada na base");
+  if (u.zona) t.push(u.zona === "Mista" ? `zona mista (${Object.entries(u.zona_n).map(([k, n]) => `${n} ${k.toLowerCase()}${n > 1 ? "s" : ""}`).join(", ")})` : `zona ${u.zona.toLowerCase()}`);
+  const iv = NOM.ivt && NOM.ivt.ubs[u.cnes];
+  if (iv) {
+    const cont = FAIXAS_IVT.map(f => `${rotFaixa(f)} ${iv.c[f]}`).join(" · ") + (iv.sem ? ` · sem IVT ${iv.sem}` : "");
+    const alvo = iv.faixa ? `IVT ${rotFaixa(iv.faixa)}` : iv.empate ? `IVT empatado entre ${iv.empate.map(rotFaixa).join(" e ")}` : "sem IVT";
+    t.push(`${alvo} (eSF: ${cont})`);
+  }
+  return t;
+}
+function tipoEqPartes(u, e) {
+  const t = [];
+  if (e.zona) t.push(`zona ${e.zona.toLowerCase()}`);
+  if (NOM.ivt) {
+    if (e.tipo !== "eSF") t.push("IVT não se aplica (só eSF)");
+    else if (!e.ine || e.migrou) t.push("sem IVT");
+    else { const v = NOM.ivt.eq[`${u.cnes}|${e.ine}`]; t.push(v ? `IVT ${String(v[0]).replace(".", ",")} (${rotFaixa(v[1])})` : NOM.ivt.sem); }
+  }
+  return t;
+}
+function tipoLinha(u, e) {   // linha discreta na ficha da unidade, só com a senha
+  if (!NOM.aberto || !P.tipo_ubs) return "";
+  const t = e ? tipoEqPartes(u, e).concat(u.porte ? [`UBS de porte ${u.porte.toLowerCase()}`] : []) : tipoUbsPartes(u);
+  return t.length ? `<div class="tipo-linha">Tipo: ${t.map(esc).join(" · ")}</div>` : "";
+}
+const COLS_FT = [["Unidade", "l"], ["Tipo", "l"], ["Lotados", ""], ["Médicos", ""], ["Enfermeiros", ""], ["Técnicos de enfermagem", ""], ["ACS", ""], ["Cirurgiões-dentistas", ""], ["THD/ASB", ""], ["Outros", ""],
+  ["Residentes (incluídos)", ""], ["Com produção em 12 meses", ""], ["Sem produção em 12 meses", ""], ["Lotados na UBS, sem equipe", ""], ["Carga horária semanal somada (h)", ""], ["Equivalente em 40 h", ""], ["Vínculo", "l"], ["Situação da equipe", "l"]];
+const CATS_FT = ["Médico", "Enfermeiro", "Técnico de enfermagem", "ACS", "Cirurgião-dentista", "THD/ASB", "Outros"];
+function linhasForca() {   // linhas do nível escolhido na barra do topo: Região > GSAP, GSAP > UBS, UBS (ou equipe) > equipes da UBS
+  const F = NOM.ft || {}, sl = estado.sel, g = gSel(), u = uSel(), L = [];
+  const vinc = r => Object.entries(r.vinc || {}).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${k} ${n}`).join("; ");
+  const sit = r => typeof r.sit === "string" ? r.sit : r.sit ? ["com produção", "sem produção", "mudou de UBS"].filter(k => r.sit[k]).map(k => `${r.sit[k]} ${k}`).join("; ") || "–" : "";
+  const mk = (nome, sub, tipo, r, o = {}) => r ? { nome, sub, tipo, r, tot: !!o.tot, sel: !!o.sel, cam: o.cam, vinc: vinc(r), sit: sit(r), usem: r.usem != null ? r.usem : (o.semEq ? r.n : null) } : null;
+  const push = x => { if (x) L.push(x); };
+  if (!g) { push(mk("Região Norte", "", "", F.R, { tot: true })); P.gsaps.forEach(x => push(mk(x.nome, "", "", F["G|" + x.nome], { cam: x.nome }))); }
+  else if (!u) { push(mk(g.nome, "", "", F["G|" + g.nome], { tot: true })); g.ubs.forEach(x => push(mk(x.nome, g.nome, tipoUbsPartes(x).join(" · "), F["U|" + x.cnes], { cam: `${g.nome} › ${x.nome}` }))); }
+  else {
+    push(mk(u.nome, g.nome, tipoUbsPartes(u).join(" · "), F["U|" + u.cnes], { tot: true }));
+    u.equipes.forEach((e, ei) => { if (e.ine) push(mk(e.nome, e.tipo, tipoEqPartes(u, e).join(" · "), F[`E|${u.cnes}|${e.ine}`], { cam: `${g.nome} › ${u.nome} › ${e.nome}`, sel: sl.e === ei })); });
+    push(mk("Lotados na UBS, sem equipe", "lotação “UBS:” da planilha de RH", "", F["S|" + u.cnes], { semEq: true }));
+  }
+  return L;
+}
+const valoresForca = x => [x.nome, x.tipo, x.r.n, ...CATS_FT.map(c => x.r.cat[c]), x.r.res, x.r.com, x.r.sem, x.usem, x.r.ch, x.r.e40, x.vinc, x.sit];
+function renderForca() {
+  if (!NOM.aberto) { $("#f-nota").textContent = "A força de trabalho traz dados da lotação por servidor e é de acesso dos gestores."; $("#f-tipo").innerHTML = $("#f-corpo").innerHTML = $("#f-sel").innerHTML = $("#f-rod").innerHTML = ""; return; }
+  const L = linhasForca(), g = gSel(), u = uSel(), e = eSel();
+  $("#f-nota").innerHTML = `Quadro da <b>lotação</b> da planilha de RH de ${esc(RH)}: quantos servidores estão lotados em cada unidade, por categoria, e quantos deles registraram produção nos <b>12 meses</b> até ${mesRot(MESES[IU])} (atendimento, visita, vacina, atividade coletiva ou procedimento, em qualquer equipe). Pontos para <b>conferir a lotação e dimensionar a equipe</b>, não juízo sobre o trabalho de ninguém.`;
+  $("#f-tipo").innerHTML = u ? [tipoLinha(u, null), e ? tipoLinha(u, e) : ""].join("").replace(/<div class="tipo-linha">/g, "<div>") : "";
+  $("#f-sel").textContent = g ? `Unidade escolhida na barra do topo: ${rotSel()}. ${u ? "Linhas: equipes da UBS, mais os lotados na UBS sem equipe." : "Linhas: as UBS da GSAP."} Para ver as GSAP, escolha “Região Norte” no caminho.` : "Linhas: as GSAP da Região Norte. Escolha uma GSAP ou UBS na barra do topo para descer.";
+  $("#f-corpo").innerHTML = L.length ? `<table class="eq"><thead><tr>${COLS_FT.map(([c, k]) => `<th${k ? ` class="${k}"` : ""}>${esc(c)}</th>`).join("")}</tr></thead><tbody>${L.map(x => {
+    const v = valoresForca(x);
+    const nm = x.cam ? `<button class="lk" data-c="${esc(x.cam)}">${esc(x.nome)}</button>` : esc(x.nome);
+    return `<tr class="${x.tot ? "dest" : ""}${x.sel ? " sel-f" : ""}"><td class="l">${nm}${x.sub ? `<small>${esc(x.sub)}</small>` : ""}</td><td class="l">${esc(x.tipo)}</td>${v.slice(2, 16).map(n => `<td class="v">${n == null ? "–" : typeof n === "number" && !Number.isInteger(n) ? n.toLocaleString("pt-BR", { minimumFractionDigits: 1 }) : fmt(n)}</td>`).join("")}<td class="l">${esc(x.vinc)}</td><td class="l">${esc(x.sit)}</td></tr>`; }).join("")}</tbody></table>` : "<p class='nota'>Sem dados de lotação neste nível.</p>";
+  $("#f-rod").innerHTML = `Cada servidor conta uma vez em cada linha (quem está lotado em duas equipes aparece nas duas equipes, mas uma vez na UBS, na GSAP e na Região). “Sem produção” inclui quem tem função sem registro individual na base do InfoSaúde (por exemplo, a odontologia só é registrada por equipe) e quem está de férias ou afastado. “Equivalente em 40 h” soma só carga horária de 20 h ou mais e é informativo. “Situação da equipe” usa os 3 últimos meses completos; equipe que mudou de UBS não é equipe parada. Porte e zona vêm da base de cadastros de ${P.tipo_ubs ? mesRot(P.tipo_ubs.comp) : "data não informada"} e da coluna Urbana/Rural da planilha de RH; o IVT é o IVT-APSDF 2024 (Nota Técnica 5/2024 SES/SAIS/COAPS), calculado só para eSF que já existiam, e quem não tem índice está rotulado, não estimado. ${P.tipo_ubs && P.tipo_ubs.rot ? esc(P.tipo_ubs.rot) + "." : ""}`;
+}
+
 /* Planilha Excel (.xlsx) montada na própria página: larguras de coluna, cabeçalho em negrito e fixo, filtro, texto longo com quebra,
    códigos e meses como texto (o Excel não converte em data nem corta zeros) e impressão em paisagem ajustada à largura. Sem mesclagem. */
 const _CRC = (() => { const T = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; T[n] = c >>> 0; } return T; })();
@@ -1433,9 +1486,11 @@ function xlsxBlob(linhas, aba) {
     ["xl/_rels/workbook.xml.rels", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`],
     ["xl/styles.xml", estilos], ["xl/worksheets/sheet1.xml", folha]]);
 }
+const INICIO_DE_FORMULA = /^[=+\-@\t\r]/;   // o Excel avalia como fórmula; texto assim ganha um apóstrofo na frente (número continua número)
+const textoCsv = c => { const s = String(c ?? ""); return typeof c === "string" && INICIO_DE_FORMULA.test(s) ? "'" + s : s; };
 let EM_CSV = false;   // o botão "CSV" ao lado de cada botão de planilha baixa o mesmo conteúdo em texto
 function baixarPlanilha(nome, linhas, aba) {
-  if (EM_CSV) { const txt = linhas.map(l => l.map(c => `"${String(c ?? "").replace(/"/g, '""')}"`).join(";")).join("\r\n");
+  if (EM_CSV) { const txt = linhas.map(l => l.map(c => `"${textoCsv(c).replace(/"/g, '""')}"`).join(";")).join("\r\n");
     const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["\ufeff" + txt], { type: "text/csv;charset=utf-8" })); a.download = nome.replace(/\.xlsx$/, ".csv"); document.body.appendChild(a); a.click(); a.remove(); return; }
   const a = document.createElement("a"); a.href = URL.createObjectURL(xlsxBlob(linhas, aba)); a.download = nome; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
 }
@@ -1463,7 +1518,7 @@ function gravarURL() {
   if (sl.g != null) { const g = P.gsaps[sl.g]; q.set("g", g.nome); if (sl.u != null) { const u = g.ubs[sl.u]; q.set("u", u.cnes); if (sl.e != null) q.set("e", u.equipes[sl.e].ine || "SEM"); } }
   if (estado.soSel && sl.g != null) q.set("so", "1");
   const s = q.toString();
-  try { history.replaceState(null, "", s ? "#" + s : location.pathname + location.search); } catch (e) {}
+  try { history.replaceState(null, "", s ? "#" + s : location.pathname + location.search); } catch (e) { /* endereço não editável (alguns navegadores em arquivo local): segue sem link */ }
 }
 let vistaPendente = "";
 function lerURL() {
@@ -1478,8 +1533,8 @@ function lerURL() {
     estado.soSel = q.get("so") === "1";
   }
   const v = q.get("v");
-  if (v === "i") vistaPendente = "i"; else if (v && Object.hasOwn(VISTAS, v) && v !== "h") mostrarVista(v);
-  atualizarNavegacao(); if (estado.sel.g != null && (!v || v === "h" || v === "i")) abrirAteSel(true);
+  if (v === "i" || v === "f") vistaPendente = v; else if (v && Object.hasOwn(VISTAS, v) && v !== "h") mostrarVista(v);
+  atualizarNavegacao(); if (estado.sel.g != null && (!v || v === "h" || v === "i" || v === "f")) abrirAteSel(true);
 }
 
 /* ---------- unidade escolhida (GSAP › UBS › equipe): vale para todas as abas ----------
@@ -1516,7 +1571,7 @@ function aplicarNaVista() {
   const v = vistaAtual, st = ST_ABA()[v];
   if (st) descerPara(st);
   if (v === "h") abrirAteSel(true); else if (v === "m") renderMapa(); else if (v === "x") renderAcesso(); else if (v === "u") renderUsuarios();
-  else if (v === "r") renderRazaoUbs(); else if (v === "p") renderPerfil(); else if (v === "i") renderIncons();
+  else if (v === "r") renderRazaoUbs(); else if (v === "p") renderPerfil(); else if (v === "i") renderIncons(); else if (v === "f") renderForca();
   ROLAR_EQ = false;
 }
 /* as abas de perfil descem por clique (Região › GSAP › UBS): isso e a unidade escolhida andam juntas */
@@ -1656,7 +1711,7 @@ function ajustarBotaoLateral() {
 }
 function alternarLateral(abrir) {
   if (abrir === undefined) abrir = !lateralAberta();
-  if (DESK.matches) { document.body.classList.toggle("sem-lateral", !abrir); try { localStorage.setItem("aps_norte_lateral", abrir ? "1" : "0"); } catch (e) {} }
+  if (DESK.matches) { document.body.classList.toggle("sem-lateral", !abrir); try { localStorage.setItem("aps_norte_lateral", abrir ? "1" : "0"); } catch (e) { /* sem armazenamento: não lembra o painel lateral */ } }
   else $("#arv-lat").classList.toggle("aberta", abrir);
   ajustarBotaoLateral();
   if (abrir && !DESK.matches) { const f = $("#arv-lat .lat-s[aria-current='true']") || $("#arv-lat .lat-reg"); if (f) f.focus({ preventScroll: true }); }
@@ -1665,7 +1720,7 @@ function fecharGaveta(volta) { if (!DESK.matches && $("#arv-lat").classList.cont
 
 function iniciarNavegacao() {
   construirLateral();
-  let ls = null; try { ls = localStorage.getItem("aps_norte_lateral"); } catch (e) {}
+  let ls = null; try { ls = localStorage.getItem("aps_norte_lateral"); } catch (e) { /* sem armazenamento: usa o padrão */ }
   document.body.classList.toggle("sem-lateral", ls === "0");
   renderNavCam(); ajustarBotaoLateral(); atualizarBotaoSo();
   const noDe = s => { const p = s.split(":").map(Number); return { g: p[0], u: p[1] ?? null, e: p[2] ?? null }; };
@@ -1709,11 +1764,6 @@ function iniciarNavegacao() {
 }
 
 /* ---------- navegação ---------- */
-const caminhos = new Map();   // "GSAP › UBS › equipe" -> ids
-P.gsaps.forEach((g, gi) => g.ubs.forEach((u, ui) => {
-  caminhos.set(`${g.nome} › ${u.nome}`, [`g${gi}`, `g${gi}u${ui}`]);
-  u.equipes.forEach((e, ei) => caminhos.set(`${g.nome} › ${u.nome} › ${e.nome}`, [`g${gi}`, `g${gi}u${ui}`, `g${gi}u${ui}e${ei}`]));
-}));
 function irPara(caminho) {   // abre a equipe (ou UBS) na Visão geral: usado pelos cliques em nomes de equipe das outras abas
   const ix = IDX.get(caminho); if (!ix) return;
   estado.sel = { ...ix };   // antes de desenhar a Visão geral, para abrir só o caminho da equipe escolhida
@@ -1730,15 +1780,16 @@ function ajustarBarra(v) {
   document.querySelectorAll("#barra-ctrl [data-ctl]").forEach(el => el.classList.toggle("fora-aba", !usa.includes(el.dataset.ctl)));
   $("#barra-ctrl").classList.toggle("vazia", !usa.length);
 }
-const VISTAS = { h: () => { if (estado.sel.g != null) abrirAteSel(true); }, c: () => renderComparar(), m: () => renderMapa(), p: () => renderPerfil(), x: () => renderAcesso(), r: () => renderRazao(), u: () => renderUsuarios(), i: () => renderIncons() };
+const VISTAS = { h: () => { if (estado.sel.g != null) abrirAteSel(true); }, c: () => renderComparar(), m: () => renderMapa(), p: () => renderPerfil(), x: () => renderAcesso(), r: () => renderRazao(), u: () => renderUsuarios(), i: () => renderIncons(), f: () => renderForca() };
 const PERFIL = ["p", "x", "u", "r"];
 function mostrarVista(v) {
-  if (v === "i" && !NOM.aberto) { if (P.restrito) { abaAposEntrar = "i"; abrirSenha(); } return; }   // aba com cadeado: pede a senha e, entrando, cai nela
+  if (v !== vistaPendente) vistaPendente = "";   // quem escolheu outra aba não é levado de volta pelo link depois de entrar
+  if ((v === "i" || v === "f") && !NOM.aberto) { if (P.restrito) { abaAposEntrar = v; abrirSenha(); } return; }   // aba com cadeado: pede a senha e, entrando, cai nela
   vistaAtual = v;
   Object.keys(VISTAS).forEach(x => { $("#vista-" + x).hidden = x !== v; });
-  $("#aba-h").setAttribute("aria-selected", v === "h" || v === "c"); $("#aba-m").setAttribute("aria-selected", v === "m"); $("#aba-p").setAttribute("aria-selected", PERFIL.includes(v)); $("#aba-i").setAttribute("aria-selected", v === "i");
+  $("#aba-h").setAttribute("aria-selected", v === "h" || v === "c"); $("#aba-m").setAttribute("aria-selected", v === "m"); $("#aba-p").setAttribute("aria-selected", PERFIL.includes(v)); $("#aba-i").setAttribute("aria-selected", v === "i"); $("#aba-f").setAttribute("aria-selected", v === "f");
   $("#sub-perfil").hidden = !PERFIL.includes(v);
-  [["sub-p", "p"], ["aba-x", "x"], ["aba-u", "u"], ["aba-r", "r"]].forEach(([id, x]) => { const b = document.getElementById(id); b.setAttribute("aria-pressed", x === v); b.setAttribute("aria-selected", x === v); });
+  [["sub-p", "p"], ["aba-x", "x"], ["aba-u", "u"], ["aba-r", "r"]].forEach(([id, x]) => { const b = document.getElementById(id); b.setAttribute("aria-pressed", x === v); });
   ajustarBarra(v);
   const st = { x: xs, u: us, r: rs, p: ps }[v]; if (st) descerPara(st);   // as abas de perfil entram já descidas até a unidade escolhida
   VISTAS[v](); gravarURL();
@@ -1750,8 +1801,8 @@ function montarPessoas() {
   pessoas.clear(); indice.length = 0;
   P.gsaps.forEach(g => g.ubs.forEach(u => u.equipes.forEach(e => e.prof.forEach(p => {
     let x = pessoas.get(p.id);
-    if (!x) { x = { id: p.id, nome: p.nome, mat: p.mat || "", cat: p.cat, cargo: p.cargo, chs: p.chs, v: [] }; pessoas.set(p.id, x); }
-    if (!x.mat && p.mat) x.mat = p.mat; if (!x.cat && p.cat) x.cat = p.cat; if (!x.cargo && p.cargo) x.cargo = p.cargo; if (!x.chs && p.chs) x.chs = p.chs;
+    if (!x) { x = { id: p.id, nome: p.nome, cat: p.cat, cargo: p.cargo, chs: p.chs, v: [] }; pessoas.set(p.id, x); }
+    if (!x.cat && p.cat) x.cat = p.cat; if (!x.cargo && p.cargo) x.cargo = p.cargo; if (!x.chs && p.chs) x.chs = p.chs;
     x.v.push({ g, u, e, p, caminho: `${g.nome} › ${u.nome} › ${e.nome}` });
   }))));
   /* busca */
@@ -1761,21 +1812,21 @@ function montarPessoas() {
   }));
   pessoas.forEach(x => {
     const ult = x.v.find(y => y.p.ativo) || x.v[0];
-    indice.push({ t: x.nome, c: ult.caminho, s: `${x.cat || ""} · ${ult.e.nome} · ${ult.u.nome}${x.v.length > 1 ? " (+" + (x.v.length - 1) + " equipe" + (x.v.length > 2 ? "s" : "") + ")" : ""}`, id: x.id, mat: x.mat, k: "Profissional", ativo: x.v.some(y => y.p.ativo) });
+    indice.push({ t: x.nome, c: ult.caminho, s: `${x.cat || ""} · ${ult.e.nome} · ${ult.u.nome}${x.v.length > 1 ? " (+" + (x.v.length - 1) + " equipe" + (x.v.length > 2 ? "s" : "") + ")" : ""}`, id: x.id, k: "Profissional", ativo: x.v.some(y => y.p.ativo) });
   });
 }
 montarPessoas();
 const semAcento = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 function procurar(q0) {
   const q = q0.trim(); if (!q) return [];
-  if (/^[\d.\-\s]+$/.test(q)) {   // só números: INE da equipe, CNES da UBS e, na área dos gestores, matrícula
+  if (/^[\d.\-\s]+$/.test(q)) {   // só números: INE da equipe ou CNES da UBS
     const d = q.replace(/\D/g, ""); if (d.length < 3) return [];
-    const campo = x => (x.k === "Profissional" ? (NOM.aberto ? x.mat : "") : x.k === "Equipe" ? x.ine : x.cnes) || "";
+    const campo = x => (x.k === "Equipe" ? x.ine : x.cnes) || "";
     const peso = x => { const c = campo(x); return c === d || c.replace(/^0+/, "") === d.replace(/^0+/, "") ? 0 : c.startsWith(d) ? 1 : 2; };
-    return indice.filter(x => campo(x).includes(d)).sort((x, y) => peso(x) - peso(y) || (y.k === "Profissional") - (x.k === "Profissional")).slice(0, 40);
+    return indice.filter(x => campo(x).includes(d)).sort((x, y) => peso(x) - peso(y)).slice(0, 40);
   }
   const t = semAcento(q); if (t.length < 2) return [];
-  const ach = indice.filter(x => semAcento(x.t).includes(t) || (x.k === "Profissional" && x.mat && x.mat === t));
+  const ach = indice.filter(x => semAcento(x.t).includes(t));
   return ach.sort((x, y) => (semAcento(x.t).startsWith(t) ? 0 : 1) - (semAcento(y.t).startsWith(t) ? 0 : 1) || (y.ativo === true) - (x.ativo === true)).slice(0, 40);
 }
 function escolher(x) {   // a unidade vira a escolha de todas as abas; do servidor, escolhe a equipe dele e abre a ficha
@@ -1789,7 +1840,7 @@ $("#busca").addEventListener("input", () => {
     const box = $("#achados"), q = $("#busca").value.trim();
     if (q.length < 2) { box.style.display = "none"; return; }
     const ach = procurar(q);
-    box.innerHTML = ach.length ? ach.map((x, i) => `<button data-i="${i}"><b>${esc(x.t)}</b> <span class="tag">${x.k}</span>${x.mat ? ` <span class="tag">mat. ${esc(x.mat)}</span>` : ""}${x.ine ? ` <span class="tag">INE ${esc(x.ine)}</span>` : ""}${x.cnes ? ` <span class="tag">CNES ${esc(x.cnes)}</span>` : ""}${x.k === "Profissional" && !x.ativo ? ' <span class="tag">vínculo não confirmado</span>' : ""}<small>${esc(x.s)}</small></button>`).join("") : "<button disabled>Nada encontrado</button>";
+    box.innerHTML = ach.length ? ach.map((x, i) => `<button data-i="${i}"><b>${esc(x.t)}</b> <span class="tag">${x.k}</span>${x.ine ? ` <span class="tag">INE ${esc(x.ine)}</span>` : ""}${x.cnes ? ` <span class="tag">CNES ${esc(x.cnes)}</span>` : ""}${x.k === "Profissional" && !x.ativo ? ' <span class="tag">vínculo não confirmado</span>' : ""}<small>${esc(x.s)}</small></button>`).join("") : "<button disabled>Nada encontrado</button>";
     box.style.display = "block";
     box.querySelectorAll("button[data-i]").forEach(b => b.addEventListener("click", () => escolher(ach[+b.dataset.i])));
   }, 150);
@@ -1798,7 +1849,9 @@ $("#busca").addEventListener("keydown", e => { if (e.key === "Enter") { const a 
 document.addEventListener("click", e => {
   if (!e.target.closest(".busca")) $("#achados").style.display = "none";
   const b = e.target.closest("button.pess"); if (b) abrirFicha(b.dataset.pid);
-  const pr = e.target.closest("button.prio, circle.pt, #i-corpo button.lk"); if (pr && pr.dataset.c) irPara(pr.dataset.c);
+  const fb = e.target.closest("#f-corpo button.lk");   // Força de trabalho: descer um nível sem sair da aba
+  if (fb && fb.dataset.c) { const gi = P.gsaps.findIndex(x => x.nome === fb.dataset.c); selecionar(gi >= 0 ? { g: gi } : IDX.get(fb.dataset.c) || {}, { rolar: false }); return; }
+  const pr = e.target.closest("circle.pt, #i-corpo button.lk"); if (pr && pr.dataset.c) irPara(pr.dataset.c);
   const fi = e.target.closest("#i-corpo button[data-fid]"); if (fi) abrirFicha(fi.dataset.fid);
   const emCsv = e.target.closest("button.em-csv");
   if (emCsv && emCsv.previousElementSibling) { EM_CSV = true; try { emCsv.previousElementSibling.click(); } finally { EM_CSV = false; } return; }
@@ -1886,7 +1939,7 @@ function fichaHTML(x, lote) {
       SOMAVEIS.map(([k]) => `<td class="v">${y.p.serie[k] ? fmt(s12p(y.p.serie[k], IU)) : "–"}</td>`).join("") + "</tr>";
   }).join("");
   const alerta = P.alertas.filter(a => x.v.some(y => a.caminho === y.caminho && a.texto.includes(x.nome))).map(a => `<li><b>${esc(a.tipo)}:</b> ${esc(a.texto)}</li>`).join("");
-  const cab = lote ? `<h2>${esc(x.nome)}</h2><p class="nota">${esc([x.cat, x.chs ? x.chs + " h" : "", x.mat ? "matrícula " + x.mat : ""].filter(Boolean).join(" · "))}</p>` : "";
+  const cab = lote ? `<h2>${esc(x.nome)}</h2><p class="nota">${esc([x.cat, x.chs ? x.chs + " h" : ""].filter(Boolean).join(" · "))}</p>` : "";
   return cab + (alerta ? `<ul class="nota" style="color:var(--saldo)">${alerta}</ul>` : "") +
     (sers.length ? `<h3>Últimos 12 meses (${janelaRot()})</h3><div class="rolagem"><table><thead><tr><th class="l">Produção</th><th>12 meses</th><th>Equivalente em 40 h</th><th>Média por mês</th><th>12 meses anteriores</th><th>Variação</th><th>Mediana do cargo</th><th>Faixa central do cargo</th><th class="l">Posição</th></tr></thead><tbody>${lin12}</tbody></table></div>` +
       `<p class="nota">Comparação com ${medico ? "todos os médicos da Região Norte (qualquer cargo)" : `quem tem o mesmo cargo (${esc(cargo || "não informado")}) na Região Norte`} que registraram aquela produção nos 12 meses; faixa central = metade do meio dessas pessoas. A comparação usa o valor bruto e não considera carga horária (20 h × 40 h), férias, licenças nem a função que a pessoa exerce na equipe. O equivalente em 40 h (12 meses × 40 ÷ carga horária semanal do RH, só para carga de 20 h ou mais) é só informativo.${incompleto ? ` <b>Registra nesta base desde ${mesRot(MESES[ini])}: 12 meses incompletos, sem comparação.</b>` : ""} Grupos com menos de 5 pessoas ficam sem comparação.</p>` : "") + blocosPerfil(x, lote) +
@@ -1899,7 +1952,7 @@ let FICHA_ATUAL = null;
 function abrirFicha(id) {
   const x = pessoas.get(id); if (!x) return; FICHA_ATUAL = x;
   $("#ficha-t").textContent = x.nome;
-  $("#ficha-sub").textContent = [x.cat, x.chs ? x.chs + " h" : "", x.mat ? "matrícula " + x.mat : ""].filter(Boolean).join(" · ");
+  $("#ficha-sub").textContent = [x.cat, x.chs ? x.chs + " h" : ""].filter(Boolean).join(" · ");
   $("#ficha-corpo").innerHTML = `<p class="acoes-ficha"><button type="button" class="btn-sec" id="ficha-pdf">Baixar PDF</button> <button type="button" class="btn-sec" id="ficha-word">Baixar Word</button></p>` + fichaHTML(x, false);
   $("#ficha-corpo").querySelectorAll("button.link").forEach(b => b.addEventListener("click", () => { $("#ficha").close(); irPara(b.dataset.c); }));
   if (!$("#ficha").open) $("#ficha").showModal();
@@ -1964,10 +2017,10 @@ function renderMapa() {
 /* planilha do indicador escolhido */
 function csv() {
   const k = estado.ind, nivProf = IND[k].nivel === "prof" && NOM.aberto, linhas = [];
-  const cab = ["GSAP", "UBS", "Equipe", "Tipo de equipe", ...(nivProf ? ["Profissional", ...(P.com_matricula ? ["Matrícula"] : []), "Categoria", "Na lotação " + RH] : []), ...MESES.map(m => m)];
+  const cab = ["GSAP", "UBS", "Equipe", "Tipo de equipe", ...(nivProf ? ["Profissional", "Categoria", "Na lotação " + RH] : []), ...MESES];
   linhas.push(cab);
   P.gsaps.forEach(g => g.ubs.forEach(u => u.equipes.forEach(e => {
-    if (nivProf) e.prof.forEach(p => { if (p.serie[k]) linhas.push([g.nome, u.nome, e.nome, e.tipo, p.nome, ...(P.com_matricula ? [p.mat || ""] : []), p.cat || "", p.lotado ? "sim" : "não", ...p.serie[k].slice(0, IU + 1)]); });
+    if (nivProf) e.prof.forEach(p => { if (p.serie[k]) linhas.push([g.nome, u.nome, e.nome, e.tipo, p.nome, p.cat || "", p.lotado ? "sim" : "não", ...p.serie[k].slice(0, IU + 1)]); });
     else if (e.serie[k]) linhas.push([g.nome, u.nome, e.nome, e.tipo, ...e.serie[k].slice(0, IU + 1)]);
   })));
   baixarPlanilha(`aps_norte_${k}_${MESES[IU]}.xlsx`, linhas, nomeInd(k));
@@ -1990,12 +2043,13 @@ function noRel(esc0) {   // "r", "g:gi" ou "u:gi:ui"
   return { ...fu(u), nome: `${u.nome} (${g.nome})`, cam: `${g.nome} › ${u.nome}`, rot: "Equipe", gsaps: [g], ubs: u,
     filhos: u.equipes.map(e => ({ nome: e.nome, ser: e.serie, cad: e.cad, usu: e.ine ? usu.equipe[e.ine] : null })) };
 }
+const caminhoInc = x => `${x.gsap} › ${x.ubs}`;
 function relatorioHTML(esc0, secoes) {
   const no = noRel(esc0), k = estado.ind, i = IU, tem = s => secoes.includes(s), h = [];
   const va = s => (s && i >= 12 && s[i - 12] ? pctv(s[i] / s[i - 12] - 1) : "–"), m6 = s => fmt(s.slice(Math.max(i - 5, 0), i + 1).reduce((a, b) => a + b, 0) / Math.min(6, i + 1));
   const linS = (nome, s, cls) => `<tr class="${cls || ""}"><td class="l">${esc(nome)}</td><td>${s ? fmt(s[i]) : "–"}</td><td>${s && i >= 12 ? fmt(s[i - 12]) : "–"}</td><td>${va(s)}</td><td>${s ? m6(s) : "–"}</td></tr>`;
   const cabS = r => `<thead><tr><th class="l">${r}</th><th>${mesRot(MESES[i])}</th><th>${i >= 12 ? mesRot(MESES[i - 12]) : ""}</th><th>Variação</th><th>Média de 6 meses</th></tr></thead>`;
-  const hoje = new Date().toLocaleDateString("pt-BR"), nominal = tem("prof") || tem("alertas") || tem("incons");
+  const hoje = new Date().toLocaleDateString("pt-BR"), nominal = tem("prof") || tem("alertas") || tem("incons") || tem("fichas");
   h.push(`<h1>Painel da Atenção Primária – Região Norte</h1><p><b>Relatório: ${esc(no.nome)}</b><br><span class="nota">Último mês completo: ${mesRot(MESES[i])} · indicador escolhido: ${esc(nomeInd(k))} · emitido em ${hoje} · ${esc(P.fonte)}.${nominal ? " <b>Contém dados nominais de servidores: uso interno da gestão.</b>" : ""}</span></p>`);
   if (tem("resumo")) {
     const ks = ["atend", "atend_med", "atend_enf", "visitas", "vacinas", "coletivas", "prenatal", "has", "dm", "odonto1"].filter(x => no.ser[x]);
@@ -2042,13 +2096,13 @@ function relatorioHTML(esc0, secoes) {
       const ps = e.prof.filter(p => p.ativo); if (!ps.length) return;
       const cols = COLS_PROF.filter(([x]) => ps.some(p => p.serie[x] && p.serie[x].slice(0, i + 1).some(y => y)));
       c += `<h3>${esc(no.ubs ? e.nome : u.nome + " › " + e.nome)}</h3><table><thead><tr><th class="l">Profissional</th><th class="l">Categoria</th>${cols.map(([, r]) => `<th>${esc(r)}</th>`).join("")}</tr></thead><tbody>${ps.map(p =>
-        `<tr><td class="l">${esc(p.nome)}${p.lotado ? "" : " (fora do RH)"}${p.mat ? " · mat. " + esc(p.mat) : ""}</td><td class="l">${esc([p.cat, p.chs ? p.chs + " h" : ""].filter(Boolean).join(" · "))}</td>${cols.map(([x]) => `<td>${p.serie[x] && p.serie[x].slice(0, i + 1).some(y => y) ? fmt(p.serie[x][i]) : "–"}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
+        `<tr><td class="l">${esc(p.nome)}${p.lotado ? "" : " (fora do RH)"}</td><td class="l">${esc([p.cat, p.chs ? p.chs + " h" : ""].filter(Boolean).join(" · "))}</td>${cols.map(([x]) => `<td>${p.serie[x] && p.serie[x].slice(0, i + 1).some(y => y) ? fmt(p.serie[x][i]) : "–"}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
     })));
-    h.push(`<h2>Profissionais por equipe: produção em ${mesRot(MESES[i])}</h2>${c || "<p>Nenhum profissional em atividade nesta unidade.</p>"}<p class="nota">Lotação: RH da APS Norte de ${RH}. “Fora do RH” = produziu nos últimos 3 meses, mas não consta na lotação; quem não consta e não produziu (vínculo atual não confirmado) fica de fora. Zero não prova ausência de trabalho: pode ser registro ausente, férias ou afastamento.</p>`);
+    h.push(`<h2>Profissionais por equipe: produção em ${mesRot(MESES[i])}</h2>${c || "<p>Nenhum profissional em atividade nesta unidade.</p>"}<p class="nota">Lotação: RH da APS Norte de ${esc(RH)}. “Fora do RH” = produziu nos últimos 3 meses, mas não consta na lotação; quem não consta e não produziu (vínculo atual não confirmado) fica de fora. Zero não prova ausência de trabalho: pode ser registro ausente, férias ou afastamento.</p>`);
   }
   if (tem("incons") && NOM.aberto) {
-    const l = (NOM.incons || []).filter(x => !no.cam || `${x.gsap} › ${x.ubs}`.startsWith(no.cam));
-    h.push(`<h2>Inconsistências de código e de vínculo, ${mesRot(MESES[Math.max(i - 2, 0)])} a ${mesRot(MESES[i])}</h2>` + (l.length ? `<table><thead><tr><th class="l">Tipo</th><th class="l">UBS e equipe</th><th class="l">Profissional</th><th class="l">O que foi encontrado</th></tr></thead><tbody>${l.map(x => `<tr><td class="l">${esc(rotInc(x.tipo))}</td><td class="l">${esc(x.ubs)}${x.equipe ? " › " + esc(x.equipe) : ""}</td><td class="l">${x.nome ? esc(x.nome) + (x.cat ? " (" + esc(x.cat) + ")" : "") : "–"}</td><td class="l">${esc(x.det)}</td></tr>`).join("")}</tbody></table><p class="nota">Pontos para conferir e corrigir o cadastro (CNES, lotação no PEC, planilha de RH de ${RH}); não são juízo sobre o trabalho de ninguém.</p>` : "<p>Nenhuma inconsistência nesta unidade.</p>"));
+    const l = (NOM.incons || []).filter(x => !no.cam || caminhoInc(x) === no.cam || caminhoInc(x).startsWith(no.cam + " › "));
+    h.push(`<h2>Inconsistências de código e de vínculo, ${mesRot(MESES[Math.max(i - 2, 0)])} a ${mesRot(MESES[i])}</h2>` + (l.length ? `<table><thead><tr><th class="l">Tipo</th><th class="l">UBS e equipe</th><th class="l">Profissional</th><th class="l">O que foi encontrado</th></tr></thead><tbody>${l.map(x => `<tr><td class="l">${esc(rotInc(x.tipo))}</td><td class="l">${esc(x.ubs)}${x.equipe ? " › " + esc(x.equipe) : ""}</td><td class="l">${x.nome ? esc(x.nome) + (x.cat ? " (" + esc(x.cat) + ")" : "") : "–"}</td><td class="l">${esc(x.det)}</td></tr>`).join("")}</tbody></table><p class="nota">Pontos para conferir e corrigir o cadastro (CNES, lotação no PEC, planilha de RH de ${esc(RH)}); não são juízo sobre o trabalho de ninguém.</p>` : "<p>Nenhuma inconsistência nesta unidade.</p>"));
   }
   if (tem("prov")) {
     const l = [...sinais()].filter(([c]) => !no.cam || c === no.cam || c.startsWith(no.cam + " › ")).flatMap(([c, xs]) => xs.map(x => [c, x]));
@@ -2071,7 +2125,7 @@ function svgParaPng(svg) {   // o Word não lê SVG em HTML: cada gráfico vira 
     const st = document.createElementNS("http://www.w3.org/2000/svg", "style"); st.textContent = "text{font:10px 'Segoe UI',Arial,sans-serif;fill:#5b6575}"; c.insertBefore(st, c.firstChild);
     const xml = new XMLSerializer().serializeToString(c).replace(/var\(--([a-z0-9]+)\)/g, (_, v) => REL_LUZ[v] || "#5b6575");
     const img = new Image(), E = 2;
-    img.onload = () => { const cv = document.createElement("canvas"); cv.width = w * E; cv.height = hh * E; const x = cv.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, cv.width, cv.height); x.drawImage(img, 0, 0, cv.width, cv.height); ok({ w, h: hh, b64: cv.toDataURL("image/png").split(",")[1] }); };
+    img.onload = () => { const cv = document.createElement("canvas"); cv.width = w * E; cv.height = hh * E; const x = cv.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, cv.width, cv.height); x.drawImage(img, 0, 0, cv.width, cv.height); const b64 = cv.toDataURL("image/png").split(",")[1]; cv.width = cv.height = 0; ok({ w, h: hh, b64 }); };
     img.onerror = () => erro(new Error("Não consegui desenhar um gráfico do relatório."));
     img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(xml);
   });
@@ -2152,8 +2206,9 @@ function iniciar() {
   $("#sel-ind").addEventListener("change", mudar); $("#sel-per").addEventListener("change", mudar);
   $("#chk-inativos").addEventListener("change", e => document.body.classList.toggle("ocultar-inativos", !e.target.checked));
   document.body.classList.add("ocultar-inativos");
-  ["x", "r", "u", "p", "i"].forEach(v => $("#aba-" + v).addEventListener("click", () => mostrarVista(v)));
+  ["x", "r", "u", "p", "i", "f"].forEach(v => $("#aba-" + v).addEventListener("click", () => mostrarVista(v)));
   $("#sub-p").addEventListener("click", () => mostrarVista("p")); $("#p-ord").addEventListener("change", renderPerfil);
+  $("#f-csv").addEventListener("click", () => baixarPlanilha(`forca_de_trabalho_aps_norte_${MESES[IU]}${sufUnidade()}.xlsx`, [COLS_FT.map(c => c[0]), ...linhasForca().map(x => valoresForca(x).map(c => c == null ? "" : c))], "Força de trabalho"));
   $("#i-tipo").addEventListener("change", e => { is.tipo = e.target.value; renderIncons(); });
   $("#i-q").addEventListener("input", e => { is.q = e.target.value; renderIncons(); });
   $("#i-csv").addEventListener("click", () => baixarPlanilha(`inconsistencias_aps_norte_${MESES[IU]}${sufUnidade()}.xlsx`, [["Tipo", "GSAP", "UBS", "Equipe", "Profissional", "Categoria", "O que foi encontrado"], ...filtInc().map(x => [rotInc(x.tipo), x.gsap, x.ubs, x.equipe, x.nome, x.cat, x.det])]));
@@ -2224,13 +2279,20 @@ function lsLer() {   // null = nada guardado; {ok:false} = havia chave, mas venc
   if (!o || typeof o.k !== "string" || !Number.isFinite(o.t) || o.t > Date.now() + 60000 || Date.now() - o.t >= VALE_MS) { lsGravar(null); return { ok: false }; }
   return { ok: true, k: o.k, t: o.t };
 }
-const lsGravar = v => { try { if (v == null) localStorage.removeItem(CH_LS); else localStorage.setItem(CH_LS, JSON.stringify({ k: v, t: Date.now() })); } catch (e) {} };
+const lsGravar = v => { try { if (v == null) localStorage.removeItem(CH_LS); else localStorage.setItem(CH_LS, JSON.stringify({ k: v, t: Date.now() })); } catch (e) { /* sem armazenamento: a chave não fica guardada */ } };
 const avisarSessao = () => { const a = $("#aviso-sessao"); a.textContent = "A sessão lembrada passou de 12 horas: a área dos gestores foi fechada. Para voltar, entre de novo com a senha."; a.hidden = false; };
 function verificarValidade() {   // enquanto a página está aberta: passadas 12 h, apaga a chave e fecha a área (como o Sair), com um aviso depois de recarregar
   if (!NOM.aberto || !NOM.selo || Date.now() - NOM.selo < VALE_MS) return;
   lsGravar(null); try { sessionStorage.setItem(AV_LS, "1"); } catch (e) {}
   location.reload();
 }
+const SAIR_LS = "aps_norte_sair";   // aviso às outras abas do mesmo navegador: "alguém clicou em Sair"
+function sair() {   // esquece a chave e recarrega: nomes, fichas abertas, resultados de busca e relatórios em preparo saem da memória e da página
+  lsGravar(null);
+  try { localStorage.setItem(SAIR_LS, String(Date.now())); localStorage.removeItem(SAIR_LS); } catch (e) { /* sem armazenamento: só esta aba fecha */ }   // o aviso chega às outras abas na gravação; apagado em seguida, nada fica guardado
+  location.reload();
+}
+window.addEventListener("storage", e => { if (e.key === SAIR_LS && e.newValue && NOM.aberto) location.reload(); });
 setInterval(verificarValidade, 60000);
 document.addEventListener("visibilitychange", () => { if (!document.hidden) verificarValidade(); });
 window.addEventListener("focus", verificarValidade);
@@ -2248,9 +2310,17 @@ async function chaveDaSenha(senha, N) {
   const km = await crypto.subtle.importKey("raw", new TextEncoder().encode(senha.normalize("NFC")), "PBKDF2", false, ["deriveBits"]);
   return new Uint8Array(await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: deB64(N.sal), iterations: N.it }, km, 256));
 }
-async function decifrar(chave, N) {
+class ErroSenha extends Error {}   // a etiqueta de autenticação do AES-GCM não confere: senha (ou chave lembrada) errada
+const MSG_SENHA = "Senha incorreta.";
+const MSG_ARQUIVO = "Não foi possível abrir o arquivo restrito: ele está incompleto ou em formato inesperado. Recarregue a página e tente de novo.";
+const nominalCompleto = N => !!N && ["sal", "iv", "ct"].every(c => typeof N[c] === "string" && N[c]) && Number.isInteger(N.it) && N.it > 0;
+async function decifrar(chave, N) {   // ErroSenha = autenticação falhou; qualquer outro erro = arquivo ou navegador
+  if (!nominalCompleto(N)) throw new Error("formato do arquivo restrito");
+  const iv = deB64(N.iv), ct = deB64(N.ct);
   const k = await crypto.subtle.importKey("raw", chave, "AES-GCM", false, ["decrypt"]);
-  const claro = await crypto.subtle.decrypt({ name: "AES-GCM", iv: deB64(N.iv), additionalData: new TextEncoder().encode("aps-norte-v1") }, k, deB64(N.ct));
+  let claro;
+  try { claro = await crypto.subtle.decrypt({ name: "AES-GCM", iv, additionalData: new TextEncoder().encode("aps-norte-v1") }, k, ct); }
+  catch (e) { throw new ErroSenha(); }
   const txt = await new Response(new Blob([claro]).stream().pipeThrough(new DecompressionStream("gzip"))).text();
   return JSON.parse(txt);
 }
@@ -2258,10 +2328,10 @@ function aplicarNominal(D) {
   P.gsaps.forEach(g => g.ubs.forEach(u => u.equipes.forEach(e => { e.prof = D.prof[`${u.cnes}|${e.ine || "SEM"}`] || []; })));
   const txt = new Map(D.alertas.map(a => [a.caminho + "|" + a.tipo, a.texto]));
   P.alertas.forEach(a => { const t = txt.get(a.caminho + "|" + a.tipo); if (t) a.texto = t; });
-  P.com_matricula = !!D.com_matricula; NOM.aberto = true; NOM.incons = D.incons || [];
+  NOM.aberto = true; NOM.incons = D.incons || []; NOM.ft = D.ft || {}; NOM.ivt = D.ivt || null;
   document.body.classList.add("aberto");
   $("#btn-entrar").textContent = "Sair"; $("#btn-entrar").title = "Fechar a área dos gestores neste navegador";
-  $("#busca").placeholder = P.com_matricula ? "Buscar nome, matrícula, equipe, INE ou UBS" : "Buscar nome, equipe, INE ou UBS"; $("#busca").setAttribute("aria-label", $("#busca").placeholder);
+  $("#busca").placeholder = "Buscar nome, equipe, INE ou UBS"; $("#busca").setAttribute("aria-label", $("#busca").placeholder);
   montarPessoas(); SIN = null; renderFiltro(); mudar();   // os alertas passam a trazer os nomes: refaz as etiquetas
   if (abaAposEntrar) { const v = abaAposEntrar; abaAposEntrar = ""; vistaPendente = ""; mostrarVista(v); }
   else if (vistaPendente) { const v = vistaPendente; vistaPendente = ""; mostrarVista(v); }
@@ -2270,18 +2340,19 @@ function aplicarNominal(D) {
 async function entrar(senha, lembrar) {
   if (!window.crypto || !crypto.subtle || typeof DecompressionStream === "undefined") return "Este navegador não tem os recursos necessários para abrir a área dos gestores. Atualize o navegador ou use outro.";
   let N; try { N = await carregarNominal(); } catch (e) { return "Não foi possível carregar a parte restrita. Confira a conexão e tente de novo."; }
+  if (!nominalCompleto(N)) return MSG_ARQUIVO;
   let chave; try { chave = await chaveDaSenha(senha, N); } catch (e) { return "Não foi possível verificar a senha neste navegador."; }
-  let D; try { D = await decifrar(chave, N); } catch (e) { return "Senha incorreta."; }
-  if (lembrar) { lsGravar(paraB64(chave)); NOM.selo = Date.now(); }
+  let D; try { D = await decifrar(chave, N); } catch (e) { return e instanceof ErroSenha ? MSG_SENHA : MSG_ARQUIVO; }
+  if (lembrar) { lsGravar(paraB64(chave)); NOM.selo = Date.now(); } else lsGravar(null);   // sem "lembrar": não deixa a chave de uma entrada anterior
   aplicarNominal(D); return "";
 }
 async function entrarLembrado() {
-  try { if (sessionStorage.getItem(AV_LS) === "1") { sessionStorage.removeItem(AV_LS); avisarSessao(); } } catch (e) {}
+  try { if (sessionStorage.getItem(AV_LS) === "1") { sessionStorage.removeItem(AV_LS); avisarSessao(); } } catch (e) { /* sem armazenamento: sem aviso */ }
   const g = lsLer(); if (!g) return;
   if (!g.ok) { avisarSessao(); return; }   // vencida (ou sem carimbo): já foi apagada
   if (!P.restrito) return;
   let N; try { N = await carregarNominal(); } catch (e) { return; }                       // sem rede: mantém a chave lembrada
-  let D; try { D = await decifrar(deB64(g.k), N); } catch (e) { lsGravar(null); return; }   // senha trocada: esquece a chave antiga
+  let D; try { D = await decifrar(deB64(g.k), N); } catch (e) { if (e instanceof ErroSenha) lsGravar(null); return; }   // só a falha de autenticação (senha trocada) esquece a chave; arquivo ou navegador com problema, não
   NOM.selo = g.t;
   aplicarNominal(D);
 }
@@ -2291,7 +2362,7 @@ function abrirSenha() {
   if (!$("#dlg-senha").open) $("#dlg-senha").showModal(); $("#senha").focus();
 }
 if (P.restrito) document.body.classList.add("restrito");
-$("#btn-entrar").addEventListener("click", () => { if (NOM.aberto) { lsGravar(null); location.reload(); } else abrirSenha(); });
+$("#btn-entrar").addEventListener("click", () => { if (NOM.aberto) sair(); else abrirSenha(); });
 $("#senha-cancelar").addEventListener("click", () => $("#dlg-senha").close());
 $("#dlg-senha").addEventListener("close", () => { if (!NOM.aberto) abaAposEntrar = ""; });
 $("#dlg-senha").addEventListener("click", e => { if (e.target === $("#dlg-senha")) $("#dlg-senha").close(); });
